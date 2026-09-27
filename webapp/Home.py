@@ -3,12 +3,13 @@
 import streamlit as st
 
 from vote_transfer.application.project_overview import get_project_overview
+from webapp.components.navigation import render_navigation
 
 st.set_page_config(
     page_title="Vote Transfer | France",
     page_icon="🗳️",
     layout="wide",
-    initial_sidebar_state="expanded",
+    initial_sidebar_state="collapsed",
 )
 
 st.markdown(
@@ -44,15 +45,7 @@ st.markdown(
 
 overview = get_project_overview()
 research = overview["research"]
-
-with st.sidebar:
-    st.markdown("### Navigation")
-    st.page_link("Home.py", label="Accueil", icon="🏠")
-    st.page_link(
-        "pages/1_Transparence_IA.py",
-        label="Transparence IA",
-        icon="🔎",
-    )
+render_navigation()
 
 st.markdown(
     """
@@ -76,12 +69,6 @@ st.markdown(
     </div>
     """,
     unsafe_allow_html=True,
-)
-
-st.page_link(
-    "pages/1_Transparence_IA.py",
-    label="Consulter la déclaration de transparence IA",
-    icon="🔎",
 )
 
 st.subheader("One question. One traceable workflow.")

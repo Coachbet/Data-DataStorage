@@ -2,6 +2,8 @@
 
 import streamlit as st
 
+from webapp.components.navigation import render_navigation
+
 st.set_page_config(
     page_title="Transparence IA | Vote Transfer",
     page_icon="◉",
@@ -38,14 +40,7 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-with st.sidebar:
-    st.markdown("### Navigation")
-    st.page_link("Home.py", label="Accueil", icon="🏠")
-    st.page_link(
-        "pages/1_Transparence_IA.py",
-        label="Transparence IA",
-        icon="🔎",
-    )
+render_navigation()
 
 st.markdown(
     """

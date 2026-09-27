@@ -1,0 +1,31 @@
+{
+  "source": {
+    "key": "reu",
+    "name": "Table des bureaux de vote du REU",
+    "provider": "INSEE",
+    "purpose": "Rapprocher les identifiants de bureaux de vote et les territoires.",
+    "landing_url": "https://www.data.gouv.fr/datasets/bureaux-de-vote-et-adresses-de-leurs-electeurs",
+    "access_method": "data.gouv.fr dataset API",
+    "raw_directory": "geography/reu",
+    "dataset_slug": "bureaux-de-vote-et-adresses-de-leurs-electeurs",
+    "endpoint": null,
+    "preferred_format": "parquet",
+    "title_contains": [
+      "table-bv-reu.parquet"
+    ],
+    "notes": "Télécharger la table des bureaux, pas les adresses individuelles volumineuses.",
+    "core": true
+  },
+  "retrieved_at_utc": "2026-09-27T21:13:22.527912+00:00",
+  "resources": [
+    {
+      "title": "table-bv-reu.parquet",
+      "url": "https://www.data.gouv.fr/api/1/datasets/r/6faacf36-1897-43f5-bf39-af8b41a15d26",
+      "format": "parquet",
+      "expected_size": 3477330,
+      "saved_as": "data/raw/geography/reu/table_bv_reu_parquet_1.parquet",
+      "downloaded_bytes": 3477330,
+      "sha256": "48047ca16b3a539bf600a05b09eb524c183e4acabe4ed8ca476be5a31f1f2106"
+    }
+  ]
+}

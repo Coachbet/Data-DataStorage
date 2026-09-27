@@ -1,0 +1,31 @@
+{
+  "source": {
+    "key": "unemployment",
+    "name": "Taux de chômage localisés",
+    "provider": "INSEE",
+    "purpose": "Série départementale de chômage utilisée comme indicateur contextuel.",
+    "landing_url": "https://www.insee.fr/fr/statistiques/2012804",
+    "access_method": "INSEE download page",
+    "raw_directory": "context/unemployment",
+    "dataset_slug": null,
+    "endpoint": null,
+    "preferred_format": "xls",
+    "title_contains": [
+      "série longue depuis 1982"
+    ],
+    "notes": "Choisir une période cohérente avec chaque élection, sans valeur future.",
+    "core": true
+  },
+  "retrieved_at_utc": "2026-09-27T21:18:29.773338+00:00",
+  "resources": [
+    {
+      "title": "Télécharger (xls, 208 Ko, série longue depuis 1982)",
+      "url": "https://www.insee.fr/fr/statistiques/fichier/2012804/sl_etc_2026T2.xls",
+      "format": "xls",
+      "expected_size": null,
+      "saved_as": "data/raw/context/unemployment/t_l_charger_xls_208_ko_s_rie_longue_depuis_1982_1.xls",
+      "downloaded_bytes": 213504,
+      "sha256": "09b00b90baf558295567ffb156a157806b3e5d0c2657164e67af0e0e50826f74"
+    }
+  ]
+}

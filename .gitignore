@@ -52,6 +52,8 @@ data/raw/**
 data/interim/**
 data/processed/**
 data/external/**
+!data/raw/**/
+!data/raw/**/manifest.json
 !data/raw/.gitkeep
 !data/interim/.gitkeep
 !data/processed/.gitkeep

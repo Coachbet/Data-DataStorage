@@ -1,0 +1,41 @@
+{
+  "source": {
+    "key": "elections",
+    "name": "Résultats électoraux consolidés",
+    "provider": "data.gouv.fr / Ministère de l'Intérieur",
+    "purpose": "Résultats généraux et par candidat, par bureau de vote, de 2002 à 2022.",
+    "landing_url": "https://www.data.gouv.fr/datasets/donnees-des-elections-agregees",
+    "access_method": "data.gouv.fr dataset API",
+    "raw_directory": "elections",
+    "dataset_slug": "donnees-des-elections-agregees",
+    "endpoint": null,
+    "preferred_format": "parquet",
+    "title_contains": [
+      "Résultats généraux",
+      "Résultats par candidat"
+    ],
+    "notes": "Source principale. Filtrer les identifiants *_pres_t1 et *_pres_t2.",
+    "core": true
+  },
+  "retrieved_at_utc": "2026-09-27T21:13:20.262037+00:00",
+  "resources": [
+    {
+      "title": "Résultats généraux",
+      "url": "https://www.data.gouv.fr/api/1/datasets/r/ff16d511-10c0-405e-9b35-511723948fce",
+      "format": "parquet",
+      "expected_size": 70866179,
+      "saved_as": "data/raw/elections/r_sultats_g_n_raux_1.parquet",
+      "downloaded_bytes": 70866179,
+      "sha256": "f939fc582fb864552f7819f4a7df45bb42d797fc6e4dc4f6ca0b7b486c2692d1"
+    },
+    {
+      "title": "Résultats par candidat",
+      "url": "https://www.data.gouv.fr/api/1/datasets/r/4d3b35f6-0b22-4415-a24c-419a676312e2",
+      "format": "parquet",
+      "expected_size": 161344622,
+      "saved_as": "data/raw/elections/r_sultats_par_candidat_2.parquet",
+      "downloaded_bytes": 161344622,
+      "sha256": "45a6ee9911ebd5d679c0c258572b693a33919d507d4faf60764068a3a5790962"
+    }
+  ]
+}

@@ -44,6 +44,18 @@ uv sync --dev
 uv run streamlit run webapp/Home.py
 ```
 
+Inspect and acquire the documented sources with:
+
+```bash
+uv run python -m vote_transfer.infrastructure.collect --list
+uv run python -m vote_transfer.infrastructure.collect --source core
+uv run python -m vote_transfer.infrastructure.collect --source elections --download
+```
+
+The second command is a read-only simulation. A download only occurs when
+`--download` is explicitly supplied. Every acquisition writes a provenance
+manifest containing the source URL, retrieval time, byte count and SHA-256 hash.
+
 Run the checks with:
 
 ```bash
