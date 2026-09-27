@@ -1,0 +1,87 @@
+# Python bytecode and caches
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Virtual environments and uv/Python tooling
+.venv/
+venv/
+env/
+.python-version
+
+# Secrets and local configuration
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Streamlit local state and secrets
+.streamlit/secrets.toml
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Logs and temporary files
+*.log
+tmp/
+temp/
+.cache/
+
+# Build and packaging outputs
+build/
+dist/
+*.egg-info/
+
+# Generated data: keep directories and small documented samples only
+data/raw/**
+data/interim/**
+data/processed/**
+data/external/**
+!data/raw/.gitkeep
+!data/interim/.gitkeep
+!data/processed/.gitkeep
+!data/external/.gitkeep
+!data/**/README.md
+!data/samples/**
+
+# Generated reports and presentation exports
+reports/figures/**
+!reports/figures/.gitkeep
+presentation/build/
+presentation/*.aux
+presentation/*.log
+presentation/*.nav
+presentation/*.out
+presentation/*.snm
+presentation/*.toc
+
+# Local databases and downloaded archives
+*.db
+*.sqlite
+*.sqlite3
+*.duckdb
+*.parquet
+*.feather
+*.arrow
+*.zip
+*.7z
+*.tar
+*.tar.gz
+
+# Keep the reproducible dependency lockfile tracked
+!uv.lock
