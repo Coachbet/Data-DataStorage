@@ -87,3 +87,5 @@ presentation/*.toc
 
 # Keep the reproducible dependency lockfile tracked
 !uv.lock
+
+old_data/

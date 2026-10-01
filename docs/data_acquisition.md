@@ -43,3 +43,32 @@ uv run python -m vote_transfer.infrastructure.collect --source core
 Each source is stored below `data/raw/<source>/`. The generated `manifest.json`
 records the landing page, resolved URL, retrieval timestamp, number of bytes and
 SHA-256 digest. Raw data files stay outside Git and must never be edited in place.
+
+## Acquisition by election year (APIs only)
+
+`vote_transfer.infrastructure.collect_year` builds one folder per presidential election year
+(`data/raw/2002/` ... `data/raw/2022/`). Every dataset comes from an API call; nothing is read from a
+file downloaded beforehand.
+
+```bash
+uv run python -m vote_transfer.infrastructure.collect_year --year 2017 --dry-run   # rows announced, nothing written
+uv run python -m vote_transfer.infrastructure.collect_year --year 2017             # writes data/raw/2017/
+uv run python -m vote_transfer.infrastructure.collect_year --all-years             # 2002, 2007, 2012, 2017, 2022
+```
+
+Each year folder holds the same files:
+
+| File | API call |
+|---|---|
+| `turnout_by_polling_station_<year>.parquet` | tabular API, resource `b8703c69-...`, `id_election__exact=<year>_pres_t1` and `_t2` |
+| `candidate_votes_by_polling_station_<year>.parquet` | tabular API, resource `52a11762-...`, same filters |
+| `polling_stations_reu_<year>.parquet` | tabular API, resource `3a321a06-...`, kept for the stations in the year's results |
+| `departments_list.json` | `https://geo.api.gouv.fr/departements?fields=nom,code,codeRegion` |
+| `department_boundaries_2025.geojson` | `https://www.data.gouv.fr/api/1/datasets/r/b06ff8a1-...` |
+| `manifest.json` | every call, row count, size, SHA-256 |
+
+- The first request of each table gives `meta.total` and the real page size; the other pages are requested
+  in parallel (`--workers`, default 6). The rows read must equal `meta.total` with no duplicated `__id`.
+- A file that already exists is kept, so an interrupted run resumes; `--force` downloads again.
+- The REU table has no year: it is read once and cached in `data/raw/_cache/`.
+- The département list and the contours are one version each, copied into every year folder.
