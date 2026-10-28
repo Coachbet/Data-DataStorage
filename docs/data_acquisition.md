@@ -1,74 +1,58 @@
-# Data acquisition guide
+# Data acquisition and provenance
 
-## Principle
-
-Collection is selective and auditable. The program first asks the producer for
-the current resource URL, prints what it found, and downloads only when a human
-adds `--download`. This prevents accidental multi-gigabyte transfers and avoids
-hard-coding dated storage URLs.
-
-## Source decisions
-
-| Key | Source | Decision |
-|---|---|---|
-| `elections` | Consolidated data.gouv.fr election files | Core source; obtain both Parquet tables |
-| `presidentielle_2022_reference` | Official 2022 second-round files | Validation reference; do not duplicate bulk data |
-| `cog` | INSEE Code officiel géographique | Core source for historical geographic identifiers |
-| `geo_api` | Etalab administrative API | Small snapshot for current labels and checks |
-| `contours` | Etalab administrative contours | Simplified department geometry for maps |
-| `reu` | INSEE electoral register | Download only the polling-station table, never the address table |
-| `insee_local` | INSEE local indicators | Acquire once, then retain only justified variables |
-| `filosofi` | INSEE income and poverty | Contextual source, with year and confidentiality caveats |
-| `unemployment` | INSEE local unemployment | Match each election to information available at that date |
-| `gdelt` | GDELT news search | Optional experiment requiring a fixed query protocol |
-
-## Commands
+## Primary path: original Ministry files
 
 ```bash
-# Complete catalogue and explanations
+uv run vote-transfer acquire --year 2022
+uv run vote-transfer process --year 2022
+```
+
+The downloader resolves the unique polling-station text resource in each
+[data.gouv.fr Ministry dataset](https://www.data.gouv.fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour).
+The second-round dataset is
+[here](https://www.data.gouv.fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-2nd-tour).
+Resource title and format must match explicitly; ambiguous results fail.
+
+Downloads stream into `.part` files. Published byte sizes and basic headers are
+checked before renaming. The manifest is checkpointed after each round and stores
+resource ID, source API, published/resolved URLs, licence metadata, retrieval
+UTC timestamp, file size and SHA-256. Existing files are reused only when their
+hash matches the manifest; their original retrieval dates are retained.
+Unverified or modified files cause an error and are never overwritten implicitly.
+
+The source API currently returns `notspecified` for licence metadata on these
+2022 datasets. The manifest records that value literally; it does not assert a
+licence that the metadata has not supplied. Check reuse terms before redistribution.
+
+Processing rechecks hashes, parses original fields, validates all station totals,
+and writes normalised interim tables plus app-ready processed tables. Raw bytes
+are never modified. Generated datasets stay outside Git. Reproduction commands
+are in the root README; exact dates/checksums are in the raw manifest.
+
+## Consolidated data: validation only
+
+The old collect/collect_year modules remain available for reference collection:
+
+```bash
 uv run python -m vote_transfer.infrastructure.collect --list
-
-# Resolve one source without writing data
 uv run python -m vote_transfer.infrastructure.collect --source elections
-
-# Download one reviewed source
 uv run python -m vote_transfer.infrastructure.collect --source elections --download
-
-# Resolve all core sources without writing data
-uv run python -m vote_transfer.infrastructure.collect --source core
+uv run python -m vote_transfer.infrastructure.collect_year --year 2017 --dry-run
 ```
 
-## Result
+The generic collector is retained for reference datasets. Original primary sources
+must use `vote-transfer acquire` to get the correct files and manifest contract.
+The old partial `data/raw/2017/` download is consolidated API data, not a primary
+original-file dataset. It is not consumed by the new pipeline.
+Older acquired data were preserved in `data/archive/legacy/`, excluded from Git.
 
-Each source is stored below `data/raw/<source>/`. The generated `manifest.json`
-records the landing page, resolved URL, retrieval timestamp, number of bytes and
-SHA-256 digest. Raw data files stay outside Git and must never be edited in place.
+## Upcoming sources
 
-## Acquisition by election year (APIs only)
+- Original 2017 polling-station results, then original 2002/2007/2012 files:
+  select exact releases and implement separate format adapters.
+- CHES: choose a survey wave and document candidate-to-party mapping and missing parties.
+- Polling-company axes / Wikipedia 2027 tables: dated snapshots and a fixed scraping protocol.
+- Political Compass 2022 / CEVIPOF: documented manual extraction for robustness checks.
+- Voter Autrement 2017: verify the precise Zenodo record before acquisition.
 
-`vote_transfer.infrastructure.collect_year` builds one folder per presidential election year
-(`data/raw/2002/` ... `data/raw/2022/`). Every dataset comes from an API call; nothing is read from a
-file downloaded beforehand.
-
-```bash
-uv run python -m vote_transfer.infrastructure.collect_year --year 2017 --dry-run   # rows announced, nothing written
-uv run python -m vote_transfer.infrastructure.collect_year --year 2017             # writes data/raw/2017/
-uv run python -m vote_transfer.infrastructure.collect_year --all-years             # 2002, 2007, 2012, 2017, 2022
-```
-
-Each year folder holds the same files:
-
-| File | API call |
-|---|---|
-| `turnout_by_polling_station_<year>.parquet` | tabular API, resource `b8703c69-...`, `id_election__exact=<year>_pres_t1` and `_t2` |
-| `candidate_votes_by_polling_station_<year>.parquet` | tabular API, resource `52a11762-...`, same filters |
-| `polling_stations_reu_<year>.parquet` | tabular API, resource `3a321a06-...`, kept for the stations in the year's results |
-| `departments_list.json` | `https://geo.api.gouv.fr/departements?fields=nom,code,codeRegion` |
-| `department_boundaries_2025.geojson` | `https://www.data.gouv.fr/api/1/datasets/r/b06ff8a1-...` |
-| `manifest.json` | every call, row count, size, SHA-256 |
-
-- The first request of each table gives `meta.total` and the real page size; the other pages are requested
-  in parallel (`--workers`, default 6). The rows read must equal `meta.total` with no duplicated `__id`.
-- A file that already exists is kept, so an interrupted run resumes; `--force` downloads again.
-- The REU table has no year: it is read once and cached in `data/raw/_cache/`.
-- The département list and the contours are one version each, copied into every year folder.
+Socioeconomic datasets and media mention counts are no longer active sources.

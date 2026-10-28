@@ -1,0 +1,30 @@
+{
+  "year": 2022,
+  "source": "Ministry original files",
+  "files": [
+    {
+      "round": 1,
+      "file": "round_1.txt",
+      "source_api": "https://www.data.gouv.fr/api/1/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/",
+      "resource_id": "79b5cac4-4957-486b-bbda-322d80868224",
+      "url": "https://static.data.gouv.fr/resources/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/20220414-152542/resultats-par-niveau-burvot-t1-france-entiere.txt",
+      "resolved_url": "https://static.data.gouv.fr/resources/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/20220414-152542/resultats-par-niveau-burvot-t1-france-entiere.txt",
+      "licence": "notspecified",
+      "retrieved_at_utc": "2026-10-28T15:29:20.514124+00:00",
+      "bytes": 36463842,
+      "sha256": "d878f33c4c1488188af0ca0eee9ff5a3116ea88c44979a1538ff43c663831624"
+    },
+    {
+      "round": 2,
+      "file": "round_2.txt",
+      "source_api": "https://www.data.gouv.fr/api/1/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-2nd-tour/",
+      "resource_id": "4dfd05a9-094e-4043-8a19-43b6b6bbe086",
+      "url": "https://static.data.gouv.fr/resources/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-2nd-tour/20220428-142237/resultats-par-niveau-burvot-t2-france-entiere.txt",
+      "resolved_url": "https://static.data.gouv.fr/resources/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-2nd-tour/20220428-142237/resultats-par-niveau-burvot-t2-france-entiere.txt",
+      "licence": "notspecified",
+      "retrieved_at_utc": "2026-10-28T15:29:21.597283+00:00",
+      "bytes": 13530843,
+      "sha256": "c2ead8aaa3501db95bc887ef949504c914b66d81b2d46313bbfcc5fdeea0bff3"
+    }
+  ]
+}

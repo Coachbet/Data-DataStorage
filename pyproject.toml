@@ -5,13 +5,14 @@ description = "Reproducible analysis of second-round vote transfers in French pr
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
-    "duckdb>=1.4.0,<2",
     "pandas>=2.3.0,<3",
-    "plotly>=6.3.0,<7",
     "pyarrow>=21.0.0,<22",
     "requests>=2.32.0,<3",
     "streamlit>=1.50.0,<2",
 ]
+
+[project.scripts]
+vote-transfer = "vote_transfer.cli:main"
 
 [dependency-groups]
 dev = [
@@ -24,12 +25,14 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/vote_transfer"]
+packages = ["backend/vote_transfer"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+pythonpath = ["backend"]
 
 [tool.ruff]
+extend-exclude = ["tmp", "data"]
 line-length = 100
 target-version = "py312"
 

@@ -13,7 +13,6 @@ htmlcov/
 .venv/
 venv/
 env/
-.python-version
 
 # Secrets and local configuration
 .env
@@ -62,15 +61,15 @@ data/external/**
 !data/samples/**
 
 # Generated reports and presentation exports
-reports/figures/**
-!reports/figures/.gitkeep
-presentation/build/
-presentation/*.aux
-presentation/*.log
-presentation/*.nav
-presentation/*.out
-presentation/*.snm
-presentation/*.toc
+docs/archive/reports/figures/**
+!docs/archive/reports/figures/.gitkeep
+docs/archive/presentation/build/
+docs/archive/presentation/*.aux
+docs/archive/presentation/*.log
+docs/archive/presentation/*.nav
+docs/archive/presentation/*.out
+docs/archive/presentation/*.snm
+docs/archive/presentation/*.toc
 
 # Local databases and downloaded archives
 *.db
@@ -88,4 +87,5 @@ presentation/*.toc
 # Keep the reproducible dependency lockfile tracked
 !uv.lock
 
-old_data/
+data/archive/
+*.part

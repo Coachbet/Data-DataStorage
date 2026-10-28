@@ -1,25 +1,14 @@
-# Data layout
+# Local data storage
 
-- `raw/`: immutable files exactly as acquired;
-- `external/`: reference tables maintained by third parties;
-- `interim/`: validated and partially transformed data;
-- `processed/`: analysis-ready outputs derived by the reproducible workflow;
-- `samples/`: small, non-sensitive fixtures that may be committed for tests.
+- `raw/official/<year>/`: unchanged Ministry files and provenance manifests.
+- `raw/reference/`: consolidated results for independent validation.
+- `raw/2017/`: preserved partial legacy API collection; not a primary source.
+- `interim/<year>/`: validated station-level Parquet tables.
+- `processed/<year>/`: results, H0 evaluation and quality report read by Streamlit.
+- `external/`: future documented candidate/party mappings and positional references.
+- `archive/legacy/`: previous local datasets, preserved but excluded from Git.
 
-Large data files are ignored by Git. Each acquisition must document its source,
-licence, retrieval date, checksum where useful, and exact reproduction command.
-
-## Acquisition
-
-The source catalogue lives in `src/vote_transfer/application/source_catalog.py`.
-To review it before any network transfer:
-
-```bash
-uv run python -m vote_transfer.infrastructure.collect --list
-uv run python -m vote_transfer.infrastructure.collect --source core
-```
-
-The first command explains every source. The second resolves current download
-links without saving the data. Add `--download` only after checking the selected
-resources and expected sizes. Downloads use a temporary `.part` file and are
-renamed only after completion; `manifest.json` records provenance and integrity.
+Build the first dataset with `uv run vote-transfer acquire --year 2022` followed
+by `uv run vote-transfer process --year 2022`. The root README has the full setup.
+Generated data and archives are ignored. Only small raw provenance manifests and
+README/placeholder files are versioned. Never edit raw source bytes in place.

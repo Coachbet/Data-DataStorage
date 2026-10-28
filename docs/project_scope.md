@@ -1,32 +1,56 @@
-# Project scope
+# Project scope and implementation roadmap
 
-## Approved direction
+## Controlling project description
 
-The project investigates aggregate second-round vote transfers in French
-presidential elections. The applied output is an explorer for hypothetical 2027
-finalists, with results presented by department and aggregated nationally.
+The supplied acquisition note dated **2 October 2026** explicitly changes the
+original proposal. It is the current research specification, rather than an
+instruction to execute every activity mentioned in the PDF immediately.
 
-## Scope guardrails from teacher feedback
+Question: **Which assumptions about voter behaviour best explain second-round
+results in French presidential elections (2002–2022)?**
 
-- Begin with the central question and retain only variables required to answer it.
-- Keep every analysis tied to the same investigation.
-- Operationalise terms such as *transfer*, *abstention*, *bloc* and *estimate*.
-- Prefer a smaller, justified evidence base over unrelated additional datasets.
-- Inspect feasibility and data quality before choosing sophisticated methods.
-- Do not use advanced statistics or machine learning without teacher approval.
+One observation is one department in one election. All input and output shares
+use registered voters, including abstention and blank/invalid ballots. The current
+raw files also contain reporting areas that are not departments; retain them
+explicitly so national aggregation does not silently omit overseas voters.
 
-## Current source priority
+## Decisions reconciled with the previous repository
 
-1. Official first- and second-round presidential election results.
-2. Official geographic identifiers needed to harmonise communes and departments.
-3. Contextual indicators only when a stated analytical need justifies them.
+| Topic | Current decision |
+|---|---|
+| Primary election data | Original Ministry files; harmonise them ourselves |
+| Consolidated election data | Independent validation reference only |
+| Socioeconomic indicators and media mentions | Removed from active scope |
+| Small-department shrinkage | Not assumed; revisit only with evidence |
+| Candidate positions | Document CHES wave, mappings and alternative axes |
+| Individual transfers | Not observed; describe aggregate model patterns |
+| 2027 | Hypothetical simulation, not a forecast |
+| Fitted methods | The note plans a methodological discussion before H3/H5 fitting |
 
-Regional media attention remains a possible extension, not a core dependency,
-until its relevance, coverage and acquisition feasibility are demonstrated.
+## Model sequence
 
-## Architectural boundaries
+| Hypothesis | Assumption | Implementation status |
+|---|---|---|
+| H0 | Eliminated support splits like the remaining electorate | First-round-only operational definition implemented; see methodology |
+| H1 | Nearest finalist in an ordinal left–right ordering | Pending documented positions and tie rules |
+| H2 | Nearest finalist in 1D/2D ideological distance, with an abstention/blank threshold | Pending positions, scales and threshold definition |
+| H3 | A calibrated fraction does not follow the closest-candidate rule | Pending fitting protocol and election-level holdout |
+| H4 | Strategic first-round voting masks broader preferences | Extension, pending Voter Autrement 2017 |
+| H5 | Transfers learned by political family | Extension, pending preference data and fitting protocol |
 
-- **Domain:** election concepts, definitions and validation rules.
-- **Application:** collection, cleaning, storage and analysis use cases.
-- **Infrastructure:** data.gouv.fr/INSEE clients, files and database adapters.
-- **Presentation:** the Streamlit app, written report and group presentation.
+## Next milestones
+
+1. Add the original polling-station adapter for 2017, then 2002/2007/2012. Validate
+   formats, election versions and source coverage separately for every year.
+2. Automate comparisons with consolidated results and independent published totals.
+   Preserve discrepancies rather than forcing sources to agree.
+3. Build a versioned candidate-to-party/bloc table and select historically
+   appropriate CHES waves. Document missing parties and mapping decisions.
+4. Implement H1/H2 and evaluate each assumption using the same outcome definitions.
+5. Fit eligible models on whole elections and test on held-out elections; never
+   randomly split departments from one election across training and test sets.
+6. Scope Voter Autrement, alternative 2D positions and dated 2027 polling tables.
+7. Build the 2027 simulation interface only after its inputs and assumptions exist.
+
+The current first slice is 2022 acquisition → validation → processing → H0 → app.
+It is a runnable starting point, not the completed research study.

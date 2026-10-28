@@ -1,0 +1,23 @@
+{
+  "source": "Ministry published national summaries; independent aggregation check",
+  "files": [
+    {
+      "round": 1,
+      "file": "round_1.txt",
+      "url": "https://www.data.gouv.fr/api/1/datasets/r/1421c8db-b10f-4ed1-abb3-52b010e74e79",
+      "resolved_url": "https://static.data.gouv.fr/resources/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/20220414-152200/resultats-par-niveau-fe-t1-france-entiere.txt",
+      "sha256": "6986b74e3d4fd86fdb16c1036e6273c8e5df12ffc53497249e760980a96ec260",
+      "retrieved_at_utc": "2026-10-28T15:41:09.509474+00:00",
+      "bytes": 816
+    },
+    {
+      "round": 2,
+      "file": "round_2.txt",
+      "url": "https://www.data.gouv.fr/api/1/datasets/r/debe2f26-48e5-4c45-abab-4926145c9936",
+      "resolved_url": "https://static.data.gouv.fr/resources/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-2nd-tour/20220428-141900/resultats-par-niveau-fe-t2-france-entiere.txt",
+      "sha256": "af8ba10aa9209eed1a18247c125fabcd7749b1f2ff380c4bc2d6b95431689859",
+      "retrieved_at_utc": "2026-10-28T15:41:09.804315+00:00",
+      "bytes": 439
+    }
+  ]
+}

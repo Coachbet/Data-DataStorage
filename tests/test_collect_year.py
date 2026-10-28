@@ -4,7 +4,6 @@ from typing import Any
 
 import pandas as pd
 import pytest
-
 from vote_transfer.infrastructure import collect_year as cy
 
 
