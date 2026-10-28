@@ -18,7 +18,13 @@ SOURCES: tuple[DataSource, ...] = (
             dataset_slug=slug,
             raw_directory=f"official/{year}",
             preferred_format="txt",
-            title_contains=(f"burvot-t{round_number}-france-entiere",),
+            title_contains=(
+                (f"burvot-t{round_number}-france-entiere",)
+                if year >= 2022
+                else (("1er tour" if round_number == 1 else "2nd tour"),)
+                if year == 2017
+                else (f"PR{str(year)[2:]}_B",)
+            ),
             notes="Use vote-transfer acquire for the validated, resumable original-file workflow.",
         )
         for (year, round_number), slug in DATASETS.items()

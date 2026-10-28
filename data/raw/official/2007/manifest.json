@@ -1,0 +1,30 @@
+{
+  "year": 2007,
+  "source": "Ministry original files",
+  "files": [
+    {
+      "round": 1,
+      "file": "both_rounds.txt",
+      "source_api": "https://www.data.gouv.fr/api/1/datasets/election-presidentielle-2007-resultats-par-bureaux-de-vote/",
+      "resource_id": "83e6c566-e313-4dbb-a504-8467c0952697",
+      "url": "https://static.data.gouv.fr/resources/election-presidentielle-2007-resultats-par-bureaux-de-vote/20151001-154056/PR07_Bvot_T1T2.txt",
+      "resolved_url": "https://static.data.gouv.fr/resources/election-presidentielle-2007-resultats-par-bureaux-de-vote/20151001-154056/PR07_Bvot_T1T2.txt",
+      "licence": "fr-lo",
+      "retrieved_at_utc": "2026-10-28T15:54:25.037947+00:00",
+      "bytes": 60796672,
+      "sha256": "620f93b9531ec2648f3d98d1981e18e0615dfb71825c980a471a3d27732908e4"
+    },
+    {
+      "round": 2,
+      "file": "both_rounds.txt",
+      "source_api": "https://www.data.gouv.fr/api/1/datasets/election-presidentielle-2007-resultats-par-bureaux-de-vote/",
+      "resource_id": "83e6c566-e313-4dbb-a504-8467c0952697",
+      "url": "https://static.data.gouv.fr/resources/election-presidentielle-2007-resultats-par-bureaux-de-vote/20151001-154056/PR07_Bvot_T1T2.txt",
+      "resolved_url": "https://static.data.gouv.fr/resources/election-presidentielle-2007-resultats-par-bureaux-de-vote/20151001-154056/PR07_Bvot_T1T2.txt",
+      "licence": "fr-lo",
+      "retrieved_at_utc": "2026-10-28T15:54:25.037947+00:00",
+      "bytes": 60796672,
+      "sha256": "620f93b9531ec2648f3d98d1981e18e0615dfb71825c980a471a3d27732908e4"
+    }
+  ]
+}

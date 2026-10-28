@@ -1,0 +1,30 @@
+{
+  "year": 2002,
+  "source": "Ministry original files",
+  "files": [
+    {
+      "round": 1,
+      "file": "both_rounds.txt",
+      "source_api": "https://www.data.gouv.fr/api/1/datasets/election-presidentielle-2002-resultats-par-bureaux-de-vote/",
+      "resource_id": "17fbaf03-33f2-48d6-95e8-aaa13809e432",
+      "url": "https://static.data.gouv.fr/resources/election-presidentielle-2002-resultats-par-bureaux-de-vote/20150925-110503/PR02_BVot_T1T2.txt",
+      "resolved_url": "https://static.data.gouv.fr/resources/election-presidentielle-2002-resultats-par-bureaux-de-vote/20150925-110503/PR02_BVot_T1T2.txt",
+      "licence": "fr-lo",
+      "retrieved_at_utc": "2026-10-28T15:54:16.350096+00:00",
+      "bytes": 75552083,
+      "sha256": "0c2d26ed5de8a2c16a8a0192a3356f27cbaa47fbf1c56795dd8ba8de77077e25"
+    },
+    {
+      "round": 2,
+      "file": "both_rounds.txt",
+      "source_api": "https://www.data.gouv.fr/api/1/datasets/election-presidentielle-2002-resultats-par-bureaux-de-vote/",
+      "resource_id": "17fbaf03-33f2-48d6-95e8-aaa13809e432",
+      "url": "https://static.data.gouv.fr/resources/election-presidentielle-2002-resultats-par-bureaux-de-vote/20150925-110503/PR02_BVot_T1T2.txt",
+      "resolved_url": "https://static.data.gouv.fr/resources/election-presidentielle-2002-resultats-par-bureaux-de-vote/20150925-110503/PR02_BVot_T1T2.txt",
+      "licence": "fr-lo",
+      "retrieved_at_utc": "2026-10-28T15:54:16.350096+00:00",
+      "bytes": 75552083,
+      "sha256": "0c2d26ed5de8a2c16a8a0192a3356f27cbaa47fbf1c56795dd8ba8de77077e25"
+    }
+  ]
+}

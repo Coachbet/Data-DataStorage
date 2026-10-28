@@ -77,3 +77,10 @@ def test_complete_pipeline_and_raw_integrity(raw_dataset):
     with pytest.raises(ValueError, match="checksum"):
         process_year(2022, raw_dataset)
     assert output.read_bytes() == previous  # a failed build does not replace valid outputs
+
+
+def test_published_blank_invalid_split_must_match_combined_count(raw_dataset):
+    turnout, votes = read_round(raw_dataset)
+    turnout.loc[0, "blank"] += 1
+    with pytest.raises(ValueError, match="combined total"):
+        validate_results(turnout, votes)

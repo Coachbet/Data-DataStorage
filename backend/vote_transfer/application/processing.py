@@ -9,7 +9,13 @@ from pathlib import Path
 
 import pandas as pd
 
-from vote_transfer.infrastructure.official import COUNTS, STATION_KEY, parse_official, sha256
+from vote_transfer.infrastructure.official import (
+    COUNTS,
+    STATION_KEY,
+    parse_official,
+    raw_filename,
+    sha256,
+)
 
 
 def validate_results(turnout: pd.DataFrame, votes: pd.DataFrame) -> None:
@@ -38,8 +44,17 @@ def validate_results(turnout: pd.DataFrame, votes: pd.DataFrame) -> None:
             raise ValueError("Counts must be nonnegative integers.")
     if not (turnout.registered == turnout.abstentions + turnout.voters).all():
         raise ValueError("Registered voters must equal abstentions plus voters.")
-    if not (turnout.voters == turnout.blank + turnout.invalid + turnout.valid).all():
+    if not (turnout.voters == turnout.blank_invalid + turnout.valid).all():
         raise ValueError("Voters must equal blank, invalid and valid ballots.")
+    if {"blank", "invalid"} <= set(turnout.columns):
+        split = turnout[["blank", "invalid"]]
+        if (split.isna().any(axis=1) != split.isna().all(axis=1)).any():
+            raise ValueError("Blank and invalid splits must both be present or both be missing.")
+        known = split.dropna()
+        if (known < 0).any().any() or (known % 1 != 0).any().any():
+            raise ValueError("Split ballot counts must be nonnegative integers.")
+        if not (known.sum(axis=1) == turnout.loc[known.index, "blank_invalid"]).all():
+            raise ValueError("Blank and invalid counts must equal the combined total.")
     summed = votes.groupby(STATION_KEY).votes.sum().rename("candidate_total")
     joined = turnout.set_index(STATION_KEY).join(summed, how="outer")
     if joined[["valid", "candidate_total"]].isna().any().any():
@@ -70,7 +85,7 @@ def aggregate_results(turnout: pd.DataFrame, votes: pd.DataFrame) -> pd.DataFram
     candidates = candidates.rename(columns={"candidate": "label", "votes": "count"})
     rows = [candidates[[*keys, "option", "label", "count"]]]
     for option, label, counts in (
-        ("blank_invalid", "Blank / invalid", totals.blank + totals.invalid),
+        ("blank_invalid", "Blank / invalid", totals.blank_invalid),
         ("abstention", "Abstention", totals.abstentions),
     ):
         row = totals[keys].copy()
@@ -94,7 +109,7 @@ def process_year(year: int, root: Path) -> dict:
     records = {item["round"]: item for item in manifest["files"]}
     turnouts, candidates = [], []
     for round_number in (1, 2):
-        path = source / f"round_{round_number}.txt"
+        path = source / raw_filename(year, round_number)
         if round_number not in records or sha256(path) != records[round_number]["sha256"]:
             raise ValueError(f"Raw checksum mismatch or missing provenance: {path}")
         turnout, votes = parse_official(path, year, round_number)
@@ -111,7 +126,7 @@ def process_year(year: int, root: Path) -> dict:
         "year": year,
         "processed_at_utc": datetime.now(UTC).isoformat(),
         "source": "Ministry original files",
-        "schema_version": 1,
+        "schema_version": 2,
         "territorial_units": int(results.department_code.nunique()),
         "polling_station_round_rows": len(turnout),
         "candidate_rows": len(votes),
@@ -128,6 +143,11 @@ def process_year(year: int, root: Path) -> dict:
             "two-round territorial coverage",
         ],
         "input_files": records,
+        "ballot_detail": "combined_only" if year <= 2012 else "separate_blank_and_invalid",
+        "geographic_labels": "codes_only" if year <= 2012 else "published_names",
+        "geographic_coverage": "All reporting units in the source; coverage differs by year.",
+        "reporting_unit_codes": sorted(results.department_code.unique().tolist()),
+        "partial_national_coverage": year in (2002, 2007),
         "limitations": [
             "Aggregate patterns, not individual voter behaviour.",
             "Ministry codes include overseas territories and voters abroad.",
@@ -135,6 +155,18 @@ def process_year(year: int, root: Path) -> dict:
             "H0 is a provisional operational definition, not a fitted transfer estimate.",
         ],
     }
+    if year <= 2012:
+        report["limitations"].extend(
+            [
+                "Historical blank/invalid splits are unavailable and remain null.",
+                "Historical labels use source department codes; no modern geography join.",
+            ]
+        )
+    if year in (2002, 2007):
+        report["limitations"].append(
+            "Partial national coverage: some overseas areas and voters abroad are absent. "
+            "Aggregated results describe only the covered units."
+        )
     parent = root / "processed"
     parent.mkdir(parents=True, exist_ok=True)
     target = parent / str(year)

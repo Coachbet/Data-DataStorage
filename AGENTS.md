@@ -7,4 +7,6 @@
 - Never treat aggregate model estimates as observed individual transfers or forecasts.
 - Keep synthetic test data clearly separate from real election results.
 - Use `uv sync --locked --dev` for setup and `make check` for verification.
-- Do not commit datasets, virtual environments or secrets.
+- Do not commit raw/interim/processed datasets, virtual environments or secrets.
+- Small verified aggregates in `data/bundled/` are the explicit exception for offline review.
+  Regenerate them with `vote-transfer bundle`; retain checksums and provenance.

@@ -4,7 +4,8 @@
 French presidential elections (2002–2022)?**
 
 A small Python library and a Streamlit frontend. The current implementation
-acquires the original Ministry files for **2022**, validates both rounds,
+acquires the original Ministry files for **2002, 2007, 2012, 2017 and 2022**,
+validates both rounds,
 builds department-level tables, and evaluates an explicit H0 baseline against
 observed results. The app explores actual data; no demo figures are substituted.
 The eventual 2027 feature will be a **simulation, not a forecast**.
@@ -16,14 +17,30 @@ From the repository root:
 
 ```bash
 uv sync --locked --dev
-uv run vote-transfer acquire --year 2022
-uv run vote-transfer process --year 2022
 uv run streamlit run site/app.py
 ```
 
-Open <http://localhost:8501>. Acquisition downloads about 50 MB once; subsequent
-runs verify and reuse the original files. The app itself makes no acquisition
-requests. Without processed data it displays setup instructions.
+Open <http://localhost:8501>. **No election-data download is needed.** The repository
+includes verified department/reporting-area aggregates for all five elections in
+`data/bundled/` (about 326 KB of dataset files in total). The app uses these on a
+clean clone, or prefers complete local processed outputs when available.
+Installation needs access to the Python package registry; subsequent data exploration
+runs offline. No Git LFS, database server or external data hosting is needed.
+
+To rebuild every dataset from the original source files (optional):
+
+```bash
+uv run vote-transfer acquire --all-years
+uv run vote-transfer process --all-years
+uv run vote-transfer bundle --all-years
+```
+
+Acquisition downloads about 293 MB once across the five elections. Existing files
+are verified and reused. The files combining both rounds in 2002–2012 are downloaded
+only once per year. Use `--year 2017` or `--year 2017 2022` for a smaller rebuild.
+`bundle` explicitly refreshes the small versioned snapshots after processing; it
+never includes raw or station-level data. Without either processed or bundled data,
+the app displays setup instructions.
 
 `uv sync` creates the local `.venv/` and installs the backend in editable mode.
 You can alternatively activate it with `source .venv/bin/activate` and run
@@ -39,12 +56,13 @@ backend/vote_transfer/      Installable Python backend
   application/              Validation, aggregation, H0 and evaluation
   domain/                   Research definitions and source metadata types
   infrastructure/           Source adapters, downloads and original-file parser
-  cli.py                    acquire / process command line interface
+  cli.py                    acquire / process / bundle command line interface
   config.py                 Shared paths and optional environment override
 data/
-  raw/official/2022/         Original files and provenance manifest
-  interim/2022/             Normalised station turnout and candidate votes
-  processed/2022/           Results, H0 errors and quality report used by the app
+  raw/official/<year>/         Original files and provenance manifest
+  interim/<year>/             Normalised station turnout and candidate votes
+  processed/<year>/           Results, H0 errors and quality report used by the app
+  bundled/<year>/           Small versioned aggregates for immediate offline use
   external/                 Future documented reference/mapping tables
   archive/legacy/           Preserved old local datasets, excluded from Git
 docs/                       Scope, methodology, data contracts and development notes
@@ -60,20 +78,22 @@ Streamlit calls the Python package directly: no separate HTTP service is needed.
 Parquet is the initial storage format. Direct runtime dependencies are Streamlit,
 pandas, PyArrow and requests. DuckDB and Plotly were removed because the current
 workflow does not need them. Git ignores environments, secrets, caches and
-large/generated datasets; small raw provenance manifests remain versionable.
+large/generated datasets; small raw manifests and curated `data/bundled/` snapshots
+are the explicit versioned exceptions.
 
 ## What is implemented
 
-- Original 2022 polling-station downloads resolved through the official dataset API,
+- Original 2002–2022 polling-station downloads resolved through the official dataset API,
   with source URLs, retrieval timestamps, sizes and SHA-256 hashes in
-  `data/raw/official/2022/manifest.json`.
+  `data/raw/official/<year>/manifest.json`.
 - Strict parsing of repeated candidate blocks and stable candidate IDs across
-  rounds (the Ministry's panel numbers change between rounds).
+  rounds (the Ministry's panel numbers change between rounds). Historical long-format
+  imports count repeated turnout once and preserve missing blank/invalid splits as null.
 - Checks for missing/duplicate keys, integer counts, turnout accounting,
   candidate totals, and matching territorial coverage between rounds.
 - Department/reporting-area shares over **registered voters**, including
   abstention and a combined blank/invalid outcome.
-- H0 predictions, unit errors and a registered-voter-weighted national comparison.
+- H0 predictions, unit errors and a registered-voter-weighted comparison across covered units.
 - An English app with year/territory/round controls, charts, CSV export and provenance.
 
 The [2 October acquisition note](docs/references/data-acquisition-note.pdf)
@@ -90,11 +110,15 @@ uv run ruff check backend site tests
 uv run ruff format --check backend site tests
 ```
 
-`make setup`, `make acquire`, `make process`, `make app` and `make check` are
-shortcuts. Tests use synthetic fixtures and temporary directories, with no network
-or dependence on downloaded data. See [development notes](docs/development.md),
-[acquisition details](docs/data_acquisition.md), [data contracts](docs/data_dictionary.md)
+`make setup`, `make acquire`, `make process`, `make bundle`, `make app` and `make check` are
+shortcuts. Tests use synthetic fixtures, temporary directories and the small shipped
+aggregates, with no network or dependence on raw downloads. See [development notes](docs/development.md),
+[acquisition details](docs/data_acquisition.md), [data contracts](docs/data_dictionary.md),
 [H0 methodology](docs/methodology.md) and the [validation record](docs/validation.md).
+
+**Coverage:** 2002 and 2007 omit some overseas territories and voters abroad.
+Their combined totals are not full national totals. The app flags this limitation;
+cross-year comparisons require matching geography.
 
 Individual voter choices are unobserved. H0 is a transparent, provisional
 baseline, not evidence that voters actually behave that way. H1–H5, cross-election

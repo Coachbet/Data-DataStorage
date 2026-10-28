@@ -22,9 +22,11 @@ missing territorial coverage, H0 mass conservation and Streamlit interactions.
 They are not historical election data. A real-data run is a separate integration
 check, documented in the quality report and validation notes.
 
-The UI shows a useful empty state on a clean clone. Its tests use Streamlit's
+The UI reads verified bundled aggregate snapshots on a clean clone; it shows an
+empty state only when the selected data root has neither local nor bundled outputs. Its tests use Streamlit's
 [AppTest](https://docs.streamlit.io/develop/api-reference/app-testing/st.testing.v1.apptest)
-with temporary processed outputs rather than depending on local raw downloads.
+with synthetic temporary outputs and the shipped aggregate snapshots rather than
+depending on local raw downloads. Bundled-data tests exercise all five years without network.
 
 ## Repository reorganisation (28 October 2026)
 

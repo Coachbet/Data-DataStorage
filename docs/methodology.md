@@ -46,5 +46,22 @@ missing areas cause a processing failure. Polling stations are validated within
 each round, then aggregated independently. This does not infer station-level
 transitions or harmonise historical commune boundaries.
 
-2022-only results cannot establish cross-election generalisation. H3/H5 need
+H0 is now computed separately for all five elections. This does not establish
+cross-election generalisation for fitted models. H3/H5 need
 whole-election holdouts and a fitted-method protocol before implementation.
+
+
+## Historical source coverage
+
+The original 2002 file covers 100 reporting units; 2007 covers 101; 2012, 2017 and
+2022 cover 107. All units within each source have both rounds. Compared with 2022
+codes, 2002 lacks `ZM`, `ZN`, `ZP`, `ZS`, `ZW`, `ZX`, `ZZ`; 2007 lacks `ZN`, `ZP`,
+`ZS`, `ZW`, `ZX`, `ZZ`. This is a coverage description, not a claim that all of
+those administrative codes existed unchanged in earlier years.
+
+Consequently, use "all covered units" for historical pooled results. Do not
+compare these totals as identical national electorates. A future matched-geography
+study must explicitly select common units and review boundary changes.
+Before 2017, only combined blank/invalid counts are available (voters minus valid
+votes). The separate counts remain null in interim tables; the model outcome is
+combined for every year, so its definition stays consistent.

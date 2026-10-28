@@ -40,8 +40,8 @@ explicitly so national aggregation does not silently omit overseas voters.
 
 ## Next milestones
 
-1. Add the original polling-station adapter for 2017, then 2002/2007/2012. Validate
-   formats, election versions and source coverage separately for every year.
+1. Completed: original-file adapters for 2002, 2007, 2012, 2017 and 2022, with
+   year-specific schemas, coverage notes and small versioned aggregate snapshots.
 2. Automate comparisons with consolidated results and independent published totals.
    Preserve discrepancies rather than forcing sources to agree.
 3. Build a versioned candidate-to-party/bloc table and select historically
@@ -52,5 +52,7 @@ explicitly so national aggregation does not silently omit overseas voters.
 6. Scope Voter Autrement, alternative 2D positions and dated 2027 polling tables.
 7. Build the 2027 simulation interface only after its inputs and assumptions exist.
 
-The current first slice is 2022 acquisition → validation → processing → H0 → app.
-It is a runnable starting point, not the completed research study.
+The current pipeline covers all five elections: acquisition → validation →
+processing → H0 → app. Curated aggregates in `data/bundled/` allow review without
+raw downloads. 2002 and 2007 have partial national coverage. Cross-source checking,
+matched-geography comparison and H1–H5 remain research work.

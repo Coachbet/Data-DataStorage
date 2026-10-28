@@ -1,14 +1,11 @@
 """English Streamlit frontend; all calculations live in the Python backend."""
 
-import json
-
-import pandas as pd
 import streamlit as st
 from vote_transfer.application.baseline import national_evaluation
+from vote_transfer.application.datasets import available_datasets, load_dataset
 from vote_transfer.application.project_overview import get_project_overview
 from vote_transfer.application.source_catalog import SOURCES
 from vote_transfer.config import data_root
-from vote_transfer.infrastructure.official import sha256
 
 st.set_page_config(page_title="Vote Transfer Lab", page_icon="◈", layout="wide")
 
@@ -18,23 +15,13 @@ st.write(get_project_overview()["research"]["question"])
 st.caption("Observed results → explicit assumptions → measured errors")
 
 root = data_root()
-folders = sorted(
-    (
-        p
-        for p in (root / "processed").glob("[0-9][0-9][0-9][0-9]")
-        if all(
-            (p / f).exists()
-            for f in ("department_results.parquet", "h0_evaluation.parquet", "quality_report.json")
-        )
-    ),
-    reverse=True,
-)
+datasets = available_datasets(root)
 
 with st.sidebar:
     st.header("Research controls")
     st.caption("Original Ministry files · registered-voter shares")
 
-if not folders:
+if not datasets:
     st.info("No processed election is available yet. Build the first dataset with these commands.")
     st.code(
         "uv run vote-transfer acquire --year 2022\nuv run vote-transfer process --year 2022",
@@ -46,21 +33,25 @@ if not folders:
     st.stop()
 
 with st.sidebar:
-    year = st.selectbox("Election year", [p.name for p in folders])
+    year = st.selectbox("Election year", list(datasets))
 
-folder = root / "processed" / year
+folder = datasets[year]
+st.caption(
+    "Versioned aggregate snapshot · no download required"
+    if folder.parent.name == "bundled"
+    else "Locally processed original data"
+)
 try:
-    quality = json.loads((folder / "quality_report.json").read_text())
-    for name in ("department_results.parquet", "h0_evaluation.parquet"):
-        if quality.get("outputs", {}).get(name) != sha256(folder / name):
-            raise ValueError(
-                "Processed outputs do not match their build report. Re-run processing."
-            )
-    results = pd.read_parquet(folder / "department_results.parquet")
-    evaluation = pd.read_parquet(folder / "h0_evaluation.parquet")
+    results, evaluation, quality = load_dataset(folder)
 except (OSError, ValueError) as error:
     st.error(f"Cannot read the processed election: {error}")
     st.stop()
+
+if quality.get("partial_national_coverage"):
+    st.info(
+        "This historical file omits some overseas areas and voters abroad. "
+        "Totals and model errors describe the covered units, not all of France."
+    )
 
 units = (
     results[["department_code", "department_name"]].drop_duplicates().sort_values("department_code")
@@ -71,7 +62,7 @@ with st.sidebar:
         "Geographic coverage",
         ["All units", *unit_labels],
         format_func=lambda value: (
-            "National · all reporting units"
+            "All covered reporting units"
             if value == "All units"
             else f"{value} · {unit_labels[value]}"
         ),
@@ -153,7 +144,7 @@ with model:
     table.columns = ["Outcome", "Observed (%)", "H0 (%)", "Absolute error (pp)"]
     st.dataframe(table, hide_index=True, width="stretch")
     st.caption(
-        "National comparison weights unit predictions by round-two registered voters. "
+        "The combined comparison weights unit predictions by round-two registered voters. "
         "Mean absolute error averages the four outcome errors. This differs from averaging "
         "unit errors."
     )
@@ -184,10 +175,14 @@ with provenance:
             st.link_button("Open source", source.landing_url)
     with st.expander("Quality report and source checksums"):
         st.json(quality)
+    if quality.get("ballot_detail") == "combined_only":
+        st.info(
+            "This historical source reports blank and invalid ballots together. "
+            "Their separate counts are unavailable. Department labels show original codes."
+        )
     st.subheader("Next research steps")
     st.markdown(
-        "1. Add original-file adapters for 2017, then 2002–2012, and compare with the "
-        "consolidated reference.\n"
+        "1. Compare historical results with the consolidated reference and audit coverage.\n"
         "2. Document candidate-to-party mappings and CHES positions for H1 and H2.\n"
         "3. Confirm fitting methods for H3/H5 and use election-level held-out evaluation.\n"
         "4. Study 2017 preference data for H4/H5 before building the 2027 scenario interface."

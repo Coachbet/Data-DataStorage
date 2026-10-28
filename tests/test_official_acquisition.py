@@ -79,3 +79,40 @@ def test_modified_raw_file_is_not_overwritten(raw_dataset, monkeypatch):
         acquire_official(2022, raw_dataset)
     assert path.read_bytes() == b"modified"
     assert not session.calls
+
+
+def test_historical_shared_file_is_downloaded_only_once(tmp_path, monkeypatch):
+    from vote_transfer.infrastructure.official import RESOURCE_IDS
+
+    content = b"1;01;001;Synthetic;0001;100;80;75;1;ALPHA;Test;X;75\n"
+
+    class HistoricalSession(Session):
+        def get(self, url, **kwargs):
+            self.calls.append(url)
+            if "/datasets/" in url:
+                return Response(
+                    {
+                        "license": "fr-lo",
+                        "resources": [
+                            {
+                                "id": RESOURCE_IDS[2002, 1],
+                                "format": "txt",
+                                "title": "PR02_BVot_T1T2.txt",
+                                "url": "https://example.test/both_rounds",
+                                "filesize": len(content),
+                            }
+                        ],
+                    }
+                )
+            return Response(content=content, url=url)
+
+    session = HistoricalSession({})
+    monkeypatch.setattr("vote_transfer.infrastructure.official.requests.Session", lambda: session)
+    manifest = acquire_official(2002, tmp_path)
+    assert len(session.calls) == 2  # One dataset metadata request and one download.
+    assert len(manifest["files"]) == 2
+    assert {r["file"] for r in manifest["files"]} == {"both_rounds.txt"}
+    assert len({r["sha256"] for r in manifest["files"]}) == 1
+    session.calls.clear()
+    assert acquire_official(2002, tmp_path) == manifest
+    assert session.calls == []

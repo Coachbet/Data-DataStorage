@@ -1,0 +1,30 @@
+{
+  "year": 2012,
+  "source": "Ministry original files",
+  "files": [
+    {
+      "round": 1,
+      "file": "both_rounds.txt",
+      "source_api": "https://www.data.gouv.fr/api/1/datasets/election-presidentielle-2012-resultats-par-bureaux-de-vote-1/",
+      "resource_id": "206b1668-2b31-46da-b957-9857f94fe85c",
+      "url": "https://static.data.gouv.fr/resources/election-presidentielle-2012-resultats-par-bureaux-de-vote-1/20150925-102751/PR12_Bvot_T1T2.txt",
+      "resolved_url": "https://static.data.gouv.fr/resources/election-presidentielle-2012-resultats-par-bureaux-de-vote-1/20150925-102751/PR12_Bvot_T1T2.txt",
+      "licence": "fr-lo",
+      "retrieved_at_utc": "2026-10-28T15:54:32.570508+00:00",
+      "bytes": 58668586,
+      "sha256": "baf999ed0d5aee3cfa3192e152f34db4b0e77af72bad18af4853c4b7b958448e"
+    },
+    {
+      "round": 2,
+      "file": "both_rounds.txt",
+      "source_api": "https://www.data.gouv.fr/api/1/datasets/election-presidentielle-2012-resultats-par-bureaux-de-vote-1/",
+      "resource_id": "206b1668-2b31-46da-b957-9857f94fe85c",
+      "url": "https://static.data.gouv.fr/resources/election-presidentielle-2012-resultats-par-bureaux-de-vote-1/20150925-102751/PR12_Bvot_T1T2.txt",
+      "resolved_url": "https://static.data.gouv.fr/resources/election-presidentielle-2012-resultats-par-bureaux-de-vote-1/20150925-102751/PR12_Bvot_T1T2.txt",
+      "licence": "fr-lo",
+      "retrieved_at_utc": "2026-10-28T15:54:32.570508+00:00",
+      "bytes": 58668586,
+      "sha256": "baf999ed0d5aee3cfa3192e152f34db4b0e77af72bad18af4853c4b7b958448e"
+    }
+  ]
+}

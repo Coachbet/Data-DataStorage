@@ -89,3 +89,12 @@ docs/archive/presentation/*.toc
 
 data/archive/
 *.part
+
+# Small, verified aggregate snapshots for offline teaching/review.
+# Only these three explicit files per year may enter Git.
+data/bundled/**
+!data/bundled/**/
+!data/bundled/README.md
+!data/bundled/*/department_results.parquet
+!data/bundled/*/h0_evaluation.parquet
+!data/bundled/*/quality_report.json
