@@ -2,12 +2,14 @@
 
 ## Automated checks
 
-- 55 offline tests passed, including raw parsing, acquisition/resume, integrity,
+- 59 offline tests passed, including raw parsing, acquisition/resume, integrity,
   vote accounting, aggregation, H0, weighting and Streamlit interactions.
 - Ruff lint and formatting checks passed; `git diff --check` passed.
 - The local Streamlit server started and `/_stcore/health` returned HTTP 200.
-- No controllable browser was available in the execution environment. Functional
-  UI verification used Streamlit AppTest; browser visual QA remains outstanding.
+- The redesigned four-view interface passed offline Streamlit AppTest coverage
+  across all five elections, plus chart schema and data-reading checks.
+- Native Chrome automation timed out. Desktop/mobile browser visual QA remains
+  outstanding; responsive CSS has not been visually verified in this environment.
 
 ## Real 2022 processing
 

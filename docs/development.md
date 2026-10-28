@@ -48,3 +48,26 @@ candidate names, original field names and source resource titles remain unchange
 AI assisted with repository restructuring, code, documentation and tests. Claims
 about source coverage and model performance must remain traceable to real checks.
 The project team owns methodological decisions, final interpretation and submission.
+
+
+## Guided frontend
+
+The Streamlit app presents four views: Start here, Explore results, Understand the
+model, and Sources & limits. Navigation uses native controls and preserves the
+selected election/area. Detailed tables, mathematical notation, provenance JSON
+and reproduction commands are expandable rather than placed on arrival.
+
+`site/styles.css` provides local editorial styling, responsive font sizes and
+visible keyboard focus. No fonts, scripts or imagery are fetched externally.
+The homepage mini-chart also exposes its numbers in an HTML table and gives its
+stacked bars accessible descriptions. Exploratory charts include explicit value
+labels, named series, tooltips and a downloadable table alternative.
+
+`application/exploration.py` supplies registered-electorate summaries and weighted
+model-error readings. The H0 algorithm and stored datasets are unchanged. The
+100-voter example on the model page is explicitly illustrative, not historical data.
+
+UI tests cover all four views for all five shipped elections without acquisition
+network access, area navigation, missing-area resets, empty/corrupt data states and
+Vega-Lite schema validation. Native Chrome inspection timed out during this
+redesign; desktop/mobile visual verification remains outstanding.

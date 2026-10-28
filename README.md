@@ -94,7 +94,9 @@ are the explicit versioned exceptions.
 - Department/reporting-area shares over **registered voters**, including
   abstention and a combined blank/invalid outcome.
 - H0 predictions, unit errors and a registered-voter-weighted comparison across covered units.
-- An English app with year/territory/round controls, charts, CSV export and provenance.
+- A guided English app: introduction, observed results, H0 explanation, and sources/limits.
+- Year/area/round controls, labelled charts, data-driven readings, a glossary and CSV exports.
+- Local styling and fonts; no external assets or election-data requests are needed.
 
 The [2 October acquisition note](docs/references/data-acquisition-note.pdf)
 explicitly revises the [original proposal](docs/references/project-proposal.pdf).
