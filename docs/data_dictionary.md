@@ -57,7 +57,17 @@ not every unit is administratively a department.
 (round two), `actual_share`, `predicted_share`, and `absolute_error_pp`.
 
 `quality_report.json` records checks, row counts, registration changes, input
-hashes, build time, limitations and output checksums. The app reads these three
+hashes, build time, limitations and output checksums. `derived_fields` states which
+counts are computed rather than published (abstentions and blank/invalid before
+2017). `diagnostics.stations_by_round` measures completeness, key uniqueness,
+zero-registration/zero-voter stations and station-level turnout outliers.
+`diagnostics.reporting_units` lists areas flagged by within-election IQR fences on
+first-round abstention, registration change between rounds and H0 error; flagged
+areas are retained. `application/quality.py` recomputes the per-area flags from the
+aggregate tables, so the bundled snapshots support the same analysis.
+
+`national_crosscheck.json` (local only, from `vote-transfer crosscheck`) compares our
+station-level sums with the Ministry's published national summaries, field by field. The app reads these three
 processed files. It never reprocesses raw results during a page rerun.
 
 

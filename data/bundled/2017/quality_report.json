@@ -1,6 +1,6 @@
 {
   "year": 2017,
-  "processed_at_utc": "2026-10-28T15:57:31.149962+00:00",
+  "processed_at_utc": "2026-10-31T15:43:10.402725+00:00",
   "source": "Ministry original files",
   "schema_version": 2,
   "territorial_units": 107,
@@ -15,10 +15,110 @@
     "source checksums",
     "unique station and candidate keys",
     "nonnegative integer counts",
-    "turnout accounting",
+    "voters <= registered and valid <= voters",
+    "turnout accounting against published abstentions, blank and invalid",
     "candidate vote sums",
     "two-round territorial coverage"
   ],
+  "derived_fields": {
+    "blank_invalid": "blank + invalid"
+  },
+  "diagnostics": {
+    "stations_by_round": {
+      "1": {
+        "station_rows": 69242,
+        "candidate_rows": 761662,
+        "completeness_required_fields_pct": 100.0,
+        "completeness_blank_invalid_split_pct": 100.0,
+        "duplicate_station_keys": 0,
+        "duplicate_candidate_keys": 0,
+        "stations_with_zero_registered": 1,
+        "stations_with_zero_voters": 1,
+        "stations_with_zero_valid_votes": 12,
+        "registered_per_station": {
+          "min": 0,
+          "median": 743.0,
+          "max": 105891
+        },
+        "turnout_iqr_outlier_stations": 4157
+      },
+      "2": {
+        "station_rows": 69242,
+        "candidate_rows": 138484,
+        "completeness_required_fields_pct": 100.0,
+        "completeness_blank_invalid_split_pct": 100.0,
+        "duplicate_station_keys": 0,
+        "duplicate_candidate_keys": 0,
+        "stations_with_zero_registered": 1,
+        "stations_with_zero_voters": 1,
+        "stations_with_zero_valid_votes": 38,
+        "registered_per_station": {
+          "min": 0,
+          "median": 743.0,
+          "max": 105924
+        },
+        "turnout_iqr_outlier_stations": 3498
+      }
+    },
+    "reporting_units": {
+      "method": "Tukey IQR fences (factor 1.5) within each election",
+      "response": "flag and retain; no area is removed",
+      "territories": {
+        "abroad": 1,
+        "metropolitan": 96,
+        "overseas": 10
+      },
+      "flag_abstention_r1": [
+        "2A",
+        "2B",
+        "93",
+        "ZA",
+        "ZB",
+        "ZC",
+        "ZD",
+        "ZM",
+        "ZN",
+        "ZP",
+        "ZS",
+        "ZW",
+        "ZX",
+        "ZZ"
+      ],
+      "flag_registration_change": [
+        "04",
+        "12",
+        "13",
+        "55",
+        "72",
+        "74",
+        "76",
+        "77",
+        "92",
+        "ZA",
+        "ZC",
+        "ZM",
+        "ZN",
+        "ZS",
+        "ZX",
+        "ZZ"
+      ],
+      "flag_h0_error": [
+        "35",
+        "75",
+        "78",
+        "92",
+        "93",
+        "ZA",
+        "ZB",
+        "ZC",
+        "ZD",
+        "ZN",
+        "ZP",
+        "ZS",
+        "ZW"
+      ]
+    }
+  },
   "input_files": {
     "1": {
       "round": 1,

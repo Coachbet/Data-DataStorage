@@ -22,10 +22,32 @@ explicitly so national aggregation does not silently omit overseas voters.
 | Consolidated election data | Independent validation reference only |
 | Socioeconomic indicators and media mentions | Removed from active scope |
 | Small-department shrinkage | Not assumed; revisit only with evidence |
-| Candidate positions | Manual 1–7 family scale agreed; draft candidate table and sources in `data/reference/`; CHES and alternative axes remain possible sensitivity references |
+| Candidate positions | Manual 1–7 family scale replaces the planned CHES table (see below); draft candidate table and sources in `data/reference/`; CHES and alternative axes remain possible sensitivity references |
 | Individual transfers | Not observed; describe aggregate model patterns |
 | 2027 | Hypothetical simulation, not a forecast |
 | Fitted methods | The note plans a methodological discussion before H3/H5 fitting |
+
+## Change from the acquisition note: candidate positions
+
+The approved note planned a candidate-to-party table built from the Chapel Hill
+Expert Survey (CHES) for H1, H2 and H5. The current input is instead a manually
+coded table of seven political families (`data/reference/candidate_positions.csv`).
+This is a deliberate change to the approved plan and must be presented as such:
+
+- **Why:** CHES rates national parties, not candidacies. The note already expected
+  small candidates to be missing and to be "placed by bloc"; with 61 first-round
+  candidacies, including independents and minor parties, that placement becomes
+  the dominant coding step anyway. A single documented family scale applies the
+  same rule to every candidate. *The team should confirm this rationale.*
+- **Cost:** the scores are a project operationalisation, not an external expert
+  measurement. Two coders could reasonably disagree (for example PCF as Left or
+  Far left), so the coding is a potential source of measurement bias.
+- **Mitigation, before H1/H2 use:** two members code every row independently,
+  without looking at model fit; report their agreement and resolve disagreements
+  in the notes. `alternative_family` supports a sensitivity analysis, and CHES
+  can still serve as an external check where it covers a party.
+
+Until this review is done, every row stays `draft` and no model reads the scores.
 
 ## Model sequence
 

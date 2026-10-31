@@ -10,6 +10,8 @@ It is tracked in Git and works offline. It is not an official political
 classification, a CHES extract or a measurement of voters' individual positions.
 The team approved the scale and its direction, but has not reviewed the individual
 classifications. Every assigned row is therefore marked `draft`.
+This table replaces the CHES-based mapping planned in the acquisition note; the
+reason and the planned two-coder review are in `docs/project_scope.md`.
 
 ## Coding convention
 

@@ -47,6 +47,8 @@ RESOURCE_IDS = {
     (2012, 2): "206b1668-2b31-46da-b957-9857f94fe85c",
     (2017, 1): "8fdb0926-ea9d-4fb4-a136-7767cd97e30b",
     (2017, 2): "2e3e44de-e584-4aa2-8148-670daf5617e1",
+    (2022, 1): "79b5cac4-4957-486b-bbda-322d80868224",
+    (2022, 2): "4dfd05a9-094e-4043-8a19-43b6b6bbe086",
 }
 
 
@@ -86,7 +88,11 @@ def sha256(path: Path) -> str:
 
 
 def acquire_official(year: int, root: Path) -> dict:
-    """Download both rounds with API-resolved URLs and verified, resumable manifests."""
+    """Download both rounds with API-resolved URLs and verified, resumable manifests.
+
+    A versioned manifest pins the reviewed bytes: a fresh download must reproduce
+    its SHA-256, so a replaced upstream file fails instead of silently changing data.
+    """
     if year not in SUPPORTED_YEARS:
         raise ValueError(f"Supported original-file adapters: {SUPPORTED_YEARS}")
     folder = root / "raw" / "official" / str(year)
@@ -114,11 +120,7 @@ def acquire_official(year: int, root: Path) -> dict:
                 resource
                 for resource in dataset["resources"]
                 if resource.get("format", "").lower() == "txt"
-                and (
-                    resource["id"] == RESOURCE_IDS[year, round_number]
-                    if (year, round_number) in RESOURCE_IDS
-                    else f"burvot-t{round_number}-france-entiere" in resource["title"].lower()
-                )
+                and resource["id"] == RESOURCE_IDS[year, round_number]
             ]
             if len(matches) != 1:
                 raise ValueError(f"Expected exactly one polling-station text resource at {api}")
@@ -135,6 +137,16 @@ def acquire_official(year: int, root: Path) -> dict:
                 raise ValueError(f"Incomplete download: {temporary}")
             # Verify the source layout before accepting it as an immutable raw input.
             _check_source_layout(temporary, year)
+            pinned = records.get(round_number)
+            if pinned:
+                if sha256(temporary) != pinned["sha256"]:
+                    raise ValueError(
+                        f"Downloaded bytes differ from the pinned checksum in {manifest_path}. "
+                        f"The source may have been replaced; inspect {temporary}."
+                    )
+                # Same bytes as the reviewed retrieval: keep its original provenance.
+                temporary.replace(target)
+                continue
             temporary.replace(target)
             records[round_number] = {
                 "round": round_number,

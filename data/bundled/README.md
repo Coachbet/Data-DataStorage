@@ -3,7 +3,7 @@
 These are real aggregate results derived from the original Ministry files, not
 synthetic demo data. All five elections (2002, 2007, 2012, 2017, 2022) are included.
 The application can read them directly after cloning and installing dependencies.
-The 15 dataset files total about 326 KB; no Git LFS or external hosting is needed.
+The 15 dataset files total about 336 KB; no Git LFS or external hosting is needed.
 
 Each year contains only:
 
