@@ -22,7 +22,7 @@ explicitly so national aggregation does not silently omit overseas voters.
 | Consolidated election data | Independent validation reference only |
 | Socioeconomic indicators and media mentions | Removed from active scope |
 | Small-department shrinkage | Not assumed; revisit only with evidence |
-| Candidate positions | Document CHES wave, mappings and alternative axes |
+| Candidate positions | Manual 1–7 family scale agreed; draft candidate table and sources in `data/reference/`; CHES and alternative axes remain possible sensitivity references |
 | Individual transfers | Not observed; describe aggregate model patterns |
 | 2027 | Hypothetical simulation, not a forecast |
 | Fitted methods | The note plans a methodological discussion before H3/H5 fitting |
@@ -44,8 +44,9 @@ explicitly so national aggregation does not silently omit overseas voters.
    year-specific schemas, coverage notes and small versioned aggregate snapshots.
 2. Automate comparisons with consolidated results and independent published totals.
    Preserve discrepancies rather than forcing sources to agree.
-3. Build a versioned candidate-to-party/bloc table and select historically
-   appropriate CHES waves. Document missing parties and mapping decisions.
+3. Review the versioned manual candidate-to-party/family table. Resolve missing
+   positions and agree on tie and threshold rules. If CHES is used as a sensitivity
+   reference, select historically appropriate waves and document party mappings.
 4. Implement H1/H2 and evaluate each assumption using the same outcome definitions.
 5. Fit eligible models on whole elections and test on held-out elections; never
    randomly split departments from one election across training and test sets.

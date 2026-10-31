@@ -1,0 +1,62 @@
+year,candidate_id,candidate_name,party_abbreviation,party_name,political_family,ideology_score,alternative_family,review_status,classification_note,source_ids
+2002,alain-madelin,Alain Madelin,DL,Démocratie libérale,Right,6,Centre-right,draft,Liberal right; centre-right is a sensitivity alternative.,E2002
+2002,arlette-laguiller,Arlette Laguiller,LO,Lutte ouvrière,Far left,1,,draft,Revolutionary socialist candidacy.,E2002
+2002,bruno-megret,Bruno Mégret,MNR,Mouvement national républicain,Far right,7,,draft,Nationalist party formed after the FN split.,E2002
+2002,christiane-taubira,Christiane Taubira,PRG,Parti radical de gauche,Centre-left,3,Left,draft,Radical centre-left convention; also test the broader left family.,E2002
+2002,christine-boutin,Christine Boutin,FRS,Forum des républicains sociaux,Right,6,Centre-right,draft,FRS candidacy within the UDF political background; conservative right.,E2002;RFI2002
+2002,corinne-lepage,Corinne Lepage,CAP21,Citoyenneté action participation pour le XXIe siècle,Centre,4,Centre-right,draft,Ecologist centrist convention; former minister in a right-led government.,E2002;RFI2002
+2002,daniel-gluckstein,Daniel Gluckstein,PT,Parti des travailleurs,Far left,1,,draft,Workers party candidacy.,E2002
+2002,francois-bayrou,François Bayrou,UDF,Union pour la démocratie française,Centre-right,5,Centre,draft,UDF centre-right convention in 2002; test Centre as an alternative.,E2002
+2002,jacques-chirac,Jacques Chirac,RPR,Rassemblement pour la République,Right,6,Centre-right,draft,Gaullist right; party label at the first round.,E2002
+2002,jean-marie-le-pen,Jean-Marie Le Pen,FN,Front national,Far right,7,,draft,National Front candidacy.,E2002
+2002,jean-pierre-chevenement,Jean-Pierre Chevènement,MDC,Mouvement des citoyens,Left,2,Centre-left,draft,Left sovereignist background; the republican campaign crossed party blocs.,E2002
+2002,jean-saint-josse,Jean Saint-Josse,CPNT,Chasse pêche nature traditions,Right,6,Centre-right,draft,Rural and hunting movement; right is a coarse project coding.,E2002
+2002,lionel-jospin,Lionel Jospin,PS,Parti socialiste,Centre-left,3,Left,draft,Mainstream socialist centre-left convention.,E2002
+2002,noel-mamere,Noël Mamère,LV,Les Verts,Left,2,Centre-left,draft,Green left convention; ecological positions are not a separate axis.,E2002
+2002,olivier-besancenot,Olivier Besancenot,LCR,Ligue communiste révolutionnaire,Far left,1,,draft,Revolutionary communist candidacy.,E2002
+2002,robert-hue,Robert Hue,PCF,Parti communiste français,Left,2,Far left,draft,Communist parliamentary left; distinguish from revolutionary parties.,E2002
+2007,arlette-laguiller,Arlette Laguiller,LO,Lutte ouvrière,Far left,1,,draft,Revolutionary socialist candidacy.,E2007
+2007,dominique-voynet,Dominique Voynet,LV,Les Verts,Left,2,Centre-left,draft,Green left convention.,E2007
+2007,francois-bayrou,François Bayrou,UDF,Union pour la démocratie française,Centre,4,Centre-right,draft,UDF at the first round; MoDem was formed after the election.,E2007
+2007,frederic-nihous,Frédéric Nihous,CPNT,Chasse pêche nature traditions,Right,6,Centre-right,draft,Rural and hunting movement; right is a coarse project coding.,E2007
+2007,gerard-schivardi,Gérard Schivardi,IND,Independent,Far left,1,Left,draft,Independent candidacy supported by PT; support is not party membership.,E2007;RFI2007
+2007,jean-marie-le-pen,Jean-Marie Le Pen,FN,Front national,Far right,7,,draft,National Front candidacy.,E2007
+2007,jose-bove,José Bové,IND,Independent,Left,2,Far left,draft,Independent anti-liberal and alter-globalisation candidacy.,E2007;RFI2007
+2007,marie-george-buffet,Marie-George Buffet,PCF,Parti communiste français,Left,2,Far left,draft,Communist parliamentary left convention.,E2007
+2007,nicolas-sarkozy,Nicolas Sarkozy,UMP,Union pour un mouvement populaire,Right,6,Centre-right,draft,Conservative right convention.,E2007
+2007,olivier-besancenot,Olivier Besancenot,LCR,Ligue communiste révolutionnaire,Far left,1,,draft,Revolutionary communist candidacy.,E2007
+2007,philippe-de-villiers,Philippe de Villiers,MPF,Mouvement pour la France,Right,6,Far right,draft,Sovereignist conservative right; far-right coding is an important alternative.,E2007
+2007,segolene-royal,Ségolène Royal,PS,Parti socialiste,Centre-left,3,Left,draft,Mainstream socialist centre-left convention.,E2007
+2012,eva-joly,Eva Joly,EELV,Europe Écologie Les Verts,Left,2,Centre-left,draft,Green left convention.,E2012
+2012,francois-bayrou,François Bayrou,MoDem,Mouvement démocrate,Centre,4,Centre-right,draft,Centrist candidacy.,E2012
+2012,francois-hollande,François Hollande,PS,Parti socialiste,Centre-left,3,Left,draft,Mainstream socialist centre-left convention.,E2012
+2012,jacques-cheminade,Jacques Cheminade,SP,Solidarité et Progrès,Unclassified,,,unresolved,No defensible single code selected: left-Gaullist self-description and contested political lineage. Review before distance modelling.,E2012;SP;CHEMINADE
+2012,jean-luc-melenchon,Jean-Luc Mélenchon,PG,Parti de gauche,Left,2,Far left,draft,PG member running for the Front de gauche coalition; radical parliamentary left convention.,E2012;PG2012
+2012,marine-le-pen,Marine Le Pen,FN,Front national,Far right,7,,draft,FN at this election; do not use the later RN name.,E2012
+2012,nathalie-arthaud,Nathalie Arthaud,LO,Lutte ouvrière,Far left,1,,draft,Revolutionary socialist candidacy.,E2012
+2012,nicolas-dupont-aignan,Nicolas Dupont-Aignan,DLR,Debout la République,Right,6,Far right,draft,DLR at this election; renamed DLF later. Sovereignist right convention.,E2012
+2012,nicolas-sarkozy,Nicolas Sarkozy,UMP,Union pour un mouvement populaire,Right,6,Centre-right,draft,Conservative right convention.,E2012
+2012,philippe-poutou,Philippe Poutou,NPA,Nouveau Parti anticapitaliste,Far left,1,,draft,Anti-capitalist revolutionary left convention.,E2012
+2017,benoit-hamon,Benoît Hamon,PS,Parti socialiste,Left,2,Centre-left,draft,PS nominee from its left wing; not the later Génération.s movement.,E2017
+2017,emmanuel-macron,Emmanuel Macron,EM,En Marche,Centre,4,Centre-right,draft,En Marche at the first round; centrist campaign convention.,E2017
+2017,francois-asselineau,François Asselineau,UPR,Union populaire républicaine,Right,6,Far right,draft,Provisional sovereignist-right coding; rejects the left-right divide. Review against a separate sovereignty axis.,E2017;ASSELINEAU
+2017,francois-fillon,François Fillon,LR,Les Républicains,Right,6,Centre-right,draft,Conservative right convention.,E2017
+2017,jacques-cheminade,Jacques Cheminade,SP,Solidarité et Progrès,Unclassified,,,unresolved,No defensible single code selected: left-Gaullist self-description and contested political lineage. Review before distance modelling.,E2017;SP;CHEMINADE
+2017,jean-lassalle,Jean Lassalle,RES,Résistons,Centre-right,5,Centre,draft,Former UDF and MoDem politician; rural centrist background makes the code uncertain.,E2017
+2017,jean-luc-melenchon,Jean-Luc Mélenchon,LFI,La France insoumise,Left,2,Far left,draft,Radical parliamentary left convention; test Far left as an alternative.,E2017
+2017,marine-le-pen,Marine Le Pen,FN,Front national,Far right,7,,draft,FN at this election; do not use the later RN name.,E2017
+2017,nathalie-arthaud,Nathalie Arthaud,LO,Lutte ouvrière,Far left,1,,draft,Revolutionary socialist candidacy.,E2017
+2017,nicolas-dupont-aignan,Nicolas Dupont-Aignan,DLF,Debout la France,Right,6,Far right,draft,First-round sovereignist-right coding; do not infer it from the later runoff endorsement.,E2017
+2017,philippe-poutou,Philippe Poutou,NPA,Nouveau Parti anticapitaliste,Far left,1,,draft,Anti-capitalist revolutionary left convention.,E2017
+2022,anne-hidalgo,Anne Hidalgo,PS,Parti socialiste,Centre-left,3,Left,draft,Mainstream socialist centre-left convention.,E2022
+2022,emmanuel-macron,Emmanuel Macron,LREM,La République en marche,Centre,4,Centre-right,draft,Centrist baseline coding; centre-right is a key sensitivity alternative. LREM at the election.,E2022
+2022,eric-zemmour,Éric Zemmour,REC,Reconquête,Far right,7,,draft,Nationalist far-right candidacy.,E2022
+2022,fabien-roussel,Fabien Roussel,PCF,Parti communiste français,Left,2,Far left,draft,Communist parliamentary left convention.,E2022
+2022,jean-lassalle,Jean Lassalle,RES,Résistons,Centre-right,5,Centre,draft,Rural centrist background; centre-right is a provisional simplification.,E2022
+2022,jean-luc-melenchon,Jean-Luc Mélenchon,LFI,La France insoumise,Left,2,Far left,draft,Radical parliamentary left convention; test Far left as an alternative.,E2022
+2022,marine-le-pen,Marine Le Pen,RN,Rassemblement national,Far right,7,,draft,Rassemblement national candidacy.,E2022
+2022,nathalie-arthaud,Nathalie Arthaud,LO,Lutte ouvrière,Far left,1,,draft,Revolutionary socialist candidacy.,E2022
+2022,nicolas-dupont-aignan,Nicolas Dupont-Aignan,DLF,Debout la France,Right,6,Far right,draft,Sovereignist right convention; far-right coding is a sensitivity alternative.,E2022
+2022,philippe-poutou,Philippe Poutou,NPA,Nouveau Parti anticapitaliste,Far left,1,,draft,Anti-capitalist revolutionary left convention.,E2022
+2022,valerie-pecresse,Valérie Pécresse,LR,Les Républicains,Right,6,Centre-right,draft,Conservative right convention.,E2022
+2022,yannick-jadot,Yannick Jadot,EELV,Europe Écologie Les Verts,Left,2,Centre-left,draft,Green left convention.,E2022

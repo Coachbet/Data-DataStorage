@@ -10,3 +10,5 @@
 - Do not commit raw/interim/processed datasets, virtual environments or secrets.
 - Small verified aggregates in `data/bundled/` are the explicit exception for offline review.
   Regenerate them with `vote-transfer bundle`; retain checksums and provenance.
+- Versioned manual research inputs in `data/reference/` are also allowed. Keep sources,
+  coding notes and review status together; do not treat draft political scores as observations.

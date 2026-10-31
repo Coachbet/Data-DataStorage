@@ -3,6 +3,7 @@
 import pandas as pd
 
 from vote_transfer.application.baseline import national_evaluation
+from vote_transfer.application.evaluation import area_errors
 
 
 def outcome_label(option: str, published_label: str) -> str:
@@ -42,6 +43,9 @@ def round_summary(results: pd.DataFrame, round_number: int) -> dict:
 
 def model_summary(evaluation: pd.DataFrame) -> dict:
     """Describe weighted model errors without interpreting them as individual transfers."""
+    errors = area_errors(evaluation)
+    if errors.year.nunique() != 1:
+        raise ValueError("Select one election for a model summary.")
     comparison = national_evaluation(evaluation)
     comparison["outcome"] = [
         outcome_label(row.option, row.label) for row in comparison.itertuples()
@@ -58,6 +62,8 @@ def model_summary(evaluation: pd.DataFrame) -> dict:
     )
     return {
         "comparison": comparison,
+        "area_errors": errors,
+        "weighted_mean_error_pp": float(errors.weighted_error_pp.sum()),
         "mean_error_pp": float(comparison.absolute_error_pp.mean()),
         "largest_error_pp": gap,
         "reading": reading,

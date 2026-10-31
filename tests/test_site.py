@@ -70,7 +70,15 @@ def test_shipped_five_year_app_runs_without_raw_data_or_network(tmp_path, monkey
             assert any("not all of France" in item.value for item in app.info)
         app.sidebar.radio(key="page").set_value("Understand the model").run()
         assert not app.exception
-        assert app.metric[0].label == "Average gap across the four outcomes"
+        assert app.metric[0].label == "Weighted average area error"
+        assert app.metric[1].label == "Gap in combined results"
+        candidates = app.dataframe[-1].value
+        assert len(candidates) == {"2002": 16, "2007": 12, "2012": 10, "2017": 11, "2022": 12}[year]
+        assert "Score (1–7)" in candidates
+        assert any(
+            button.label == "Download all candidate positions (CSV)"
+            for button in app.get("download_button")
+        )
         app.sidebar.radio(key="page").set_value("Sources & limits").run()
         assert not app.exception
         assert len(app.get("link_button")) == 2

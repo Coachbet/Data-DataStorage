@@ -1,6 +1,22 @@
-# Validation record — 28 October 2026
+# Validation record
 
-## Automated checks
+## Candidate reference and territorial scoring — 31 October 2026
+
+- 72 offline tests passed. The 61 candidate-election keys exactly match the five
+  bundled first-round rosters. Historical party labels have regression checks.
+- The reference loader rejects duplicate keys, invalid families, inconsistent
+  scores and unknown source IDs. Cheminade's two missing scores remain explicit.
+- Independent synthetic calculations verify a primary weighted local error of
+  6.25 pp where pooling first gives 1.25 pp. Registration is counted once per
+  area. Filtered weights renormalise, and elections receive separate denominators.
+- Streamlit AppTest exercises the new score labels, candidate tables and CSV
+  download controls across all five elections without network acquisition.
+- Ruff lint/format checks and `git diff --check` passed. No aggregate snapshot or
+  H0 prediction was changed. Individual political codes still need team review.
+- Desktop/mobile visual inspection remains outstanding; AppTest verifies widgets
+  and interactions, not their appearance in a browser.
+
+## Earlier automated checks — 28 October 2026
 
 - 59 offline tests passed, including raw parsing, acquisition/resume, integrity,
   vote accounting, aggregation, H0, weighting and Streamlit interactions.

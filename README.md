@@ -63,7 +63,8 @@ data/
   interim/<year>/             Normalised station turnout and candidate votes
   processed/<year>/           Results, H0 errors and quality report used by the app
   bundled/<year>/           Small versioned aggregates for immediate offline use
-  external/                 Future documented reference/mapping tables
+  reference/                Versioned manual candidate positions and source notes
+  external/                 Local downloads for future external references
   archive/legacy/           Preserved old local datasets, excluded from Git
 docs/                       Scope, methodology, data contracts and development notes
   references/               The two supplied project PDFs
@@ -79,7 +80,7 @@ Parquet is the initial storage format. Direct runtime dependencies are Streamlit
 pandas, PyArrow and requests. DuckDB and Plotly were removed because the current
 workflow does not need them. Git ignores environments, secrets, caches and
 large/generated datasets; small raw manifests and curated `data/bundled/` snapshots
-are the explicit versioned exceptions.
+and documented manual inputs in `data/reference/` are the explicit versioned exceptions.
 
 ## What is implemented
 
@@ -93,7 +94,11 @@ are the explicit versioned exceptions.
   candidate totals, and matching territorial coverage between rounds.
 - Department/reporting-area shares over **registered voters**, including
   abstention and a combined blank/invalid outcome.
-- H0 predictions, unit errors and a registered-voter-weighted comparison across covered units.
+- H0 predictions and a primary score averaging territorial errors with round-two
+  registered-voter weights. The gap after pooling results is a separate diagnostic.
+- A [manual candidate reference](data/reference/README.md): 61 candidacies with
+  historical party labels, draft political families, a 1–7 scale and source notes.
+  Cheminade's two positions remain unresolved. H0 does not use political scores.
 - A guided English app: introduction, observed results, H0 explanation, and sources/limits.
 - Year/area/round controls, labelled charts, data-driven readings, a glossary and CSV exports.
 - Local styling and fonts; no external assets or election-data requests are needed.

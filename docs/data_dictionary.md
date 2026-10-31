@@ -69,5 +69,30 @@ hashes. `vote-transfer bundle` enforces a 2 MB per-year ceiling and copies only
 these three allowlisted files. It never copies polling-station records.
 
 The app prefers a complete local processed year, falling back to its bundled
-snapshot otherwise. A custom `VOTE_TRANSFER_DATA_DIR` uses only datasets under
-that root, with no hidden fallback to another project directory.
+snapshot otherwise. A custom `VOTE_TRANSFER_DATA_DIR` uses only election datasets
+under that root, with no hidden fallback to another project's election outputs.
+
+## Manual candidate reference
+
+`data/reference/candidate_positions.csv` is a versioned research input, separate
+from observed results. Its key is `(year, candidate_id)`. Join to candidate
+outcomes by removing the `candidate:` prefix from `option`; never join by row
+order or display name. The reference includes all 61 first-round candidacies.
+
+The [reference codebook](../data/reference/README.md) defines every column,
+the 1–7 scale, draft classifications and missing values. `sources.json` resolves
+each row's source IDs to citation metadata. Candidate/party names are proper names;
+all explanatory fields use English. A missing score remains null, never zero.
+
+This static project reference ships with the code and is read from the repository,
+independently of `VOTE_TRANSFER_DATA_DIR`, which selects election outputs only.
+It is not merged into the checksum-protected aggregate files and does not affect H0.
+
+## Evaluation summaries
+
+`area_errors(evaluation)` recomputes each area's four-outcome absolute errors
+from actual and predicted shares, counts registration once per area, and returns
+`mean_error_pp`, `weight` and `weighted_error_pp` alongside year, area code and
+registration. Weights sum to one within each selected election. The total of
+weighted contributions is the primary score; the error after pooling the
+outcome shares remains a separate diagnostic. No new processed files are required.

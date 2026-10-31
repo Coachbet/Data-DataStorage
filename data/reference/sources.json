@@ -1,0 +1,57 @@
+{
+  "E2002": {
+    "title": "2002 presidential election: candidates and party labels",
+    "publisher": "Wikipedia (secondary reference)",
+    "url": "https://fr.wikipedia.org/wiki/%C3%89lection_pr%C3%A9sidentielle_fran%C3%A7aise_de_2002"
+  },
+  "RFI2002": {
+    "title": "2002 election retrospective: CAP21 and FRS candidacies",
+    "publisher": "RFI",
+    "url": "https://www1.rfi.fr/actufr/articles/080/article_45724.asp"
+  },
+  "E2007": {
+    "title": "2007 election assessment: candidate affiliations, annex page 25 (PDF page 27)",
+    "publisher": "OSCE/ODIHR",
+    "url": "https://www.osce.org/files/f/documents/1/b/27768.pdf"
+  },
+  "RFI2007": {
+    "title": "2007 left-wing candidacies and support for independents",
+    "publisher": "RFI",
+    "url": "https://www1.rfi.fr/actufr/articles/087/article_50450.asp"
+  },
+  "E2012": {
+    "title": "Ten candidates qualified for the 2012 election",
+    "publisher": "Le Parisien, 19 March 2012",
+    "url": "https://www.leparisien.fr/elections/presidentielle/dix-candidats-qualifies-pour-l-election-presidentielle-19-03-2012-1913613.php"
+  },
+  "PG2012": {
+    "title": "Melenchon's party and the Front de gauche coalition in 2012",
+    "publisher": "Fondation Jean-Jaures",
+    "url": "https://www.jean-jaures.org/publication/la-dynamique-melenchon/"
+  },
+  "E2017": {
+    "title": "The eleven qualified candidates in 2017",
+    "publisher": "Le Monde, 18 March 2017",
+    "url": "https://www.lemonde.fr/election-presidentielle-2017/article/2017/03/18/deux-femmes-neuf-hommes-qui-sont-les-candidats-qualifies-pour-l-election-presidentielle_5096791_4854003.html"
+  },
+  "E2022": {
+    "title": "2022 candidate profiles and parties",
+    "publisher": "France 24, updated 31 March 2022",
+    "url": "https://graphics.france24.com/france-candidats-presidentielle-2022-macron-le-pen-pecresse-melenchon-zemmour/"
+  },
+  "SP": {
+    "title": "Solidarite et Progres: movement history and Cheminade candidacies",
+    "publisher": "Solidarite et Progres (party self-description)",
+    "url": "https://www.solidariteetprogres.fr/le-mouvement"
+  },
+  "CHEMINADE": {
+    "title": "Cheminade profile: conflicting ideological descriptions",
+    "publisher": "Le Parisien, 17 March 2017",
+    "url": "https://www.leparisien.fr/elections/presidentielle/presidentielle-cheminade-le-candidat-lunaire-qui-a-obtenu-trois-fois-ses-parrainages-17-03-2017-6771630.php"
+  },
+  "ASSELINEAU": {
+    "title": "Asselineau profile: UPR and rejection of the left-right divide",
+    "publisher": "Anadolu Agency, 4 April 2017",
+    "url": "https://www.aa.com.tr/fr/politique/france-pr%C3%A9sidentielle-francois-asselineau-le-candidat-du-frexit-portrait/789010"
+  }
+}

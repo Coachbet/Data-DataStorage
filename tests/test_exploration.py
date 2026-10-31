@@ -24,6 +24,7 @@ def test_model_reading_reports_direction_and_weighted_gap():
         [
             dict(
                 year=2022,
+                department_code="01",
                 option="abstention",
                 label="Abstention",
                 registered=100,
@@ -32,6 +33,7 @@ def test_model_reading_reports_direction_and_weighted_gap():
             ),
             dict(
                 year=2022,
+                department_code="02",
                 option="abstention",
                 label="Abstention",
                 registered=300,
@@ -40,9 +42,36 @@ def test_model_reading_reports_direction_and_weighted_gap():
             ),
         ]
     )
-    summary = model_summary(evaluation)
-    assert summary["mean_error_pp"] == pytest.approx(10)
+
+    def complete_outcomes(abstentions):
+        rows = []
+        for row in abstentions.to_dict("records"):
+            rows.append(row)
+            for candidate in ("a", "b"):
+                rows.append(
+                    {
+                        **row,
+                        "option": f"candidate:{candidate}",
+                        "label": candidate,
+                        "actual_share": (1 - row["actual_share"]) / 2,
+                        "predicted_share": (1 - row["predicted_share"]) / 2,
+                    }
+                )
+            rows.append(
+                {
+                    **row,
+                    "option": "blank_invalid",
+                    "label": "Blank/invalid",
+                    "actual_share": 0,
+                    "predicted_share": 0,
+                }
+            )
+        return pd.DataFrame(rows)
+
+    summary = model_summary(complete_outcomes(evaluation))
+    assert summary["mean_error_pp"] == pytest.approx(5)
+    assert summary["weighted_mean_error_pp"] == pytest.approx(5)
     assert "50.0% versus an observed 40.0%" in summary["reading"]
     assert "10.0 percentage points above" in summary["reading"]
     evaluation["predicted_share"] = evaluation.actual_share - 0.05
-    assert "5.0 percentage points below" in model_summary(evaluation)["reading"]
+    assert "5.0 percentage points below" in model_summary(complete_outcomes(evaluation))["reading"]

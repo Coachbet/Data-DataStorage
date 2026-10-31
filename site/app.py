@@ -6,6 +6,7 @@ from pathlib import Path
 import streamlit as st
 from vote_transfer.application.datasets import available_datasets, load_dataset
 from vote_transfer.application.exploration import model_summary, round_summary
+from vote_transfer.application.positions import load_candidate_positions, load_position_sources
 from vote_transfer.application.source_catalog import SOURCES
 from vote_transfer.config import data_root
 
@@ -56,6 +57,70 @@ def glossary():
             "A model share of 30% and an observed share of 25% differ by 5 percentage points.\n\n"
             "**Reporting area** — an area used in the official files: usually a department, "
             "but sometimes an overseas territory or the electorate abroad."
+        )
+
+
+def candidate_reference(year):
+    with st.expander("Candidate parties and political families"):
+        st.write(
+            "Our manual reference links each candidate to their party at that election. "
+            "The scale runs from 1 (Far left) to 7 (Far right), with Centre at 4. "
+            "The team has agreed on this scale; the individual classifications are drafts "
+            "for review. H0 does not use these scores."
+        )
+        try:
+            positions = load_candidate_positions()
+            sources = load_position_sources()
+        except (OSError, ValueError) as exc:
+            st.error(f"The candidate reference could not be opened: {exc}")
+            return
+        selected = positions[positions.year == int(year)]
+        table = selected[
+            [
+                "candidate_name",
+                "party_abbreviation",
+                "political_family",
+                "ideology_score",
+                "alternative_family",
+                "review_status",
+                "classification_note",
+            ]
+        ].copy()
+        table.columns = [
+            "Candidate",
+            "Party",
+            "Proposed family",
+            "Score (1–7)",
+            "Alternative family",
+            "Review status",
+            "Coding note",
+        ]
+        st.dataframe(table, hide_index=True, width="stretch")
+        if selected.ideology_score.isna().any():
+            st.info(
+                "Jacques Cheminade has no score yet: a single left–right classification "
+                "is unresolved. Missing does not mean Centre or zero."
+            )
+        st.caption(
+            "Political families simplify different dimensions of politics. Equal numerical "
+            "steps are a modelling assumption, not measured ideological distances. "
+            "Alternative families identify sensitivity checks; they are not additional scores."
+        )
+        st.download_button(
+            "Download all candidate positions (CSV)",
+            positions.to_csv(index=False),
+            file_name="candidate_positions.csv",
+            mime="text/csv",
+            key="candidate_download",
+        )
+        st.markdown("**References for this election**")
+        source_ids = sorted({key for keys in selected.source_ids for key in keys.split(";")})
+        for key in source_ids:
+            source = sources[key]
+            st.markdown(f"- [{source['title']}]({source['url']}) — {source['publisher']}")
+        st.caption(
+            "Sources document affiliations and background. The seven-category coding is "
+            "our research choice, not an official classification."
         )
 
 
@@ -435,8 +500,22 @@ elif page == "Understand the model":
     bar_chart(model["comparison"], comparison=True)
     reading(model["reading"], "What this comparison shows")
     a, b = st.columns(2)
-    a.metric("Average gap across the four outcomes", f"{model['mean_error_pp']:.2f} pp")
-    b.metric("Largest outcome gap", f"{model['largest_error_pp']:.2f} pp")
+    a.metric(
+        "Weighted average area error",
+        f"{model['weighted_mean_error_pp']:.2f} pp",
+        help="Four-outcome error calculated in each area, then weighted by round-two registration.",
+    )
+    b.metric(
+        "Gap in combined results",
+        f"{model['mean_error_pp']:.2f} pp",
+        help="Average gap after pooling results. Opposite local errors can cancel here.",
+    )
+    st.write(
+        f"Across {len(model['area_errors'])} selected reporting area(s), the weighted "
+        f"average error is {model['weighted_mean_error_pp']:.2f} percentage points. "
+        "Larger registered electorates carry more weight. The score follows the area filter; "
+        "the full selection includes overseas areas and voters abroad when available."
+    )
     st.caption(
         "pp = percentage points. For example, 30% versus 25% is a gap of 5 points. "
         "Closer to zero means a closer fit; it does not establish the true voter-transfer pattern."
@@ -448,10 +527,14 @@ elif page == "Understand the model":
         table[["actual_share", "predicted_share"]] *= 100
         table.columns = ["Outcome", "Observed (%)", "H0 (%)", "Gap (pp)"]
         st.dataframe(table, hide_index=True, width="stretch")
-        errors = selected_evaluation.groupby(
-            ["department_code", "department_name"], as_index=False
-        ).absolute_error_pp.mean()
-        errors.columns = ["Area code", "Area", "Average gap (pp)"]
+        errors = model["area_errors"].merge(
+            selected_evaluation[["department_code", "department_name"]].drop_duplicates(),
+            on="department_code",
+            validate="one_to_one",
+        )
+        errors = errors[["department_code", "department_name", "mean_error_pp", "weight"]]
+        errors["weight"] *= 100
+        errors.columns = ["Area code", "Area", "Average gap (pp)", "Weight (%)"]
         st.dataframe(
             errors.sort_values("Average gap (pp)", ascending=False),
             hide_index=True,
@@ -459,8 +542,17 @@ elif page == "Understand the model":
         )
         st.write(
             "Combined predictions are weighted by each area's round-two registered electorate. "
-            "The average shown above is the mean of four combined outcome gaps, not "
-            "the average of area-level errors."
+            "The main score first computes the mean absolute error across the four outcomes "
+            "in each area, then weights those errors by registered voters. Errors in different "
+            "areas cannot cancel. The combined-results gap is shown separately and can be smaller."
+        )
+        st.latex(
+            r"\mathrm{Score}=\sum_d\frac{R_{d,2}}{\sum_j R_{j,2}}"
+            r"\left[\frac{1}{4}\sum_k100\lvert\hat{s}_{d,k}-s_{d,k}\rvert\right]"
+        )
+        st.caption(
+            "R is the round-two registered electorate. Weights sum to one within the "
+            "selected covered areas; a filtered score is not a score for all of France."
         )
         st.latex(
             r"q_k = x_k / \sum_{t \in K} x_t,\quad "
@@ -480,6 +572,7 @@ elif page == "Understand the model":
         "A close aggregate fit is not evidence of individual transfers. H0 is a "
         "provisional baseline; H1–H5 have not yet been implemented."
     )
+    candidate_reference(year)
     st.button("Next: check the sources and limitations →", on_click=go_to, args=(PAGES[3],))
 
 else:
@@ -544,11 +637,13 @@ else:
     with st.expander("What comes next in the research?"):
         st.markdown(
             "- Compare historical results against the consolidated reference dataset.\n"
-            "- Document candidate positions and test ideological explanations (H1/H2).\n"
+            "- Review the manual candidate positions and define ties and distance thresholds "
+            "before testing ideological explanations (H1/H2).\n"
             "- Define and review the methods for noise, strategic voting and learned "
             "transfers (H3–H5).\n"
             "- Evaluate fitted methods on held-out elections before developing 2027 scenarios."
         )
+    candidate_reference(year)
     glossary()
     st.caption(
         "AI assisted with development, documentation and tests. The project team is "
