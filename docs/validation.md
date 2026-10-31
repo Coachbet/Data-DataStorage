@@ -51,6 +51,11 @@ Ministry's published national summary files from the same releases:
 - [Round 2 national summary](https://www.data.gouv.fr/api/1/datasets/r/debe2f26-48e5-4c45-abab-4926145c9936):
   all six participation/ballot totals and both candidate totals matched exactly.
 
+This comparison is reproducible with `uv run vote-transfer crosscheck --year 2022`
+(added 31 October 2026). It downloads the pinned summary files, verifies their
+checksums, and writes `data/processed/2022/national_crosscheck.json`. The rerun
+compared 26 fields (6 counts and 12 candidates in round 1; 6 counts and 2 finalists
+in round 2): all matched. Differences would be reported, never repaired.
 Reference snapshots and hashes are in `data/raw/reference/national_2022/`.
 The reference manifest is versionable; its source files remain outside Git.
 This verifies aggregation against that publication version, not agreement with
@@ -71,7 +76,7 @@ model, cross-election generalisation claim or completed 2027 simulation.
 
 All five original-source pipelines completed successfully. The source files and
 station-level outputs remain local and ignored; small aggregate snapshots are
-included under `data/bundled/` (325,886 bytes for the 15 data/report files).
+included under `data/bundled/` (336,371 bytes for the 15 data/report files since the 31 October diagnostics were added).
 
 | Year | Reporting units | Station/round records | Candidate records | Registered R1 | Registered R2 |
 |---|---:|---:|---:|---:|---:|

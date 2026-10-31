@@ -12,13 +12,18 @@ The downloader resolves the verified polling-station text resource in each
 [data.gouv.fr Ministry dataset](https://www.data.gouv.fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour).
 The second-round dataset is
 [here](https://www.data.gouv.fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-2nd-tour).
-Resource title and format must match explicitly; ambiguous results fail.
+Every election and round is pinned to a reviewed resource ID; a replaced or
+ambiguous resource fails rather than being substituted.
 
 Downloads stream into `.part` files. Published byte sizes and basic headers are
 checked before renaming. The manifest is checkpointed after each round and stores
 resource ID, source API, published/resolved URLs, licence metadata, retrieval
 UTC timestamp, file size and SHA-256. Existing files are reused only when their
-hash matches the manifest; their original retrieval dates are retained.
+hash matches the manifest; their original retrieval dates are retained. The
+manifests are versioned, so a fresh clone must reproduce the pinned SHA-256: a
+download with different bytes stops with an error and is left as a `.part` file for
+inspection. On 31 October 2026 a clean re-download of all five elections reproduced
+every pinned checksum.
 Unverified or modified files cause an error and are never overwritten implicitly.
 
 For 2022, the source API currently returns `notspecified` for licence metadata on these
@@ -50,7 +55,8 @@ Older acquired data were preserved in `data/archive/legacy/`, excluded from Git.
 
 ## Upcoming sources
 
-- CHES: choose a survey wave and document candidate-to-party mapping and missing parties.
+- CHES: no longer the primary candidate-position source (see `project_scope.md`,
+  "Change from the acquisition note"); possible later sensitivity reference only.
 - Polling-company axes / Wikipedia 2027 tables: dated snapshots and a fixed scraping protocol.
 - Political Compass 2022 / CEVIPOF: documented manual extraction for robustness checks.
 - Voter Autrement 2017: verify the precise Zenodo record before acquisition.
@@ -76,5 +82,9 @@ manifest associates that same file/hash with each round, without two downloads.
 The 2002/2007 embedded comments document their 13-field schema. The 2012 format
 has two additional codes before the station identifier; those unused contextual
 fields are not used to infer geography. Counts are independently validated against
-candidate sums and turnout accounting. Historical cross-source comparison remains
+candidate sums. In these files abstentions (`registered − voters`) and blank/invalid
+(`voters − valid`) are derived, so turnout accounting holds by construction; the
+informative checks are `voters ≤ registered`, `valid ≤ voters`, agreement of the
+station totals repeated on every candidate row, and candidate sums. Historical
+cross-source comparison remains
 an explicit next step.

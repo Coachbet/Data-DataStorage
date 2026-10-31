@@ -1,6 +1,6 @@
 {
   "year": 2007,
-  "processed_at_utc": "2026-10-28T15:57:23.786823+00:00",
+  "processed_at_utc": "2026-10-31T15:43:02.377699+00:00",
   "source": "Ministry original files",
   "schema_version": 2,
   "territorial_units": 101,
@@ -15,10 +15,81 @@
     "source checksums",
     "unique station and candidate keys",
     "nonnegative integer counts",
-    "turnout accounting",
+    "voters <= registered and valid <= voters",
+    "repeated station totals agree across candidate rows",
     "candidate vote sums",
     "two-round territorial coverage"
   ],
+  "derived_fields": {
+    "abstentions": "registered - voters",
+    "blank_invalid": "voters - valid"
+  },
+  "diagnostics": {
+    "stations_by_round": {
+      "1": {
+        "station_rows": 65617,
+        "candidate_rows": 787404,
+        "completeness_required_fields_pct": 100.0,
+        "completeness_blank_invalid_split_pct": 0.0,
+        "duplicate_station_keys": 0,
+        "duplicate_candidate_keys": 0,
+        "stations_with_zero_registered": 0,
+        "stations_with_zero_voters": 2,
+        "stations_with_zero_valid_votes": 7,
+        "registered_per_station": {
+          "min": 5,
+          "median": 708.0,
+          "max": 2962
+        },
+        "turnout_iqr_outlier_stations": 2581
+      },
+      "2": {
+        "station_rows": 65617,
+        "candidate_rows": 131234,
+        "completeness_required_fields_pct": 100.0,
+        "completeness_blank_invalid_split_pct": 0.0,
+        "duplicate_station_keys": 0,
+        "duplicate_candidate_keys": 0,
+        "stations_with_zero_registered": 0,
+        "stations_with_zero_voters": 0,
+        "stations_with_zero_valid_votes": 1,
+        "registered_per_station": {
+          "min": 5,
+          "median": 708.0,
+          "max": 2962
+        },
+        "turnout_iqr_outlier_stations": 2272
+      }
+    },
+    "reporting_units": {
+      "method": "Tukey IQR fences (factor 1.5) within each election",
+      "response": "flag and retain; no area is removed",
+      "territories": {
+        "metropolitan": 96,
+        "overseas": 5
+      },
+      "flag_abstention_r1": [
+        "2A",
+        "2B",
+        "ZA",
+        "ZB",
+        "ZC",
+        "ZD",
+        "ZM"
+      ],
+      "flag_registration_change": [
+        "05",
+        "27",
+        "64",
+        "78",
+        "ZC",
+        "ZD"
+      ],
+      "flag_h0_error": [
+        "ZM"
+      ]
+    }
+  },
   "input_files": {
     "1": {
       "round": 1,
@@ -158,7 +229,7 @@
     "Shares use each round's own registered electorate; registration can change.",
     "H0 is a provisional operational definition, not a fitted transfer estimate.",
     "Historical blank/invalid splits are unavailable and remain null.",
-    "Historical department labels show original codes, without a modern geography join.",
+    "Historical labels use source department codes; no modern geography join.",
     "Partial national coverage: some overseas areas and voters abroad are absent. Aggregated results describe only the covered units."
   ],
   "outputs": {

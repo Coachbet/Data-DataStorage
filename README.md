@@ -22,7 +22,7 @@ uv run streamlit run site/app.py
 
 Open <http://localhost:8501>. **No election-data download is needed.** The repository
 includes verified department/reporting-area aggregates for all five elections in
-`data/bundled/` (about 326 KB of dataset files in total). The app uses these on a
+`data/bundled/` (about 336 KB of dataset files in total). The app uses these on a
 clean clone, or prefers complete local processed outputs when available.
 Installation needs access to the Python package registry; subsequent data exploration
 runs offline. No Git LFS, database server or external data hosting is needed.
@@ -33,6 +33,7 @@ To rebuild every dataset from the original source files (optional):
 uv run vote-transfer acquire --all-years
 uv run vote-transfer process --all-years
 uv run vote-transfer bundle --all-years
+uv run vote-transfer crosscheck --year 2022   # optional: compare with published totals
 ```
 
 Acquisition downloads about 293 MB once across the five elections. Existing files
@@ -90,7 +91,8 @@ and documented manual inputs in `data/reference/` are the explicit versioned exc
 - Strict parsing of repeated candidate blocks and stable candidate IDs across
   rounds (the Ministry's panel numbers change between rounds). Historical long-format
   imports count repeated turnout once and preserve missing blank/invalid splits as null.
-- Checks for missing/duplicate keys, integer counts, turnout accounting,
+- Checks for missing/duplicate keys, integer counts, `voters ≤ registered`, turnout
+  accounting (2017/2022; derived fields make it hold by construction for 2002–2012),
   candidate totals, and matching territorial coverage between rounds.
 - Department/reporting-area shares over **registered voters**, including
   abstention and a combined blank/invalid outcome.
@@ -121,7 +123,8 @@ uv run ruff format --check backend site tests
 shortcuts. Tests use synthetic fixtures, temporary directories and the small shipped
 aggregates, with no network or dependence on raw downloads. See [development notes](docs/development.md),
 [acquisition details](docs/data_acquisition.md), [data contracts](docs/data_dictionary.md),
-[H0 methodology](docs/methodology.md) and the [validation record](docs/validation.md).
+[H0 methodology](docs/methodology.md), the [validation record](docs/validation.md)
+and the [data quality and cleaning assessment](docs/data_quality_and_cleaning.md).
 
 **Coverage:** 2002 and 2007 omit some overseas territories and voters abroad.
 Their combined totals are not full national totals. The app flags this limitation;

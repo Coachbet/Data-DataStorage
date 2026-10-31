@@ -24,7 +24,8 @@ def test_repeated_blocks_and_panel_changes_preserve_candidate_identity(raw_datas
 
 
 @pytest.mark.parametrize(
-    "fault", ["duplicate", "negative", "fraction", "missing", "turnout", "votes", "orphan"]
+    "fault",
+    ["duplicate", "negative", "fraction", "missing", "turnout", "votes", "orphan", "bounds"],
 )
 def test_invalid_results_fail_closed(raw_dataset, fault):
     turnout, votes = read_round(raw_dataset)
@@ -43,6 +44,10 @@ def test_invalid_results_fail_closed(raw_dataset, fault):
         votes.loc[0, "votes"] += 1
     elif fault == "orphan":
         votes.loc[0, "station_code"] = "9999"
+    elif fault == "bounds":
+        # Internally consistent accounting, but more voters than registered electors.
+        turnout.loc[0, "voters"] = turnout.loc[0, "registered"] + 1
+        turnout.loc[0, "abstentions"] = 0
     with pytest.raises(ValueError):
         validate_results(turnout, votes)
 

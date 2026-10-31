@@ -1,7 +1,7 @@
 import json
 
 import pytest
-from vote_transfer.infrastructure.official import acquire_official
+from vote_transfer.infrastructure.official import RESOURCE_IDS, acquire_official
 
 
 class Response:
@@ -44,7 +44,7 @@ class Session:
                     "license": "notspecified",
                     "resources": [
                         {
-                            "id": str(number),
+                            "id": RESOURCE_IDS[2022, number],
                             "format": "txt",
                             "filesize": len(content),
                             "title": f"resultats-par-niveau-burvot-t{number}-france-entiere.txt",
@@ -82,8 +82,6 @@ def test_modified_raw_file_is_not_overwritten(raw_dataset, monkeypatch):
 
 
 def test_historical_shared_file_is_downloaded_only_once(tmp_path, monkeypatch):
-    from vote_transfer.infrastructure.official import RESOURCE_IDS
-
     content = b"1;01;001;Synthetic;0001;100;80;75;1;ALPHA;Test;X;75\n"
 
     class HistoricalSession(Session):
@@ -116,3 +114,39 @@ def test_historical_shared_file_is_downloaded_only_once(tmp_path, monkeypatch):
     session.calls.clear()
     assert acquire_official(2002, tmp_path) == manifest
     assert session.calls == []
+
+
+def test_fresh_download_must_match_pinned_manifest(raw_dataset, tmp_path, monkeypatch):
+    rounds = {n: (raw_dataset / f"raw/official/2022/round_{n}.txt").read_bytes() for n in (1, 2)}
+    session = Session(rounds)
+    monkeypatch.setattr("vote_transfer.infrastructure.official.requests.Session", lambda: session)
+    target = tmp_path / "clone"
+    pinned = acquire_official(2022, target)
+    folder = target / "raw/official/2022"
+    # A fresh clone has the versioned manifest but no raw bytes yet.
+    for n in (1, 2):
+        (folder / f"round_{n}.txt").unlink()
+    assert acquire_official(2022, target) == pinned  # Original provenance is retained.
+    (folder / "round_1.txt").unlink()
+    session.rounds[1] = rounds[1] + b"replaced upstream\n"
+    with pytest.raises(ValueError, match="pinned checksum"):
+        acquire_official(2022, target)
+    assert not (folder / "round_1.txt").exists()
+    assert json.loads((folder / "manifest.json").read_text()) == pinned
+
+
+def test_replacement_resource_is_not_substituted(raw_dataset, tmp_path, monkeypatch):
+    rounds = {n: (raw_dataset / f"raw/official/2022/round_{n}.txt").read_bytes() for n in (1, 2)}
+
+    class ReplacedSession(Session):
+        def get(self, url, **kwargs):
+            response = super().get(url, **kwargs)
+            if "/datasets/" in url:
+                response.payload["resources"][0]["id"] = "replacement-resource"
+            return response
+
+    session = ReplacedSession(rounds)
+    monkeypatch.setattr("vote_transfer.infrastructure.official.requests.Session", lambda: session)
+    with pytest.raises(ValueError, match="exactly one"):
+        acquire_official(2022, tmp_path / "fresh")
+    assert len(session.calls) == 1  # Metadata only; nothing downloaded.

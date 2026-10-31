@@ -42,6 +42,12 @@ def validate_results(turnout: pd.DataFrame, votes: pd.DataFrame) -> None:
             raise ValueError("Counts must be numeric integers.")
         if (counts < 0).any().any() or (counts % 1 != 0).any().any():
             raise ValueError("Counts must be nonnegative integers.")
+    # Meaningful for every year, including 2002-2012 where the identities below hold
+    # by construction because abstentions and blank/invalid are derived.
+    if (turnout.voters > turnout.registered).any():
+        raise ValueError("Voters cannot exceed registered voters at a station.")
+    if (turnout.valid > turnout.voters).any():
+        raise ValueError("Valid ballots cannot exceed voters at a station.")
     if not (turnout.registered == turnout.abstentions + turnout.voters).all():
         raise ValueError("Registered voters must equal abstentions plus voters.")
     if not (turnout.voters == turnout.blank_invalid + turnout.valid).all():
@@ -103,6 +109,11 @@ def aggregate_results(turnout: pd.DataFrame, votes: pd.DataFrame) -> pd.DataFram
 def process_year(year: int, root: Path) -> dict:
     """Publish validated outputs only after both rounds and the baseline succeed."""
     from vote_transfer.application.baseline import evaluate_h0
+    from vote_transfer.application.quality import (
+        station_diagnostics,
+        unit_flag_summary,
+        unit_flags,
+    )
 
     source = root / "raw" / "official" / str(year)
     manifest = json.loads((source / "manifest.json").read_text())
@@ -138,10 +149,27 @@ def process_year(year: int, root: Path) -> dict:
             "source checksums",
             "unique station and candidate keys",
             "nonnegative integer counts",
-            "turnout accounting",
+            "voters <= registered and valid <= voters",
+            *(
+                ["repeated station totals agree across candidate rows"]
+                if year <= 2012
+                else ["turnout accounting against published abstentions, blank and invalid"]
+            ),
             "candidate vote sums",
             "two-round territorial coverage",
         ],
+        "derived_fields": (
+            {
+                "abstentions": "registered - voters",
+                "blank_invalid": "voters - valid",
+            }
+            if year <= 2012
+            else {"blank_invalid": "blank + invalid"}
+        ),
+        "diagnostics": {
+            "stations_by_round": station_diagnostics(turnout, votes),
+            "reporting_units": unit_flag_summary(unit_flags(results, evaluation)),
+        },
         "input_files": records,
         "ballot_detail": "combined_only" if year <= 2012 else "separate_blank_and_invalid",
         "geographic_labels": "codes_only" if year <= 2012 else "published_names",
