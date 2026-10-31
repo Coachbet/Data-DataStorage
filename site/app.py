@@ -124,7 +124,7 @@ def candidate_reference(year):
         )
 
 
-def bar_chart(frame, comparison=False):
+def bar_chart(frame, comparison=False, basis="registered voters"):
     """Label both marks and tooltips; colour is never the only source of meaning."""
     chart = frame.copy()
     if comparison:
@@ -161,7 +161,7 @@ def bar_chart(frame, comparison=False):
             "type": "quantitative",
             "scale": {"domain": [0, min(100, max(10, float(chart.value.max()) * 1.2))]},
             "axis": {
-                "title": "Share of registered voters (%)",
+                "title": f"Share of {basis} (%)",
                 "tickCount": 5,
                 "gridColor": "#e6ebe3",
             },
@@ -175,7 +175,7 @@ def bar_chart(frame, comparison=False):
         "tooltip": [
             {"field": "outcome", "title": "Outcome"},
             {"field": "series", "title": "Series"},
-            {"field": "value_label", "title": "Of registered voters"},
+            {"field": "value_label", "title": f"Of {basis}"},
         ],
     }
     if comparison:
@@ -314,7 +314,8 @@ selected_evaluation = (
     evaluation if unit == "All units" else evaluation[evaluation.department_code == unit]
 )
 area = "All covered areas" if unit == "All units" else f"{unit_labels[unit]} ({unit})"
-if quality.get("partial_national_coverage"):
+partial_coverage = quality.get("partial_national_coverage") and unit == "All units"
+if quality.get("partial_national_coverage") and page != "Explore results":
     st.info(
         "Coverage note: this historical file omits some overseas areas and voters abroad. "
         "Combined totals describe the covered areas, not all of France."
@@ -399,6 +400,13 @@ elif page == "Explore results":
         "Which round?", [1, 2], format_func=lambda n: f"Round {n}", horizontal=True, key="round"
     )
     summary = round_summary(selected, round_number)
+    if partial_coverage:
+        st.warning(
+            f"**Not national totals.** The {year} source file omits voters abroad and some "
+            "overseas areas. These totals cover only the areas in the file, so turnout and "
+            "candidate figures differ slightly from official national results, for example "
+            "those reported on Wikipedia."
+        )
     a, b, c = st.columns(3)
     a.metric(
         "Registered voters",
@@ -415,22 +423,52 @@ elif page == "Explore results":
         f"{summary['abstention_pct']:.1f}%",
         help="Abstention as a share of registered voters.",
     )
-    st.subheader(f"Round {round_number} · out of 100 registered voters")
-    st.caption(
-        "Each bar uses the full registered electorate. These percentages differ from "
-        "candidate shares of valid votes often quoted in election coverage."
+    basis = st.radio(
+        "Show percentages of",
+        ["Registered voters", "Valid votes"],
+        captions=["Used by our models", "As usually reported"],
+        horizontal=True,
+        key="basis",
     )
-    bar_chart(summary["totals"])
-    reading(summary["reading"])
+    if basis == "Valid votes":
+        st.subheader(f"Round {round_number} · out of 100 valid votes")
+        st.caption(
+            "The usual way results are reported: each candidate's share of ballots cast "
+            "for a candidate. Abstention and blank or invalid ballots are left out, so "
+            "this view cannot show the whole electorate."
+        )
+        candidates = summary["totals"].dropna(subset=["valid_share_pct"])
+        bar_chart(candidates.assign(share_pct=candidates.valid_share_pct), basis="valid votes")
+        leader = candidates.iloc[0]
+        reading(
+            f"Of every 100 valid votes in this selection, {leader.outcome} received about "
+            f"{leader.valid_share_pct:.1f}. Out of all registered voters, the same votes are "
+            f"{leader.share_pct:.1f}%."
+        )
+    else:
+        st.subheader(f"Round {round_number} · out of 100 registered voters")
+        st.caption(
+            "Each bar uses the full registered electorate, which our models need because "
+            "abstention and blank ballots are outcomes too. Switch to valid votes to compare "
+            "with the shares usually quoted in election coverage."
+        )
+        bar_chart(summary["totals"])
+        reading(summary["reading"])
     with st.expander("See exact figures and download the data"):
-        table = summary["totals"][["outcome", "count", "share_pct"]].copy()
-        table.columns = ["Outcome", "People / ballots", "Registered electorate (%)"]
+        table = summary["totals"][["outcome", "count", "share_pct", "valid_share_pct"]].copy()
+        table.columns = [
+            "Outcome",
+            "People / ballots",
+            "Registered electorate (%)",
+            "Valid votes (%)",
+        ]
         st.dataframe(
             table,
             hide_index=True,
             width="stretch",
             column_config={
-                "Registered electorate (%)": st.column_config.NumberColumn(format="%.2f")
+                "Registered electorate (%)": st.column_config.NumberColumn(format="%.2f"),
+                "Valid votes (%)": st.column_config.NumberColumn(format="%.2f"),
             },
         )
         st.download_button(

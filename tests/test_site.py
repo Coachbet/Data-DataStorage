@@ -1,5 +1,6 @@
 from pathlib import Path
 
+import pytest
 from streamlit.testing.v1 import AppTest
 from vote_transfer.application.processing import process_year
 
@@ -66,8 +67,16 @@ def test_shipped_five_year_app_runs_without_raw_data_or_network(tmp_path, monkey
         app.sidebar.selectbox[0].select(year).run()
         assert not app.exception
         assert app.metric[0].value == registered
-        if year in ("2002", "2007"):
-            assert any("not all of France" in item.value for item in app.info)
+        coverage = [item.value for item in app.warning if "Not national totals" in item.value]
+        assert bool(coverage) == (year in ("2002", "2007"))
+        if year == "2002":
+            app.radio(key="basis").set_value("Valid votes").run()
+            assert not app.exception
+            figures = app.dataframe[0].value.set_index("Outcome")
+            assert round(figures.loc["Jacques Chirac", "Valid votes (%)"], 2) == 82.14
+            assert figures["Valid votes (%)"].sum() == pytest.approx(100)
+            assert any("82.1" in item.value for item in app.markdown)
+            app.radio(key="basis").set_value("Registered voters").run()
         app.sidebar.radio(key="page").set_value("Understand the model").run()
         assert not app.exception
         assert app.metric[0].label == "Weighted average area error"

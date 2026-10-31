@@ -22,6 +22,10 @@ def round_summary(results: pd.DataFrame, round_number: int) -> dict:
         raise ValueError("No registered electorate is available for this selection.")
     totals = current.groupby(["option", "label"], as_index=False)["count"].sum()
     totals["share_pct"] = totals["count"] / registered * 100
+    # Candidate shares of valid votes, as usually quoted; undefined for non-votes.
+    is_candidate = totals.option.str.startswith("candidate:")
+    valid = int(totals.loc[is_candidate, "count"].sum())
+    totals["valid_share_pct"] = (totals["count"] / valid * 100).where(is_candidate)
     totals["outcome"] = [outcome_label(row.option, row.label) for row in totals.itertuples()]
     totals = totals.sort_values("count", ascending=False).reset_index(drop=True)
     abstention = float(totals.loc[totals.option == "abstention", "share_pct"].iloc[0])
@@ -29,6 +33,7 @@ def round_summary(results: pd.DataFrame, round_number: int) -> dict:
     return {
         "totals": totals,
         "registered": registered,
+        "valid": valid,
         "turnout_pct": 100 - abstention,
         "abstention_pct": abstention,
         "blank_invalid_pct": blank,
