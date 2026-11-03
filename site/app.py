@@ -1,5 +1,6 @@
 """A guided, offline-first introduction to the vote-transfer research project."""
 
+import base64
 from html import escape
 from pathlib import Path
 
@@ -10,21 +11,36 @@ from vote_transfer.application.positions import load_candidate_positions, load_p
 from vote_transfer.application.source_catalog import SOURCES
 from vote_transfer.config import data_root
 
-PAGES = ("Start here", "Explore results", "Understand the model", "Sources & limits")
-OBSERVED, MODEL = "#246B5B", "#A85E27"
+PAGES = ("Home", "Explore", "Understand the model", "Sources & limits")
+OBSERVED, MODEL = "#0071E3", "#E35D00"
+SITE_DIR = Path(__file__).resolve().parent
+LOGO_PATH = SITE_DIR / "assets" / "logo.svg"
+LOGO_URI = "data:image/svg+xml;base64," + base64.b64encode(LOGO_PATH.read_bytes()).decode("ascii")
 
-st.set_page_config(page_title="Vote Transfer Lab", page_icon="◈", layout="wide")
-st.markdown(
-    f"<style>{Path(__file__).with_name('styles.css').read_text()}</style>", unsafe_allow_html=True
-)
+st.set_page_config(page_title="Vote Transfer Lab", page_icon=str(LOGO_PATH), layout="wide")
+st.markdown(f"<style>{(SITE_DIR / 'styles.css').read_text()}</style>", unsafe_allow_html=True)
 
 
 def go_to(page):
     st.session_state["page"] = page
 
 
-def eyebrow(text):
-    st.markdown(f'<div class="eyebrow">{escape(text)}</div>', unsafe_allow_html=True)
+def intro(kicker, title, lead):
+    """Centred page opening: short kicker, large headline, one supporting sentence."""
+    st.markdown(
+        f'<header class="intro"><p class="eyebrow">{escape(kicker)}</p>'
+        f'<h1 class="intro-title">{escape(title)}</h1>'
+        f'<p class="intro-lead">{escape(lead)}</p></header>',
+        unsafe_allow_html=True,
+    )
+
+
+def section(title, lead=None):
+    body = f'<p class="section-lead">{escape(lead)}</p>' if lead else ""
+    st.markdown(
+        f'<div class="section-head"><h2 class="section-title">{escape(title)}</h2>{body}</div>',
+        unsafe_allow_html=True,
+    )
 
 
 def reading(text, title="How to read this"):
@@ -163,7 +179,7 @@ def bar_chart(frame, comparison=False, basis="registered voters"):
             "axis": {
                 "title": f"Share of {basis} (%)",
                 "tickCount": 5,
-                "gridColor": "#e6ebe3",
+                "gridColor": "#ececf0",
             },
         },
         "color": {
@@ -184,22 +200,29 @@ def bar_chart(frame, comparison=False, basis="registered voters"):
         "height": max(190, len(order) * (62 if comparison else 31)),
         "encoding": enc,
         "layer": [
-            {"mark": {"type": "bar", "cornerRadiusEnd": 3, "size": 15 if comparison else 18}},
+            {"mark": {"type": "bar", "cornerRadiusEnd": 5, "size": 14 if comparison else 18}},
             {
                 "mark": {
                     "type": "text",
                     "align": "left",
                     "dx": 5,
                     "fontSize": 11,
-                    "color": "#18312e",
+                    "color": "#1d1d1f",
                 },
-                "encoding": {"text": {"field": "value_label"}, "color": {"value": "#18312e"}},
+                "encoding": {"text": {"field": "value_label"}, "color": {"value": "#1d1d1f"}},
             },
         ],
         "config": {
             "view": {"stroke": None},
             "background": "transparent",
-            "axis": {"labelColor": "#435a51", "titleColor": "#435a51", "titlePadding": 15},
+            "font": "-apple-system, BlinkMacSystemFont, Helvetica Neue, sans-serif",
+            "axis": {
+                "labelColor": "#6e6e73",
+                "titleColor": "#6e6e73",
+                "titleFontWeight": 500,
+                "titlePadding": 15,
+            },
+            "legend": {"labelColor": "#1d1d1f", "labelFontSize": 12, "symbolType": "circle"},
         },
     }
     st.vega_lite_chart(chart, spec, width="stretch", theme=None)
@@ -210,7 +233,7 @@ def snapshot(results, year):
     finalists = summaries[1]["totals"].query("option.str.startswith('candidate:')", engine="python")
     keys = finalists.option.tolist()
     labels = finalists.outcome.tolist() + ["Other candidates", "Blank or invalid", "Did not vote"]
-    colours = ["#246B5B", "#537c99", "#9cae9a", "#ad885b", "#c9cfbf"]
+    colours = ["#0071E3", "#8E44D9", "#C7C7CC", "#6E6E73", "#E5E5EA"]
     bars, distributions = [], []
     for number, summary in enumerate(summaries, 1):
         table = summary["totals"].set_index("option")
@@ -245,33 +268,56 @@ def snapshot(results, year):
         for label, colour, first, second in zip(labels, colours, *distributions, strict=True)
     )
     st.markdown(
-        f'<section class="snapshot"><div class="eyebrow">Observed · {escape(year)}</div>'
-        f"<h3>Two snapshots of an electorate</h3><p>Same categories. Different results.</p>"
+        f'<section class="snapshot"><p class="snapshot-kicker">Observed · {escape(year)}</p>'
+        f"<h3>Two snapshots of an electorate.</h3><p>Same categories. Different results.</p>"
         f'{"".join(bars)}<table class="snapshot-table"><thead><tr>'
         '<th scope="col">Outcome</th><th scope="col">R1</th><th scope="col">R2</th>'
         f"</tr></thead><tbody>{legend}</tbody></table>"
-        '<p style="margin-top:1.3rem;margin-bottom:0">These are totals at each round. '
+        '<p class="snapshot-note">These are totals at each round. '
         "Each round uses its own registration total. They do not show how individual "
         "people moved between choices.</p></section>",
         unsafe_allow_html=True,
     )
 
 
-with st.sidebar:
-    st.markdown(
-        '<div class="brand"><span class="brand-symbol">◈</span> Vote Transfer<br>Lab</div>',
-        unsafe_allow_html=True,
+datasets = available_datasets(data_root())
+# Preserve an open session when upgrading from the sidebar navigation.
+legacy_pages = {"Start here": "Home", "Explore results": "Explore"}
+if st.session_state.get("page") in legacy_pages:
+    st.session_state["page"] = legacy_pages[st.session_state["page"]]
+
+with st.container(key="topbar"):
+    brand_column, navigation_column, year_column, area_column = st.columns(
+        [1.15, 3.3, 0.7, 1.6], gap="small", vertical_alignment="bottom"
     )
-    st.caption("Understanding the space between two rounds.")
-    page = st.radio("Your guide", PAGES, key="page")
-    st.divider()
-    st.markdown("**Choose your view**")
-    datasets = available_datasets(data_root())
-    if datasets:
-        year = st.selectbox("Election year", list(datasets), key="year")
+    with brand_column:
+        st.markdown(
+            f'<div class="brand"><img src="{LOGO_URI}" alt="" width="30" height="30">'
+            '<span class="brand-wordmark">Vote Transfer <span>Lab</span></span></div>',
+            unsafe_allow_html=True,
+        )
+    with navigation_column:
+        page = st.radio(
+            "Main navigation", PAGES, key="page", horizontal=True, label_visibility="collapsed"
+        )
+    with year_column:
+        year = st.selectbox(
+            "Year",
+            list(datasets),
+            key="year",
+            disabled=not datasets,
+            label_visibility="collapsed",
+            help="Choose an election. Your selection applies on every page.",
+        )
+    area_slot = area_column.empty()
 
 if not datasets:
-    st.title("Welcome to Vote Transfer Lab")
+    area_slot.selectbox("Area", [], disabled=True, label_visibility="collapsed")
+    intro(
+        "Vote Transfer Lab",
+        "Welcome.",
+        "French presidential elections, read round by round.",
+    )
     st.info(
         "No processed election is available yet. Restore the bundled data or build an election."
     )
@@ -284,6 +330,7 @@ if not datasets:
 try:
     results, evaluation, quality = load_dataset(datasets[year])
 except (OSError, ValueError, KeyError) as error:
+    area_slot.selectbox("Area", [], disabled=True, label_visibility="collapsed")
     st.error("This election could not be opened. Its data may be incomplete or modified.")
     with st.expander("Details for the project team"):
         st.code(str(error))
@@ -293,21 +340,20 @@ units = (
     results[["department_code", "department_name"]].drop_duplicates().sort_values("department_code")
 )
 unit_labels = dict(zip(units.department_code, units.department_name, strict=True))
-with st.sidebar:
+if st.session_state.get("unit", "All units") not in {"All units", *unit_labels}:
+    st.session_state["unit"] = "All units"
+with area_slot.container():
     unit = st.selectbox(
         "Area",
         ["All units", *unit_labels],
         key="unit",
+        label_visibility="collapsed",
+        help="Choose all covered areas or one reporting area, usually a department. "
+        "Your selection applies on every page.",
         format_func=lambda x: (
             "All covered areas" if x == "All units" else f"{x} · {unit_labels[x]}"
         ),
     )
-    st.caption(
-        "Your selection applies throughout the site. A reporting area is usually a department."
-    )
-    st.divider()
-    st.caption("2002 · 2007 · 2012 · 2017 · 2022")
-    st.caption("Historical research. The future 2027 feature will be a simulation, not a forecast.")
 
 selected = results if unit == "All units" else results[results.department_code == unit]
 selected_evaluation = (
@@ -315,39 +361,40 @@ selected_evaluation = (
 )
 area = "All covered areas" if unit == "All units" else f"{unit_labels[unit]} ({unit})"
 partial_coverage = quality.get("partial_national_coverage") and unit == "All units"
-if quality.get("partial_national_coverage") and page != "Explore results":
+if quality.get("partial_national_coverage") and page != "Explore":
     st.info(
         "Coverage note: this historical file omits some overseas areas and voters abroad. "
         "Combined totals describe the covered areas, not all of France."
     )
 
-if page == "Start here":
-    eyebrow("French presidential elections · 2002–2022")
-    left, right = st.columns([1.25, 1], gap="large", vertical_alignment="center")
-    with left:
-        st.markdown(
-            '<h1 class="hero-title">Two rounds.<br>One electorate.<br><em>What changes?</em></h1>',
-            unsafe_allow_html=True,
-        )
-        st.markdown(
-            '<p class="lead">When candidates leave the race, where might their support go? '
-            "Explore official election results and test a simple explanation for the "
-            "second round.</p>",
-            unsafe_allow_html=True,
-        )
+if page == "Home":
+    st.markdown(
+        '<header class="hero"><p class="eyebrow">French presidential elections · 2002–2022</p>'
+        '<h1 class="hero-title">Two rounds. One electorate. <br><em>What changes?</em></h1>'
+        '<p class="lead">When candidates leave the race, where might their support go? '
+        "Explore official election results and test a simple explanation for the "
+        "second round.</p></header>",
+        unsafe_allow_html=True,
+    )
+    with st.container(horizontal=True, gap="small", key="hero_actions"):
         st.button(
-            "Explore the results →",
+            "Explore the results",
             type="primary",
             on_click=go_to,
             args=(PAGES[1],),
             key="start_explore",
         )
-        st.button("First, explain the model", on_click=go_to, args=(PAGES[2],), key="start_model")
-    with right:
+        st.button(
+            "Understand the model ›",
+            type="tertiary",
+            on_click=go_to,
+            args=(PAGES[2],),
+            key="start_model",
+        )
+    with st.container(key="hero_visual"):
         snapshot(selected, year)
-        st.caption(f"Your view: {year} · {area}. Change it in the sidebar.")
-    st.divider()
-    st.header("The project, in three steps")
+        st.caption(f"Your view: {year} · {area}. Change it using the menus at the top.")
+    section("The project, in three steps.", "Observe. Explain. Check.")
     steps(
         [
             (
@@ -370,10 +417,10 @@ if page == "Start here":
             ),
         ]
     )
-    st.subheader("What are we trying to understand?")
-    st.write(
+    section(
+        "What are we trying to understand?",
         "Which assumptions about voter behaviour best explain second-round results in "
-        "French presidential elections?"
+        "French presidential elections?",
     )
     reading(
         "We know the totals before and after the second round. We do not know how "
@@ -388,14 +435,14 @@ if page == "Start here":
     )
     glossary()
 
-elif page == "Explore results":
-    eyebrow("01 / Observe · official results")
-    st.title("Start with what happened.")
-    st.write(
+elif page == "Explore":
+    intro(
+        "Observe · official results",
+        "Start with what happened.",
         "See how the registered electorate is distributed across candidates, blank or "
-        "invalid ballots, and abstention."
+        "invalid ballots, and abstention.",
     )
-    st.caption(f"{year} · {area}")
+    st.markdown(f'<p class="context-pill">{escape(f"{year} · {area}")}</p>', unsafe_allow_html=True)
     round_number = st.radio(
         "Which round?", [1, 2], format_func=lambda n: f"Round {n}", horizontal=True, key="round"
     )
@@ -486,12 +533,11 @@ elif page == "Explore results":
     )
 
 elif page == "Understand the model":
-    eyebrow("02 / Explain & check · H0 baseline")
-    st.title("One simple rule. A measurable gap.")
-    st.write(
-        "A model is an explicit assumption we can test. H0 is our starting rule, "
-        "called a baseline: "
-        "more elaborate explanations will need to improve on it."
+    intro(
+        "Explain & check · H0 baseline",
+        "One simple rule. A measurable gap.",
+        "A model is an explicit assumption we can test. H0 is our starting rule, called a "
+        "baseline: more elaborate explanations will need to improve on it.",
     )
     steps(
         [
@@ -531,8 +577,7 @@ elif page == "Understand the model":
             "This is a behavioural assumption. It does not tell us what those 25 "
             "people actually did."
         )
-    st.divider()
-    st.subheader("How close does H0 get?")
+    section("How close does H0 get?")
     st.caption(f"Round 2 · {year} · {area} · share of registered voters")
     model = model_summary(selected_evaluation)
     bar_chart(model["comparison"], comparison=True)
@@ -614,12 +659,12 @@ elif page == "Understand the model":
     st.button("Next: check the sources and limitations →", on_click=go_to, args=(PAGES[3],))
 
 else:
-    eyebrow("03 / Verify · sources & limitations")
-    st.title("Know what sits behind the numbers.")
-    st.write(
+    intro(
+        "Verify · sources & limitations",
+        "Know what sits behind the numbers.",
         "The figures come from original French Ministry of the Interior polling-station files. "
         "We check the counts, aggregate them by reporting area, then calculate the "
-        "same outcomes for every election."
+        "same outcomes for every election.",
     )
     st.subheader(f"Your selected source · {year}")
     for source in SOURCES:
@@ -689,7 +734,8 @@ else:
     )
 
 st.markdown(
-    '<footer class="footer">VOTE TRANSFER LAB · Historical election research<br>'
-    "Observed totals. Explicit assumptions. No individual voting histories.</footer>",
+    '<footer class="footer"><p class="footer-note">Observed totals. Explicit assumptions. '
+    "No individual voting histories.</p><p>Vote Transfer Lab · Historical election research "
+    "· French presidential elections 2002–2022</p></footer>",
     unsafe_allow_html=True,
 )

@@ -20,10 +20,21 @@ def test_loaded_app_filters_round_and_territory(raw_dataset, monkeypatch):
     app = AppTest.from_file(str(APP)).run(timeout=20)
     assert not app.exception
     assert not app.metric  # The introduction is not a wall of statistics.
+    assert not app.sidebar.radio
+    assert not app.sidebar.selectbox
+    assert app.radio(key="page").options == [
+        "Home",
+        "Explore",
+        "Understand the model",
+        "Sources & limits",
+    ]
+    assert app.radio(key="page").proto.horizontal
+    assert app.selectbox(key="year").label == "Year"
+    assert app.selectbox(key="unit").label == "Area"
     app.button(key="start_explore").click().run()
     assert not app.exception
     assert app.metric[0].value == "300"
-    app.sidebar.selectbox[1].select("01").run()
+    app.selectbox(key="unit").select("01").run()
     assert not app.exception
     assert app.metric[0].value == "100"
     app.radio(key="round").set_value(2).run()
@@ -54,7 +65,7 @@ def test_shipped_five_year_app_runs_without_raw_data_or_network(tmp_path, monkey
     monkeypatch.setattr("requests.Session.request", reject_network)
     app = AppTest.from_file(str(APP)).run(timeout=20)
     assert not app.exception
-    assert set(app.sidebar.selectbox[0].options) == {"2002", "2007", "2012", "2017", "2022"}
+    assert set(app.selectbox(key="year").options) == {"2002", "2007", "2012", "2017", "2022"}
     app.button(key="start_explore").click().run()
     app.radio(key="round").set_value(2).run()
     for year, registered in {
@@ -64,7 +75,7 @@ def test_shipped_five_year_app_runs_without_raw_data_or_network(tmp_path, monkey
         "2017": "47,568,693",
         "2022": "48,752,339",
     }.items():
-        app.sidebar.selectbox[0].select(year).run()
+        app.selectbox(key="year").select(year).run()
         assert not app.exception
         assert app.metric[0].value == registered
         coverage = [item.value for item in app.warning if "Not national totals" in item.value]
@@ -77,7 +88,7 @@ def test_shipped_five_year_app_runs_without_raw_data_or_network(tmp_path, monkey
             assert figures["Valid votes (%)"].sum() == pytest.approx(100)
             assert any("82.1" in item.value for item in app.markdown)
             app.radio(key="basis").set_value("Registered voters").run()
-        app.sidebar.radio(key="page").set_value("Understand the model").run()
+        app.radio(key="page").set_value("Understand the model").run()
         assert not app.exception
         assert app.metric[0].label == "Weighted average area error"
         assert app.metric[1].label == "Gap in combined results"
@@ -88,10 +99,10 @@ def test_shipped_five_year_app_runs_without_raw_data_or_network(tmp_path, monkey
             button.label == "Download all candidate positions (CSV)"
             for button in app.get("download_button")
         )
-        app.sidebar.radio(key="page").set_value("Sources & limits").run()
+        app.radio(key="page").set_value("Sources & limits").run()
         assert not app.exception
         assert len(app.get("link_button")) == 2
-        app.sidebar.radio(key="page").set_value("Start here").run()
+        app.radio(key="page").set_value("Home").run()
         assert not app.exception
         app.button(key="start_explore").click().run()
         app.radio(key="round").set_value(2).run()
@@ -107,13 +118,16 @@ def test_navigation_preserves_area_and_handles_unavailable_area_after_year_chang
     shutil.copytree(APP.parent.parent / "data/bundled", tmp_path / "bundled")
     monkeypatch.setenv("VOTE_TRANSFER_DATA_DIR", str(tmp_path))
     app = AppTest.from_file(str(APP)).run(timeout=20)
-    app.sidebar.selectbox(key="unit").select("ZZ").run()
-    app.button(key="start_model").click().run()
+    app.selectbox(key="year").select("2017").run()
+    app.selectbox(key="unit").select("ZZ").run()
+    for page in ["Explore", "Understand the model", "Sources & limits", "Home"]:
+        app.radio(key="page").set_value(page).run()
+        assert not app.exception
+        assert app.selectbox(key="unit").value == "ZZ"
+        assert app.selectbox(key="year").value == "2017"
+    app.selectbox(key="year").select("2002").run()
     assert not app.exception
-    assert app.sidebar.selectbox(key="unit").value == "ZZ"
-    app.sidebar.selectbox(key="year").select("2002").run()
-    assert not app.exception
-    assert app.sidebar.selectbox(key="unit").value != "ZZ"
+    assert app.selectbox(key="unit").value == "All units"
 
 
 def test_exploration_charts_have_valid_vega_schema(raw_dataset, monkeypatch):
@@ -134,6 +148,6 @@ def test_exploration_charts_have_valid_vega_schema(raw_dataset, monkeypatch):
     app = AppTest.from_file(str(APP)).run(timeout=20)
     app.button(key="start_explore").click().run()
     assert not app.exception
-    app.sidebar.radio(key="page").set_value("Understand the model").run()
+    app.radio(key="page").set_value("Understand the model").run()
     assert not app.exception
     assert len(specs) == 2
