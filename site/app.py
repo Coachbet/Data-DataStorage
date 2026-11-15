@@ -5,7 +5,11 @@ from html import escape
 from pathlib import Path
 
 import streamlit as st
-from vote_transfer.application.datasets import available_datasets, load_dataset
+from vote_transfer.application.datasets import (
+    available_datasets,
+    load_dataset,
+    snapshot_drift,
+)
 from vote_transfer.application.exploration import model_summary, round_summary
 from vote_transfer.application.positions import load_candidate_positions, load_position_sources
 from vote_transfer.application.source_catalog import SOURCES
@@ -335,6 +339,15 @@ except (OSError, ValueError, KeyError) as error:
     with st.expander("Details for the project team"):
         st.code(str(error))
     st.stop()
+
+stale_snapshots = snapshot_drift(data_root())
+if stale_snapshots:
+    st.warning(
+        "Local processed data differ from the bundled snapshots ("
+        + ", ".join(stale_snapshots)
+        + "). This app shows the local build; a fresh clone would show the snapshots. "
+        "Run `vote-transfer bundle --all-years` to align them."
+    )
 
 units = (
     results[["department_code", "department_name"]].drop_duplicates().sort_values("department_code")

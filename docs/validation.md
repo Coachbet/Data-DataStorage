@@ -1,5 +1,12 @@
 # Validation record
 
+## Current status
+
+The number of tests is deliberately not written here: it went stale once already.
+`make check` prints the current count and runs, in order, the offline test suite,
+Ruff lint, Ruff format and the processed-versus-bundled snapshot comparison. The
+entries below are dated records: each count was correct on its date.
+
 ## Candidate reference and territorial scoring — 31 October 2026
 
 - 72 offline tests passed. The 61 candidate-election keys exactly match the five

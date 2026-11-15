@@ -57,3 +57,18 @@ def bundle_year(year: int, root: Path) -> dict:
         for name in BUNDLE_FILES:
             (staging / name).replace(target / name)
     return {"year": year, "bytes": size, "directory": str(target), "files": list(BUNDLE_FILES)}
+
+
+def snapshot_drift(root: Path) -> list[str]:
+    """Name each data file whose local build and versioned snapshot hold different bytes.
+
+    A stale snapshot means a fresh clone and this machine would show different results.
+    Files present in only one layer are not drift: there is nothing to disagree with.
+    """
+    differing = []
+    for bundled in sorted((root / "bundled").glob("[0-9][0-9][0-9][0-9]")):
+        for name in DATA_FILES:
+            ours, theirs = root / "processed" / bundled.name / name, bundled / name
+            if ours.is_file() and theirs.is_file() and sha256(ours) != sha256(theirs):
+                differing.append(f"{bundled.name}/{name}")
+    return differing

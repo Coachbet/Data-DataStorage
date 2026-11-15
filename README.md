@@ -66,7 +66,6 @@ data/
   bundled/<year>/           Small versioned aggregates for immediate offline use
   reference/                Versioned manual candidate positions and source notes
   external/                 Local downloads for future external references
-  archive/legacy/           Preserved old local datasets, excluded from Git
 docs/                       Scope, methodology, data contracts and development notes
   references/               The two supplied project PDFs
   references/archive/       Earlier course/proposal documents, unchanged
@@ -119,8 +118,10 @@ uv run ruff check backend site tests
 uv run ruff format --check backend site tests
 ```
 
-`make setup`, `make acquire`, `make process`, `make bundle`, `make app` and `make check` are
-shortcuts. Tests use synthetic fixtures, temporary directories and the small shipped
+`make setup`, `make acquire`, `make process`, `make bundle` (each for all five
+elections), `make data` (the three in sequence), `make app`, `make check` and
+`make archive` (a `git archive` zip of tracked files only) are shortcuts.
+`make check` also fails when `data/processed/` and `data/bundled/` disagree. Tests use synthetic fixtures, temporary directories and the small shipped
 aggregates, with no network or dependence on raw downloads. See [development notes](docs/development.md),
 [acquisition details](docs/data_acquisition.md), [data contracts](docs/data_dictionary.md),
 [H0 methodology](docs/methodology.md), the [validation record](docs/validation.md)

@@ -36,7 +36,9 @@ depending on local raw downloads. Bundled-data tests exercise all five years wit
   `docs/references/` under stable English filenames. Original source documents
   remain unchanged.
 - `reports/` and `presentation/` → `docs/archive/` so they do not clutter the root.
-- `old_data/` → `data/archive/legacy/`; no historical data were deleted.
+- `old_data/` was moved to an ignored local folder on the machine that did the
+  migration. It is not part of the repository or of any archive; nothing in the
+  workflow reads it.
 - The previous placeholder interface is also retained locally in ignored
   `tmp/legacy_webapp/` during this migration. Git history retains its tracked version.
 

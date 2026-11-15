@@ -48,3 +48,16 @@ def test_shipped_snapshot_reproduces_h0_from_aggregate_inputs(year):
     results, stored, _ = load_dataset(root)
     reproduced = evaluate_h0(results)
     pd.testing.assert_frame_equal(reproduced, stored)
+
+
+def test_snapshot_drift_names_files_that_differ_between_processed_and_bundled(raw_dataset):
+    from vote_transfer.application.datasets import snapshot_drift
+
+    assert snapshot_drift(raw_dataset) == []  # nothing to compare yet
+    process_year(2022, raw_dataset)
+    assert snapshot_drift(raw_dataset) == []  # only one copy exists
+    bundle_year(2022, raw_dataset)
+    assert snapshot_drift(raw_dataset) == []
+    stale = raw_dataset / "bundled/2022/department_results.parquet"
+    stale.write_bytes(stale.read_bytes() + b"x")
+    assert snapshot_drift(raw_dataset) == ["2022/department_results.parquet"]
