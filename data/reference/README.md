@@ -70,7 +70,21 @@ endorse our seven-category scores. RFI's older pages were available through sear
 excerpts but direct retrieval timed out. The 2002 overview is a secondary reference
 and should receive a primary-source cross-check during the group's review.
 France 24 also lists some unsuccessful prospective candidates: only names present
-in the Ministry results enter this CSV. H0 does not use this table.
+in the Ministry results enter this CSV. H0a and H0b do not use this table.
+
+## Review procedure
+
+`review/` holds the blind coding sheet and the coder instructions. Two members
+code all 61 rows independently; `vote-transfer review-agreement` then reports
+percentage agreement, quadratic-weighted kappa, the confusion matrix and every
+disagreement. Automated checks on this table (same party coded identically across
+elections; rows without a score) are written to
+`reports/results/candidate_table_quality.json` by `vote-transfer analyse`.
+
+Since 15 November 2026 the models H1, H2 and H3 read `ideology_score`. All their
+outputs say "draft coding" until every scored row is marked `reviewed`.
+`alternative_family` drives the `positions=alternative` sensitivity variant: every
+row that lists an alternative uses it, all at once.
 
 When reviewing, update the year-specific row, its notes and sources together.
 Record the reviewer and rationale in the Git change. Keep party affiliation
