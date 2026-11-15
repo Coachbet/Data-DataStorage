@@ -5,17 +5,46 @@ from html import escape
 from pathlib import Path
 
 import streamlit as st
+from vote_transfer.application.analysis import (
+    MODEL_ORDER,
+    comparison_table,
+    national_errors,
+    setting_predictions,
+    with_roles,
+)
 from vote_transfer.application.datasets import (
     available_datasets,
     load_dataset,
+    load_predictions,
     snapshot_drift,
 )
 from vote_transfer.application.exploration import model_summary, round_summary
 from vote_transfer.application.positions import load_candidate_positions, load_position_sources
+from vote_transfer.application.scenario import (
+    BANNER,
+    SCENARIO_MODELS,
+    SCENARIO_YEAR,
+    scenario_candidates,
+    simulate_runoff,
+)
 from vote_transfer.application.source_catalog import SOURCES
 from vote_transfer.config import data_root
 
-PAGES = ("Home", "Explore", "Understand the model", "Sources & limits")
+PAGES = (
+    "Home",
+    "Explore",
+    "Understand the model",
+    "Compare models",
+    "2027 scenarios",
+    "Sources & limits",
+)
+OUTCOME_NAMES = {
+    "finalist_a": "Finalist A",
+    "finalist_b": "Finalist B",
+    "blank_invalid": "Blank / invalid",
+    "abstention": "Abstention",
+}
+OUTCOME_COLOURS = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100"]
 OBSERVED, MODEL = "#0071E3", "#E35D00"
 SITE_DIR = Path(__file__).resolve().parent
 LOGO_PATH = SITE_DIR / "assets" / "logo.svg"
@@ -232,6 +261,62 @@ def bar_chart(frame, comparison=False, basis="registered voters"):
     st.vega_lite_chart(chart, spec, width="stretch", theme=None)
 
 
+def signed_error_chart(errors, models):
+    """Signed pooled error by outcome and election, one row of bars per model."""
+    chart = errors[errors.model.isin(models)].copy()
+    chart["Outcome"] = chart.role.map(OUTCOME_NAMES)
+    chart["Election"] = chart.year.astype(str)
+    chart["label"] = chart.signed_error_pp.map(lambda x: f"{x:+.1f} pp")
+    order = list(OUTCOME_NAMES.values())
+    spec = {
+        "facet": {
+            "row": {"field": "model", "type": "nominal", "title": None, "sort": list(models)}
+        },
+        "spec": {
+            "width": 620,
+            "height": 150,
+            "mark": {"type": "bar", "cornerRadiusEnd": 3},
+            "encoding": {
+                "x": {"field": "Election", "type": "nominal", "axis": {"labelAngle": 0}},
+                "xOffset": {"field": "Outcome", "sort": order},
+                "y": {
+                    "field": "signed_error_pp",
+                    "type": "quantitative",
+                    "axis": {"title": "Predicted − observed (pp)", "gridColor": "#ececf0"},
+                },
+                "color": {
+                    "field": "Outcome",
+                    "type": "nominal",
+                    "scale": {"domain": order, "range": OUTCOME_COLOURS},
+                    "legend": {"title": None, "orient": "top"},
+                },
+                "tooltip": [
+                    {"field": "model", "title": "Model"},
+                    {"field": "Election"},
+                    {"field": "Outcome"},
+                    {"field": "label", "title": "Predicted − observed"},
+                ],
+            },
+        },
+        "config": {
+            "view": {"stroke": None},
+            "background": "transparent",
+            "header": {"labelFontWeight": 600, "labelFontSize": 13, "labelColor": "#1d1d1f"},
+            "axis": {"labelColor": "#6e6e73", "titleColor": "#6e6e73", "titleFontWeight": 500},
+        },
+    }
+    st.vega_lite_chart(chart, spec, theme=None)
+
+
+def coding_banner(report):
+    st.warning(
+        f"**{report['coding_status'].capitalize()}.** H1, H2 and H3 read hand-coded candidate "
+        "positions. Until two coders have reviewed them independently, treat every result "
+        "that depends on them as provisional. Scores describe aggregate patterns, "
+        "not individual transfers."
+    )
+
+
 def snapshot(results, year):
     summaries = [round_summary(results, n) for n in (1, 2)]
     finalists = summaries[1]["totals"].query("option.str.startswith('candidate:')", engine="python")
@@ -340,6 +425,11 @@ except (OSError, ValueError, KeyError) as error:
         st.code(str(error))
     st.stop()
 
+try:
+    evaluated = load_predictions(data_root())
+except (OSError, ValueError, KeyError):
+    evaluated = None
+
 stale_snapshots = snapshot_drift(data_root())
 if stale_snapshots:
     st.warning(
@@ -443,8 +533,8 @@ if page == "Home":
         "The essential distinction",
     )
     st.caption(
-        "Available now: five historical elections and one baseline model (H0). "
-        "Additional hypotheses are planned."
+        "Available now: five historical elections, two baselines (H0a, H0b) and three "
+        "families of assumptions (H1, H2, H3). See Compare models."
     )
     glossary()
 
@@ -665,11 +755,213 @@ elif page == "Understand the model":
             mime="text/csv",
         )
     st.warning(
-        "A close aggregate fit is not evidence of individual transfers. H0 is a "
-        "provisional baseline; H1–H5 have not yet been implemented."
+        "A close aggregate fit is not evidence of individual transfers. This page explains "
+        "H0a, the original baseline. Compare models sets it against H0b, H1, H2 and H3."
     )
     candidate_reference(year)
-    st.button("Next: check the sources and limitations →", on_click=go_to, args=(PAGES[3],))
+    st.button("Next: check the sources and limitations →", on_click=go_to, args=(PAGES[-1],))
+
+elif page == "Compare models":
+    intro(
+        "Compare · five elections",
+        "Eight assumptions. One score.",
+        "Every assumption predicts the second round from the first. The score is the "
+        "average gap, in percentage points, between its prediction and what happened.",
+    )
+    if evaluated is None:
+        st.info(
+            "Cross-election results are not available in this data folder. "
+            "Run `vote-transfer evaluate --all-models --all-years`."
+        )
+    else:
+        predictions, evaluation_report = evaluated
+        predictions = with_roles(predictions, evaluation_report)
+        coding_banner(evaluation_report)
+        st.info(
+            "Coverage note: the 2002 and 2007 files omit some overseas areas and voters "
+            "abroad. Scores describe the covered areas of each election."
+        )
+        comparison = comparison_table(predictions)
+        best_model = comparison["mean"].idxmin()
+        table = comparison.drop(columns=[c for c in comparison if c.startswith("rank")])
+        table = table.rename(
+            columns={"mean": "Mean", "mean_without_2002": "Mean without 2002"}
+        ).reset_index(names="Model")
+        st.dataframe(
+            table,
+            hide_index=True,
+            width="stretch",
+            key="comparison_table",
+            column_config={
+                c: st.column_config.NumberColumn(format="%.1f") for c in table.columns[1:]
+            },
+        )
+        st.caption(
+            "Weighted average area error in percentage points; lower is closer. "
+            "H3 scores are held-out: the share p is fitted on four elections and tested on "
+            "the fifth. H2 is reported in both variants; neither is selected by fit."
+        )
+        reading(
+            f"{best_model} has the lowest five-election mean "
+            f"({comparison.loc[best_model, 'mean']:.1f} pp), but 2002 weighs heavily: without "
+            f"it the lowest mean belongs to {comparison['mean_without_2002'].idxmin()} "
+            f"({comparison['mean_without_2002'].min():.1f} pp) and H0b is at "
+            f"{comparison.loc['H0b', 'mean_without_2002']:.1f} pp. No assumption is best "
+            "in every election.",
+            "What this table shows",
+        )
+        section("Where does each assumption miss?")
+        focus = st.selectbox(
+            "Model shown beside the two baselines",
+            [m for m in MODEL_ORDER if m not in ("H0a", "H0b")],
+            index=[m for m in MODEL_ORDER if m not in ("H0a", "H0b")].index(best_model)
+            if best_model not in ("H0a", "H0b")
+            else 0,
+            key="compare_model",
+        )
+        errors = national_errors(setting_predictions(predictions))
+        signed_error_chart(errors, ["H0a", "H0b", focus])
+        st.caption(
+            "Predicted minus observed share of registered voters, pooled over covered areas. "
+            "Above zero: the assumption predicts too much of that outcome. Finalist A is the "
+            "first-round leader. These are aggregate patterns, not individual transfers."
+        )
+        with st.expander("H3: fitted share per held-out election"):
+            folds = [
+                {
+                    "Base": fold["base"],
+                    "Tested on": str(fold["test_year"]),
+                    "Trained on": ", ".join(map(str, fold["train_elections"])),
+                    "Fitted p": fold["p"],
+                    "Held-out score (pp)": fold["heldout_score_pp"],
+                }
+                for fold in evaluation_report["h3_folds"]
+                if fold["variant"] == evaluation_report["main_variant"] and fold["test_year"]
+            ]
+            st.dataframe(folds, hide_index=True, width="stretch", key="h3_folds")
+            st.caption(
+                "p is the share of each eliminated group that splits as in H0b instead of "
+                "following the base rule. Each test election is never used to fit its own p."
+            )
+
+elif page == "2027 scenarios":
+    intro(
+        "Simulate · hypothetical runoffs",
+        "What would an assumption imply?",
+        "Choose two 2022 first-round candidates as stand-ins for the finalists, and one "
+        "assumption. The page applies it to the 2022 first-round results of every area.",
+    )
+    status = evaluated[1]["coding_status"] if evaluated else "draft coding"
+    st.warning(
+        f"**{BANNER}** {status.capitalize()}. Aggregate assumptions, not individual transfers."
+    )
+    if evaluated is None or str(SCENARIO_YEAR) not in datasets:
+        st.info(
+            "Scenarios need the 2022 election and the cross-election evaluation in this "
+            "data folder. Run `vote-transfer evaluate --all-models --all-years`."
+        )
+    else:
+        predictions, evaluation_report = evaluated
+        electorate = load_dataset(datasets[str(SCENARIO_YEAR)])[0]
+        candidates = scenario_candidates(electorate)
+        names = {row.option: row.label.title() for row in candidates.itertuples()}
+        best_model = comparison_table(predictions)["mean"].idxmin()
+        a, b, c = st.columns(3)
+        first_choice = a.selectbox(
+            "First finalist", list(names), index=0, key="scenario_a", format_func=names.get
+        )
+        second_choice = b.selectbox(
+            "Second finalist", list(names), index=1, key="scenario_b", format_func=names.get
+        )
+        model_choice = c.selectbox(
+            "Assumption",
+            SCENARIO_MODELS,
+            index=SCENARIO_MODELS.index(best_model),
+            key="scenario_model",
+            help="Defaults to the assumption with the lowest five-election mean score.",
+        )
+        if first_choice == second_choice:
+            st.error("Choose two different candidates.")
+        else:
+            positions = load_candidate_positions()
+            pair = (first_choice, second_choice)
+            chosen = simulate_runoff(electorate, pair, model_choice, positions, evaluation_report)
+            baseline = simulate_runoff(electorate, pair, "H0b", positions, evaluation_report)
+            labels = {
+                "finalist_a": names[chosen["finalist_a"]],
+                "finalist_b": names[chosen["finalist_b"]],
+                "blank_invalid": "Blank or invalid ballot",
+                "abstention": "Did not vote",
+            }
+            section(f"{labels['finalist_a']} – {labels['finalist_b']}")
+            national = {
+                "Outcome": list(labels.values()),
+                f"{model_choice} (%)": [chosen["pooled_pct"][k] for k in labels],
+            }
+            if model_choice != "H0b":
+                national["H0b (%)"] = [baseline["pooled_pct"][k] for k in labels]
+            st.dataframe(
+                national,
+                hide_index=True,
+                width="stretch",
+                key="scenario_national",
+                column_config={
+                    k: st.column_config.NumberColumn(format="%.1f")
+                    for k in national
+                    if k != "Outcome"
+                },
+            )
+            st.caption(
+                "Shares of 2022 first-round registered voters, all areas pooled. "
+                f"Among the two finalists only, {model_choice} gives {labels['finalist_a']} "
+                f"{chosen['finalist_a_valid_pct']:.1f}% and H0b gives "
+                f"{baseline['finalist_a_valid_pct']:.1f}%. H0b is always shown for comparison."
+                + (
+                    f" H3 uses p = {chosen['p']:.2f}, fitted on the five historical elections."
+                    if chosen["p"] is not None
+                    else ""
+                )
+            )
+            reading(
+                "This is what the chosen assumption implies if the 2022 first-round electorate "
+                "faced this runoff. It is not a prediction for 2027: the candidates, the "
+                "electorate and the campaign will differ, and no 2027 data enters this page.",
+                "How to read this",
+            )
+            with st.expander("Area-level table and download", expanded=True):
+                areas = chosen["areas"].rename(
+                    columns={
+                        "area_code": "Area code",
+                        "area_name": "Area",
+                        "registered": "Registered (2022 R1)",
+                        "finalist_a_pct": f"{labels['finalist_a']} (%)",
+                        "finalist_b_pct": f"{labels['finalist_b']} (%)",
+                        "blank_invalid_pct": "Blank / invalid (%)",
+                        "abstention_pct": "Abstention (%)",
+                    }
+                )
+                st.dataframe(
+                    areas,
+                    hide_index=True,
+                    width="stretch",
+                    key="scenario_areas",
+                    column_config={
+                        k: st.column_config.NumberColumn(format="%.1f")
+                        for k in areas.columns
+                        if k.endswith("(%)")
+                    },
+                )
+                st.download_button(
+                    "Download this scenario (CSV)",
+                    areas.to_csv(index=False),
+                    file_name=f"scenario_{model_choice}.csv",
+                    mime="text/csv",
+                    key="scenario_download",
+                )
+                st.caption(
+                    "No map is shown: the repository holds no boundary data, and no new "
+                    "source was added for this page."
+                )
 
 else:
     intro(
@@ -700,8 +992,9 @@ else:
         "3. **Ballot detail changes.** Before 2017, blank and invalid ballots are "
         "reported together. "
         "We use their combined total for every year.\n"
-        "4. **H0 is a starting assumption.** It has not been compared with H1–H5. "
-        "A future 2027 feature will explore hypothetical scenarios, not forecast an election."
+        "4. **Every model is an assumption.** H1, H2 and H3 depend on hand-coded candidate "
+        "positions that are still drafts. The 2027 page explores hypothetical scenarios on "
+        "the 2022 electorate; it does not forecast an election."
     )
     if quality.get("geographic_labels") == "codes_only":
         st.info(
@@ -732,12 +1025,11 @@ else:
         st.json(quality, expanded=False)
     with st.expander("What comes next in the research?"):
         st.markdown(
+            "- Two team members code the candidate positions independently; agreement "
+            "is reported and every model is rerun.\n"
             "- Compare historical results against the consolidated reference dataset.\n"
-            "- Review the manual candidate positions and define ties and distance thresholds "
-            "before testing ideological explanations (H1/H2).\n"
-            "- Define and review the methods for noise, strategic voting and learned "
-            "transfers (H3–H5).\n"
-            "- Evaluate fitted methods on held-out elections before developing 2027 scenarios."
+            "- Out of scope, as future work: strategic first-round voting (H4), transfers "
+            "learned by political family (H5) and two-dimensional positions."
         )
     candidate_reference(year)
     glossary()
