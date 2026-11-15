@@ -46,6 +46,12 @@ YEARLY = {
 def run_yearly(args: argparse.Namespace) -> None:
     every = sorted(NATIONAL_SUMMARIES) if args.command == "crosscheck" else SUPPORTED_YEARS
     for year in every if args.all_years else (args.year or [2022]):
+        local = args.data_root / "processed" / str(year)
+        if args.command == "bundle" and args.all_years and not local.is_dir():
+            # A clone without raw data has no local build of this election: its
+            # snapshot is already the only copy, so there is nothing to refresh.
+            print(f"{year}: no local processed build; snapshot left as it is.")
+            continue
         print(json.dumps(YEARLY[args.command](year, args.data_root), indent=2))
     local = [args.data_root / "processed" / name for name in PREDICTION_FILES]
     if args.command == "bundle" and args.all_years and all(p.is_file() for p in local):
