@@ -32,7 +32,12 @@ PARAMETER_FREE = ("H0a", "H0b", *BASES)
 TIES = ("split", "abstention")
 CODINGS = ("primary", "alternative")
 # (coding, tie) pairs evaluated for every scored model. The first is the main analysis.
-SETTINGS = (("primary", "split"), ("primary", "abstention"), ("alternative", "split"))
+SETTINGS = (
+    ("primary", "split"),
+    ("primary", "abstention"),
+    ("alternative", "split"),
+    ("alternative", "abstention"),
+)
 P_GRID = np.arange(101) / 100
 PREDICTION_COLUMNS = [
     "year",

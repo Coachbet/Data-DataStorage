@@ -1,4 +1,4 @@
-.PHONY: setup app acquire process evaluate bundle data check archive
+.PHONY: setup app acquire process evaluate bundle data analysis check archive
 setup:
 	uv sync --locked --dev
 app:
@@ -13,6 +13,10 @@ bundle:
 	uv run vote-transfer bundle --all-years
 # Full rebuild from the original Ministry files to the versioned snapshots.
 data: acquire process evaluate bundle
+# Every model result, figure, table and rendered document, from processed/bundled data.
+analysis: evaluate
+	uv run vote-transfer bundle --all-years
+	uv run vote-transfer analyse
 check:
 	uv run pytest -q
 	uv run ruff check backend site tests

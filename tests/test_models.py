@@ -13,6 +13,7 @@ from vote_transfer.application.models import (
     BASES,
     MAIN_VARIANT,
     P_GRID,
+    SETTINGS,
     build_election,
     election_scores,
     evaluate_models,
@@ -315,7 +316,7 @@ def test_leave_one_election_out_never_trains_on_the_test_election(real_evaluatio
     parameter_free = predictions[~predictions.model.str.startswith("H3")]
     assert set(parameter_free.train_elections) == {""}
     folds = [fold for fold in report["h3_folds"] if fold["test_year"] is not None]
-    assert len(folds) == len(YEARS) * len(BASES) * 3  # three variants
+    assert len(folds) == len(YEARS) * len(BASES) * len(SETTINGS)
     assert all(fold["test_year"] not in fold["train_elections"] for fold in folds)
 
 
@@ -349,5 +350,5 @@ def test_evaluation_report_records_fallbacks_and_finalists(real_evaluation):
         (2017, "candidate:jacques-cheminade"),
     ]
     full = [fold for fold in report["h3_folds"] if fold["test_year"] is None]
-    assert len(full) == len(BASES) * 3
+    assert len(full) == len(BASES) * len(SETTINGS)
     assert all(0 <= fold["p"] <= 1 for fold in report["h3_folds"])

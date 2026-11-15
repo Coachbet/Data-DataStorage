@@ -133,6 +133,7 @@ is listed in `docs/handoff.md` for the team to confirm.
 | `positions=primary;tie=split` | **Main analysis**: `ideology_score`, 50/50 ties |
 | `positions=primary;tie=abstention` | Tie sensitivity |
 | `positions=alternative;tie=split` | Coding sensitivity: every row that lists an `alternative_family` uses it, all at once |
+| `positions=alternative;tie=abstention` | Both changes together; the only setting pair in which the tie rule can matter if the primary coding produces no tie |
 
 The alternative coding is one alternative scenario, not a search over codings.
 H0a and H0b read no scores; their variant is `default`.

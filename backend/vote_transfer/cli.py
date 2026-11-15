@@ -73,6 +73,12 @@ def evaluate(args: argparse.Namespace) -> None:
     print(json.dumps(build_predictions(args.data_root), indent=2))
 
 
+def analyse(args: argparse.Namespace) -> None:
+    from vote_transfer.application.analysis import run_analysis  # imports Matplotlib
+
+    print(json.dumps(run_analysis(args.data_root), indent=2))
+
+
 def review_kit(args: argparse.Namespace) -> None:
     """Write the blind sheet two coders fill independently. It contains no codes."""
     target = REFERENCE_DIR / "review" / "coding_sheet_template.csv"
@@ -117,6 +123,8 @@ def build_parser() -> argparse.ArgumentParser:
     sub.add_argument("--all-models", action="store_true", help="always on")
     sub.add_argument("--all-years", action="store_true", help="always on")
     sub.set_defaults(run=evaluate)
+    sub = subparsers.add_parser("analyse", help="regenerate figures, results and documents")
+    sub.set_defaults(run=analyse)
     sub = subparsers.add_parser("review-kit", help="write the blind coding sheet template")
     sub.set_defaults(run=review_kit)
     sub = subparsers.add_parser("review-agreement", help="agreement between two coders' sheets")
