@@ -29,9 +29,9 @@ def test_complete_local_build_takes_precedence(raw_dataset):
 def test_bundle_export_rejects_corruption_without_replacing_previous_copy(raw_dataset):
     process_year(2022, raw_dataset)
     bundle_year(2022, raw_dataset)
-    bundle = raw_dataset / "bundled/2022/department_results.parquet"
+    bundle = raw_dataset / "bundled/2022/outcomes.parquet"
     previous = bundle.read_bytes()
-    (raw_dataset / "processed/2022/department_results.parquet").write_bytes(b"bad data")
+    (raw_dataset / "processed/2022/outcomes.parquet").write_bytes(b"bad data")
     with pytest.raises(ValueError, match="do not match"):
         bundle_year(2022, raw_dataset)
     assert bundle.read_bytes() == previous
@@ -58,6 +58,6 @@ def test_snapshot_drift_names_files_that_differ_between_processed_and_bundled(ra
     assert snapshot_drift(raw_dataset) == []  # only one copy exists
     bundle_year(2022, raw_dataset)
     assert snapshot_drift(raw_dataset) == []
-    stale = raw_dataset / "bundled/2022/department_results.parquet"
+    stale = raw_dataset / "bundled/2022/outcomes.parquet"
     stale.write_bytes(stale.read_bytes() + b"x")
-    assert snapshot_drift(raw_dataset) == ["2022/department_results.parquet"]
+    assert snapshot_drift(raw_dataset) == ["2022/outcomes.parquet"]

@@ -45,7 +45,7 @@ def test_loaded_app_filters_round_and_territory(raw_dataset, monkeypatch):
 def test_app_rejects_modified_processed_outputs(raw_dataset, monkeypatch):
     process_year(2022, raw_dataset)
     monkeypatch.setenv("VOTE_TRANSFER_DATA_DIR", str(raw_dataset))
-    path = raw_dataset / "processed/2022/department_results.parquet"
+    path = raw_dataset / "processed/2022/outcomes.parquet"
     path.write_bytes(b"corrupt")
     app = AppTest.from_file(str(APP)).run(timeout=20)
     assert not app.exception
@@ -161,7 +161,7 @@ def test_app_warns_when_processed_and_bundled_copies_differ(raw_dataset, monkeyp
     monkeypatch.setenv("VOTE_TRANSFER_DATA_DIR", str(raw_dataset))
     app = AppTest.from_file(str(APP)).run(timeout=20)
     assert not any("differ from the bundled" in item.value for item in app.warning)
-    stale = raw_dataset / "bundled/2022/department_results.parquet"
+    stale = raw_dataset / "bundled/2022/outcomes.parquet"
     stale.write_bytes(stale.read_bytes() + b"x")
     app = AppTest.from_file(str(APP)).run(timeout=20)
     assert not app.exception

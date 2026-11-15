@@ -15,9 +15,9 @@ def test_check_snapshots_fails_only_when_copies_differ(raw_dataset):
     process_year(2022, raw_dataset)
     bundle_year(2022, raw_dataset)
     assert run_cli("check-snapshots", "--data-root", str(raw_dataset)).returncode == 0
-    stale = raw_dataset / "bundled/2022/department_results.parquet"
+    stale = raw_dataset / "bundled/2022/outcomes.parquet"
     stale.write_bytes(stale.read_bytes() + b"x")
     result = run_cli("check-snapshots", "--data-root", str(raw_dataset))
     assert result.returncode == 1
-    assert "2022/department_results.parquet" in result.stderr
+    assert "2022/outcomes.parquet" in result.stderr
     assert "bundle" in result.stderr

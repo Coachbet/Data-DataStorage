@@ -1,8 +1,8 @@
 {
   "year": 2017,
-  "processed_at_utc": "2026-10-31T15:43:10.402725+00:00",
+  "processed_at_utc": "2026-11-15T14:04:41.731817+00:00",
   "source": "Ministry original files",
-  "schema_version": 2,
+  "schema_version": 3,
   "territorial_units": 107,
   "polling_station_round_rows": 138484,
   "candidate_rows": 900146,
@@ -265,7 +265,8 @@
     "H0 is a provisional operational definition, not a fitted transfer estimate."
   ],
   "outputs": {
-    "h0_evaluation.parquet": "8bd2e57bacb6a4e6741ac095b17a7266d0612ddaf5337e9c6e4ee1bcf141dde4",
-    "department_results.parquet": "e20a8c3f615fbd36a1d5aedd79bcd583c1652144dddcba83adb7baf87ef16d33"
+    "outcomes.parquet": "8f5b168fe53e3c516411d88188baafe48742e539f6cbc996dd3ef2aad5e43a1b",
+    "areas.parquet": "8fcf45e604f1402a0663e7ab8ac59727edad7db7601fb81c2cae5c9537452a4a",
+    "options.parquet": "6f068f076ac947b9baa7aa8da867543050453a9cec4ddc2ff3159edc79a427be"
   }
 }

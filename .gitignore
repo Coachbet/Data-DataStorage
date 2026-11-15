@@ -91,10 +91,13 @@ data/archive/
 *.part
 
 # Small, verified aggregate snapshots for offline teaching/review.
-# Only these three explicit files per year may enter Git.
+# Only these explicit files may enter Git.
 data/bundled/**
 !data/bundled/**/
 !data/bundled/README.md
-!data/bundled/*/department_results.parquet
-!data/bundled/*/h0_evaluation.parquet
+!data/bundled/*/areas.parquet
+!data/bundled/*/outcomes.parquet
+!data/bundled/*/options.parquet
 !data/bundled/*/quality_report.json
+!data/bundled/predictions.parquet
+!data/bundled/evaluation_report.json

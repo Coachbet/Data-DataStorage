@@ -1,6 +1,7 @@
 import pandas as pd
 import pytest
 from vote_transfer.application.baseline import evaluate_h0, national_evaluation, predict_h0
+from vote_transfer.application.datasets import load_dataset
 from vote_transfer.application.processing import process_year
 
 
@@ -45,7 +46,7 @@ def test_h0_requires_positive_retained_mass():
 
 def test_missing_second_round_unit_is_rejected(raw_dataset):
     process_year(2022, raw_dataset)
-    results = pd.read_parquet(raw_dataset / "processed/2022/department_results.parquet")
+    results = load_dataset(raw_dataset / "processed/2022")[0]
     results = results[~((results["round"] == 2) & (results.department_code == "2A"))]
     with pytest.raises(ValueError, match="same territorial units"):
         evaluate_h0(results)

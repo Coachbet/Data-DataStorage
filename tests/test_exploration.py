@@ -1,12 +1,13 @@
 import pandas as pd
 import pytest
+from vote_transfer.application.datasets import load_dataset
 from vote_transfer.application.exploration import model_summary, round_summary
 from vote_transfer.application.processing import process_year
 
 
 def test_round_reading_uses_registered_voters_and_selected_round(raw_dataset):
     process_year(2022, raw_dataset)
-    results = pd.read_parquet(raw_dataset / "processed/2022/department_results.parquet")
+    results = load_dataset(raw_dataset / "processed/2022")[0]
     summary = round_summary(results, 1)
     assert summary["registered"] == 300
     assert summary["turnout_pct"] == 80
