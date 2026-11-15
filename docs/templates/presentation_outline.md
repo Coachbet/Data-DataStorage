@@ -57,7 +57,8 @@ Numbers are filled from `reports/results/numbers.json`. Status: **{{coding_statu
 **9. Result 2: no stable winner**
 - Lowest five-election mean: {{best.model}} ({{best.mean}} pp), but it beats H0b in only {{wins.H1.vs_H0b}} election.
 - Without 2002, {{best.model}} ranks {{best.rank_without_2002}} of {{n.models}}; H0b is at {{score.H0b.mean_without_2002}} pp.
-- H2 has the highest errors; the fitted H3 throws the H2 rule away (`p` from {{p.H2-blank.min|.2f}} to {{p.H2-abst.max|.2f}}).
+- H2 has the highest errors: with finalists at {{h2.2022.finalist_a_score}} and {{h2.2022.finalist_b_score}}, every group coded {{h2.2022.on_threshold_scores}} is exactly {{h2.threshold}} steps away and is sent to a non-vote ({{h2.2022.on_threshold_pct}}% of registered voters in 2022). A finding about thresholds on a coarse scale.
+- The fitted H3 throws the H2 rule away (`p` from {{p.H2-blank.min|.2f}} to {{p.H2-abst.max|.2f}}).
 - Figure: `reports/figures/model_comparison.png`.
 
 **10. How fragile is it?**
@@ -67,7 +68,7 @@ Numbers are filled from `reports/results/numbers.json`. Status: **{{coding_statu
 - Figure: `reports/figures/predicted_vs_observed_2022.png`.
 
 **11. A 2027 scenario, not a forecast**
-- The 2022 first-round electorate, two stand-in finalists, one assumption, always beside H0b.
+- The 2022 first-round electorate, two stand-in finalists, one assumption. Default H0b; one option shows all models side by side.
 - No 2027 data, no polls.
 - The spread between assumptions is the message.
 - Figure: live demo or screenshot of the "2027 scenarios" page.

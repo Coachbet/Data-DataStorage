@@ -59,7 +59,8 @@ Numbers are filled from `reports/results/numbers.json`. Status: **draft coding**
 **9. Result 2: no stable winner**
 - Lowest five-election mean: H1 (4.3 pp), but it beats H0b in only 1 election.
 - Without 2002, H1 ranks 5 of 8; H0b is at 3.0 pp.
-- H2 has the highest errors; the fitted H3 throws the H2 rule away (`p` from 0.85 to 1.00).
+- H2 has the highest errors: with finalists at 4 and 7, every group coded 2 is exactly 2 steps away and is sent to a non-vote (20.8% of registered voters in 2022). A finding about thresholds on a coarse scale.
+- The fitted H3 throws the H2 rule away (`p` from 0.85 to 1.00).
 - Figure: `reports/figures/model_comparison.png`.
 
 **10. How fragile is it?**
@@ -69,7 +70,7 @@ Numbers are filled from `reports/results/numbers.json`. Status: **draft coding**
 - Figure: `reports/figures/predicted_vs_observed_2022.png`.
 
 **11. A 2027 scenario, not a forecast**
-- The 2022 first-round electorate, two stand-in finalists, one assumption, always beside H0b.
+- The 2022 first-round electorate, two stand-in finalists, one assumption. Default H0b; one option shows all models side by side.
 - No 2027 data, no polls.
 - The spread between assumptions is the message.
 - Figure: live demo or screenshot of the "2027 scenarios" page.

@@ -12,12 +12,15 @@ Each year contains only:
   separate blank and invalid counts where published);
 - `outcomes.parquet`: one count per area, round and option;
 - `options.parquet`: display labels;
-- `quality_report.json`: source URLs, dates, checksums, processing checks and limitations.
+- `quality_report.json`: source URLs, retrieval dates, checksums, processing checks and
+  limitations. It holds no processing time, so a rebuild is byte-identical.
 
 Beside the year folders:
 
 - `predictions.parquet`: every model, variant and election in one long table;
 - `evaluation_report.json`: coding status, finalists, H3 folds and input hashes.
+- `crosscheck_2022.json`: date and outcome of the last `vote-transfer crosscheck` run
+  against the Ministry's published national totals (needs network to refresh).
 
 Shares and the wide table used by the app are computed on load, not stored.
 

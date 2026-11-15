@@ -151,6 +151,34 @@ inflow counted as blank):
 - Accuracy (two-coder agreement): {{quality.accuracy_status}}.
   `[PENDING: coder agreement]`
 
+### 8. What the H2 threshold removes (`h2_threshold.csv`)
+
+Shares are first-round shares of registered voters, all covered areas pooled,
+under the primary coding. H2 sends these groups to abstention (H2-abst) or to a
+blank ballot (H2-blank) in full.
+
+| Election | Finalist scores (A, B) | Eliminated supporters at least {{h2.threshold}} steps from both finalists | …of which exactly {{h2.threshold}} steps away (scores) |
+|---|---|---:|---:|
+| 2002 | {{h2.2002.finalist_a_score}}, {{h2.2002.finalist_b_score}} | {{h2.2002.beyond_pct}}% | {{h2.2002.on_threshold_pct}}% ({{h2.2002.on_threshold_scores}}) |
+| 2007 | {{h2.2007.finalist_a_score}}, {{h2.2007.finalist_b_score}} | {{h2.2007.beyond_pct}}% | {{h2.2007.on_threshold_pct}}% ({{h2.2007.on_threshold_scores}}) |
+| 2012 | {{h2.2012.finalist_a_score}}, {{h2.2012.finalist_b_score}} | {{h2.2012.beyond_pct}}% | {{h2.2012.on_threshold_pct}}% ({{h2.2012.on_threshold_scores}}) |
+| 2017 | {{h2.2017.finalist_a_score}}, {{h2.2017.finalist_b_score}} | {{h2.2017.beyond_pct}}% | {{h2.2017.on_threshold_pct}}% ({{h2.2017.on_threshold_scores}}) |
+| 2022 | {{h2.2022.finalist_a_score}}, {{h2.2022.finalist_b_score}} | {{h2.2022.beyond_pct}}% | {{h2.2022.on_threshold_pct}}% ({{h2.2022.on_threshold_scores}}) |
+
+- In 2017 and 2022 the finalists are coded {{h2.2022.finalist_a_score}} and
+  {{h2.2022.finalist_b_score}}. A group coded {{h2.2022.on_threshold_scores}} is exactly {{h2.threshold}} steps
+  from the nearer finalist, so the rule "at least {{h2.threshold}} steps from both"
+  applies to it: {{h2.2017.on_threshold_pct}}% of registered voters in 2017 and
+  {{h2.2022.on_threshold_pct}}% in 2022 sit exactly on the threshold.
+- In 2002 the finalists are coded {{h2.2002.finalist_a_score}} and
+  {{h2.2002.finalist_b_score}}, and {{h2.2002.beyond_pct}}% of registered voters are in
+  groups beyond the threshold.
+- In 2007 and 2012 the corresponding shares are {{h2.2007.beyond_pct}}% and
+  {{h2.2012.beyond_pct}}%.
+- H2-abst and H2-blank score {{score.H2-abst.2007}} and {{score.H2-blank.2007}} pp in
+  2007 and {{score.H2-abst.2012}} and {{score.H2-blank.2012}} pp in 2012, against
+  {{score.H2-abst.2017}} and {{score.H2-blank.2017}} pp in 2017.
+
 ## Interpretations
 
 What the observations may mean. Each point is a reading of aggregate patterns
@@ -172,14 +200,21 @@ under a draft coding, not a statement about how individuals voted.
    from a single-election effect. **The evidence does not support naming one
    assumption as the best explanation.**
 
-3. **The distance threshold, as fixed, does not help.** H2 sends every group at
-   least two steps from both finalists to a non-vote. In 2002, 2017 and 2022 that
-   removes large left-coded groups from the finalists entirely, and the scores are
-   worse than H0b's. H3 confirms it: when a share `p` is allowed to ignore the H2
-   rule, the fit puts nearly everyone in that share. The threshold of two steps
-   and the equal spacing of the scale are assumptions we did not tune, on purpose;
-   a different threshold might behave differently, and choosing it by fit would
-   need more elections than we have.
+3. **A fixed threshold on a coarse ordinal scale is fragile: this is a finding
+   about thresholds, not about voters.** H2 fits badly where the threshold removes
+   a large group in one piece, and the mechanism is arithmetic (observation 8).
+   With finalists at {{h2.2022.finalist_a_score}} and {{h2.2022.finalist_b_score}},
+   every group coded {{h2.2022.on_threshold_scores}} is exactly {{h2.threshold}} steps
+   from the nearer finalist, so the "at least {{h2.threshold}} steps" rule sends the
+   whole left to a non-vote; on a seven-point scale one step is the difference
+   between "all of them vote for the nearer finalist" and "none of them do". Where
+   few voters are beyond the threshold (2007, 2012), H2 stays close to H1
+   ({{score.H2-abst.2012}} against {{score.H1.2012}} pp in 2012). H3 agrees:
+   allowed to ignore the H2 rule for a share `p`, the fit puts nearly everyone in
+   that share. The threshold and the equal spacing of the scale were fixed before
+   any result was computed and were not changed afterwards. We add no variant with
+   another threshold: choosing one after seeing these scores would be tuning on
+   the evaluation elections.
 
 4. **H3 adds little here.** It is at best equal to the better of its two
    ingredients, and for H1 the fitted share is unstable because one election
@@ -213,3 +248,8 @@ under a draft coding, not a statement about how individuals voted.
 - Naming a "best" model after comparing eight on the same five elections is
   itself a selection; no significance is claimed.
 - The scale is one-dimensional and assumed equally spaced.
+- The alternative coding moves all {{quality.with_alternative}} listed rows at once,
+  finalists included. It is a single alternative scenario, not a per-candidate
+  sensitivity analysis.
+- H3 is reported pending approval of its fitted parameter.
+  `[PENDING: professor approval]`

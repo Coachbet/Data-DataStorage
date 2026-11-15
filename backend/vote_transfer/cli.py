@@ -2,12 +2,14 @@
 
 import argparse
 import json
+from datetime import date
 from pathlib import Path
 
 import requests
 
 from vote_transfer.application.crosscheck import crosscheck_national
 from vote_transfer.application.datasets import (
+    CROSSCHECK_RECORD,
     PREDICTION_FILES,
     build_predictions,
     bundle_predictions,
@@ -30,9 +32,13 @@ def crosscheck(year: int, root: Path) -> dict:
     acquire_national_summary(year, root)
     report = crosscheck_national(year, root)
     mismatches = [row for row in report["comparisons"] if not row["matches"]]
-    return {k: report[k] for k in ("year", "fields_compared", "all_match")} | {
-        "mismatches": mismatches
-    }
+    summary = {k: report[k] for k in ("year", "fields_compared", "all_match")}
+    # A small dated record of the check, versioned so the report can cite it offline.
+    record = summary | {"checked_on": date.today().isoformat(), "reference": report["reference"]}
+    target = root / "bundled" / CROSSCHECK_RECORD.format(year=year)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    target.write_text(json.dumps(record, indent=2) + "\n")
+    return summary | {"mismatches": mismatches}
 
 
 YEARLY = {

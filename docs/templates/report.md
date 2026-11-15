@@ -56,8 +56,7 @@ repaired, because with official counts it can only mean that we parsed a file
 wrongly. Checks cover schema per file layout (three layouts over twenty years),
 unique station and candidate keys, bounds (`voters ≤ registered`,
 `valid ≤ voters`), candidate votes equal to valid ballots in every station, and
-identical areas in both rounds. Our 2022 sums match the Ministry's published
-national summaries field by field.
+identical areas in both rounds. {{text.crosscheck}}
 
 We removed, imputed and corrected no observation. Three decisions matter for the
 analysis:
@@ -76,7 +75,8 @@ The candidate table is assessed with the same characteristics. Consistency: of
 {{quality.parties_checked}} party labels, {{quality.inconsistent_parties}} are coded
 with more than one family across elections (both documented choices awaiting
 review). Completeness: {{quality.without_score}} rows have no score. Accuracy, the
-agreement between two independent coders: `[PENDING: coder agreement]`.
+agreement between two independent coders: `[PENDING: coder agreement]`. The full
+assessment is in `docs/candidate_table_quality.md`.
 
 ## 4. Storage
 
@@ -120,7 +120,7 @@ was computed.
 | H0b | split between the two finalists and blank/invalid, in proportion to first-round shares; none abstain | no |
 | H1 | go to the finalist nearest on the 1–7 scale (a tie would split 50/50) | no |
 | H2-abst, H2-blank | as H1, unless at least two steps from both finalists: then abstention, or a blank ballot | no |
-| H3 | a share `p` splits as in H0b, the rest follows H1 or H2 | `p` |
+| H3 `[PENDING: professor approval]` | a share `p` splits as in H0b, the rest follows H1 or H2 | `p` |
 
 Candidates without a score use the H0b row. We report both H2 variants and do not
 choose between them by fit. We use simple, parameter-free rules first because the
@@ -137,7 +137,8 @@ diagnostic.
 0.01) on four elections and scored on the fifth, for each election in turn. Areas
 of one election are never split between training and test. Only held-out scores
 are reported. With five elections this describes how a rule transfers; it
-supports no significance claim. `[PENDING: professor approval for H3]`
+supports no significance claim. H3 is included pending approval of its fitted
+parameter. `[PENDING: professor approval]`
 
 ## 6. Results
 
@@ -165,7 +166,14 @@ observed result. H3 is held-out.*
 4. **The distance threshold makes things worse.** H2-abst and H2-blank have the
    highest means ({{score.H2-abst.mean}} and {{score.H2-blank.mean}} pp). They beat
    H0b in {{wins.H2-abst.vs_H0b}} and {{wins.H2-blank.vs_H0b}} of {{n.elections}} elections.
-5. **H3 adds little.** On the H2 bases the fitted `p` is between
+   In 2017 and 2022 the finalists are coded {{h2.2022.finalist_a_score}} and
+   {{h2.2022.finalist_b_score}}, so every group coded {{h2.2022.on_threshold_scores}} is exactly {{h2.threshold}}
+   steps from the nearer one and is sent to a non-vote:
+   {{h2.2017.on_threshold_pct}}% and {{h2.2022.on_threshold_pct}}% of registered
+   voters. In 2002 (finalists at {{h2.2002.finalist_a_score}} and
+   {{h2.2002.finalist_b_score}}) the rule removes {{h2.2002.beyond_pct}}%; in 2007 and
+   2012, {{h2.2007.beyond_pct}}% and {{h2.2012.beyond_pct}}%.
+5. **H3 adds little** `[PENDING: professor approval]`**.** On the H2 bases the fitted `p` is between
    {{p.H2-blank.min|.2f}} and {{p.H2-abst.max|.2f}}: the fit discards the H2 rule. On
    H1, `p` is at most {{p.H1.2017|.2f}} in four folds and {{p.H1.2002|.2f}} when 2002
    is held out, and held-out H3(H1) is worse than H1 itself
@@ -209,10 +217,11 @@ Second, **we cannot name one best assumption.** Ideological proximity describes
 right and the far right and almost every other voter ended on the same side. In
 the four other elections, "people who voted once vote again, in proportion to the
 finalists' first-round strength" does as well or better. Five elections cannot
-separate a general rule from one exceptional election. Third, a fixed threshold
-of two steps removes large groups from both finalists and does not match what
-happened; we did not tune it, on purpose, and a tuned threshold would need more
-elections than exist. Fourth, a left–right scale coded for national politics may
+separate a general rule from one exceptional election. Third, H2's failure is a
+finding about thresholds on a coarse ordinal scale, not about voters: on seven
+points, one step decides whether the whole left votes for the nearer finalist or
+not at all. The threshold was fixed before any result was seen and we add no
+other, since choosing one now would be tuning on the evaluation elections. Fourth, a left–right scale coded for national politics may
 describe overseas electorates poorly; this is a hypothesis.
 
 ## 7. Limitations
@@ -222,6 +231,9 @@ describe overseas electorates poorly; this is a hypothesis.
 - **Draft coding.** Every H1–H3 number rests on {{quality.draft_rows}} draft codes.
   The ranking changes under the alternative coding, so conclusions about H1
   relative to H0b are provisional. `[PENDING: coder agreement]`
+- **One alternative coding.** It moves all {{quality.with_alternative}} listed rows at
+  once, finalists included: a single alternative scenario, not a per-candidate
+  sensitivity analysis.
 - **One-dimensional, equally spaced scale.** Distances assume equal steps between
   families and ignore other dimensions (Europe, sovereignty, ecology).
 - **Coverage.** 2002 and 2007 describe covered areas only; years are not
@@ -237,10 +249,14 @@ describe overseas electorates poorly; this is a hypothesis.
 No 2027 first-round data exists and we collect no polls. The app's "2027
 scenarios" page takes the **2022 first-round results by area** as the electorate,
 lets the user name two 2022 candidates as stand-ins for the finalists, and
-applies one assumption, always next to H0b. It shows what an assumption implies
-for that electorate. Since the assumptions disagree and none is clearly best, the
-spread between them is the message: it is a way to see how much a conclusion
-depends on the assumption, not a prediction.
+applies one assumption. The default is H0b, not {{best.model}}:
+{{best.model}}'s lead comes from 2002 alone (rank {{best.rank_without_2002}} of
+{{n.models}} without it), while H0b needs no candidate coding and ranks
+{{rank.H0b}} with 2002 and {{rank_without_2002.H0b}} without. An option shows every
+model side by side. Since the assumptions disagree and none is clearly best, the
+spread between them is the message, not a prediction. Limits: finalists are
+candidates, not political families, and there is no map (we hold no boundary
+data).
 
 ## 9. Reproducibility and response to feedback
 

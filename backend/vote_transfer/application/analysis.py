@@ -9,12 +9,15 @@ from __future__ import annotations
 
 import json
 import re
+from datetime import date
 from pathlib import Path
 
 import pandas as pd
 
 from vote_transfer.application.datasets import (
     available_datasets,
+    load_crosscheck,
+    load_dataset,
     load_predictions,
     load_tables,
     stale_predictions,
@@ -27,6 +30,8 @@ from vote_transfer.application.models import (
     NO_VARIANT,
     SETTINGS,
     THRESHOLD,
+    Election,
+    build_election,
     election_scores,
     h3_name,
     variant_name,
@@ -39,6 +44,7 @@ from vote_transfer.config import PROJECT_ROOT
 MODEL_ORDER = ("H0a", "H0b", *BASES, *(h3_name(base) for base in BASES))
 ROLES = ("finalist_a", "finalist_b", "blank_invalid", "abstention")
 OUTLIER_YEAR = 2002
+CROSSCHECK_YEAR = 2022
 REPORTS_DIR = PROJECT_ROOT / "reports"
 TEMPLATES_DIR = PROJECT_ROOT / "docs" / "templates"
 # template name -> rendered file, relative to the project root
@@ -152,6 +158,44 @@ def tied_groups(positions: pd.DataFrame, report: dict) -> pd.DataFrame:
         "beyond_h2_threshold",
     ]
     return pd.DataFrame(rows, columns=columns)
+
+
+def threshold_table(elections: dict[int, Election], positions: pd.DataFrame) -> pd.DataFrame:
+    """What the fixed H2 threshold does in each election, under the primary coding.
+
+    For every election: the finalists' scores and the pooled first-round share of
+    registered voters in eliminated groups at least ``THRESHOLD`` steps from both
+    finalists (sent to a non-vote by H2), with the part that sits exactly on the
+    threshold. Areas are pooled with the election's registration weights.
+    """
+    rows = []
+    for year, election in sorted(elections.items()):
+        scores = election_scores(positions, year, "primary")
+        a, b = (scores[f] for f in election.finalists)
+        weights = election.registered_r2 / election.registered_r2.sum()
+        pooled = dict(zip(election.groups, (weights @ election.first * 100).tolist(), strict=True))
+        distance = {
+            g: min(abs(scores[g] - a), abs(scores[g] - b))
+            for g in election.eliminated
+            if scores.get(g) is not None
+        }
+        far = {g for g, d in distance.items() if d >= THRESHOLD}
+        on_threshold = {g for g in far if distance[g] == THRESHOLD}
+        rows.append(
+            {
+                "year": year,
+                "finalist_a_score": a,
+                "finalist_b_score": b,
+                "groups_beyond_threshold": len(far),
+                "beyond_threshold_pct": sum(pooled[g] for g in far),
+                "exactly_on_threshold_pct": sum(pooled[g] for g in on_threshold),
+                "scores_exactly_on_threshold": ",".join(
+                    str(v) for v in sorted({scores[g] for g in on_threshold})
+                ),
+                "eliminated_scored_pct": sum(pooled[g] for g in distance),
+            }
+        )
+    return pd.DataFrame(rows)
 
 
 def blank_only_table(
@@ -378,6 +422,18 @@ def build_numbers(
         n[f"blank.{year}.ranking5"] = five
     n["blank.years"] = " and ".join(str(y) for y in sorted(blank.year.unique()))
 
+    for row in tables["threshold"].itertuples():
+        key = f"h2.{row.year}"
+        n[f"{key}.finalist_a_score"], n[f"{key}.finalist_b_score"] = (
+            int(row.finalist_a_score),
+            int(row.finalist_b_score),
+        )
+        n[f"{key}.beyond_pct"] = row.beyond_threshold_pct
+        n[f"{key}.on_threshold_pct"] = row.exactly_on_threshold_pct
+        n[f"{key}.on_threshold_scores"] = row.scores_exactly_on_threshold or "none"
+        n[f"{key}.eliminated_scored_pct"] = row.eliminated_scored_pct
+    n["h2.threshold"] = THRESHOLD
+
     for row in tables["territory"].itertuples():
         n[f"territory.{row.territory}.{row.model}.{row.year}"] = row.score_pp
         n[f"territory.{row.territory}.areas.{row.year}"] = int(row.territorial_units)
@@ -441,6 +497,23 @@ def storage_numbers(
 # --- Templates -------------------------------------------------------------------------
 
 
+def crosscheck_numbers(record: dict | None) -> dict:
+    """One sentence on the comparison with published national totals, from its dated record."""
+    if record is None or not record["all_match"]:
+        return {
+            "text.crosscheck": f"Our {CROSSCHECK_YEAR} sums were compared with the Ministry's "
+            "published national summaries (see `docs/validation.md`)."
+        }
+    checked = date.fromisoformat(record["checked_on"])
+    return {
+        "crosscheck.fields": record["fields_compared"],
+        "crosscheck.date": f"{checked.day} {checked:%B %Y}",
+        "text.crosscheck": f"Our {record['year']} sums match the Ministry's published national "
+        f"summaries on all {record['fields_compared']} fields compared "
+        f"(`vote-transfer crosscheck`, rerun on {checked.day} {checked:%B %Y}).",
+    }
+
+
 def format_value(value: object, spec: str | None) -> str:
     if spec:
         return format(value, spec)
@@ -497,6 +570,9 @@ def analysis_tables(root: Path, positions: pd.DataFrame) -> tuple[dict, pd.DataF
         "ties": tied_groups(positions, report),
         "blank_only": blank_only_table(predictions, areas),
         "territory": territory_scores(predictions),
+        "threshold": threshold_table(
+            {int(y): build_election(load_dataset(f)[0]) for y, f in folders.items()}, positions
+        ),
         "h3_folds": pd.DataFrame(report["h3_folds"]).assign(
             train_elections=lambda f: f.train_elections.map(lambda y: ",".join(map(str, y)))
         ),
@@ -520,6 +596,7 @@ def run_analysis(
     quality = reference_quality(positions, agreement)
     numbers = build_numbers(predictions, report, positions, tables, quality)
     numbers |= storage_numbers(root)
+    numbers |= crosscheck_numbers(load_crosscheck(root, CROSSCHECK_YEAR))
     files = {
         "model_comparison.csv": tables["comparison"].reset_index(),
         "signed_errors.csv": tables["errors"],
@@ -527,6 +604,7 @@ def run_analysis(
         "tied_groups.csv": tables["ties"],
         "blank_only.csv": tables["blank_only"],
         "territory_scores.csv": tables["territory"],
+        "h2_threshold.csv": tables["threshold"],
         "h3_folds.csv": tables["h3_folds"],
     }
     for name, table in files.items():

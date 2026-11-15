@@ -61,6 +61,7 @@ def test_one_command_writes_every_result_figure_and_document(generated):
         "blank_only.csv",
         "territory_scores.csv",
         "h3_folds.csv",
+        "h2_threshold.csv",
         "candidate_table_quality.json",
         "numbers.json",
         "findings.md",
@@ -142,3 +143,26 @@ def test_sensitivity_covers_every_setting_and_keeps_baselines_fixed(tables):
 def test_analysis_refuses_stale_or_missing_predictions(tmp_path):
     with pytest.raises(ValueError, match="No predictions"):
         run_analysis(tmp_path, project=tmp_path, figures=False)
+
+
+def test_threshold_table_shows_what_the_fixed_h2_rule_removes(tables):
+    table = tables["threshold"].set_index("year")
+    assert list(table.index) == [int(y) for y in YEARS]
+    assert (table.exactly_on_threshold_pct <= table.beyond_threshold_pct + 1e-12).all()
+    assert (table.beyond_threshold_pct <= table.eliminated_scored_pct + 1e-12).all()
+    # Finalists coded 4 and 7: a group coded 2 is exactly two steps from the nearer one.
+    for year in (2017, 2022):
+        assert (table.finalist_a_score[year], table.finalist_b_score[year]) == (4, 7)
+        assert table.scores_exactly_on_threshold[year] == "2"
+        assert table.exactly_on_threshold_pct[year] > 10
+
+
+def test_crosscheck_sentence_comes_from_the_dated_record():
+    from vote_transfer.application.analysis import crosscheck_numbers
+
+    record = {"year": 2022, "fields_compared": 26, "all_match": True, "checked_on": "2026-11-05"}
+    numbers = crosscheck_numbers(record)
+    assert numbers["crosscheck.date"] == "5 November 2026"
+    assert "all 26 fields" in numbers["text.crosscheck"]
+    assert "docs/validation.md" in crosscheck_numbers(None)["text.crosscheck"]
+    assert "match" not in crosscheck_numbers(record | {"all_match": False})["text.crosscheck"]

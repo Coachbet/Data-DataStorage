@@ -118,13 +118,9 @@ used only by the 2027 scenario page, where no election is being scored.
 With five elections there are five folds. Held-out scores describe how the rule
 transfers between these elections; they support no significance statement.
 
-**A note on weights.** The 31 October text below says registered-voter weights
-"must not enter model fitting". That sentence was written to stop second-round
-information from the evaluated election being used as a predictor. The H3
-protocol agreed on 15 November minimises the primary score on *training*
-elections, and that score uses their round-two weights. The held-out election's
-weights and outcomes never enter the fit. The tension between the two statements
-is listed in `docs/handoff.md` for the team to confirm.
+**Weights in the fit.** `p` minimises the primary score on the *training*
+elections, and that score uses their round-two registered-voter weights. The
+held-out election's weights and outcomes never enter the fit.
 
 ### Variants and what is reported
 
@@ -155,7 +151,8 @@ table's `review_status` column, not typed by hand).
   registration matches the evaluated round and needs no INSEE population join.
 - National comparison: weight unit predictions by round-two registered counts,
   then compare with actual counts divided by the same national denominator.
-  These weights are for retrospective evaluation, not model fitting.
+  These weights are for retrospective evaluation; the only fit that uses them is
+  H3's, on training elections (see above).
 - National MAE: mean absolute error across the four nationally aggregated outcomes.
   This is a secondary diagnostic, labelled "Gap in combined results" in the app.
   It is different from the primary weighted unit MAE; errors can cancel during aggregation.
@@ -164,8 +161,10 @@ The primary score includes all available reporting areas by default, including
 non-department territories and voters abroad. Filters recompute weights over the
 selected areas. A filtered score or a partial historical coverage score must not
 be labelled a complete France score. These are registered-electorate weights,
-not resident-population weights. They are retrospective evaluation weights and
-must not enter model fitting or be used as predictive second-round information.
+not resident-population weights. They are retrospective evaluation weights.
+Registered-voter weights from training elections may enter the H3 fit through the
+primary score; the weights and outcomes of the election being evaluated never
+enter a fit and are never used as predictive second-round information.
 
 The app includes every reporting area present in both original files, including
 territories and voters abroad. The two rounds must cover the same unit codes;
@@ -212,6 +211,23 @@ of first-round blank/invalid and abstention groups (identity rows) and of missin
 positions (H0b row) are defined above. Before 2017 the evaluated outcome remains
 combined blank/invalid, even where the behavioural reading concerns blank voting;
 for 2017 and 2022 a sensitivity analysis scores blank ballots alone.
+
+### Blank-only scoring (2017 and 2022)
+
+The Ministry publishes blank and invalid ballots separately from 2017. For those
+two elections `blank_only.csv` scores every model on five outcomes instead of
+four: finalist A, finalist B, blank, invalid, abstention. The convention is the
+same for every model and was confirmed by the team:
+
+- **Invalid ballots stay invalid.** The predicted invalid share of an area is its
+  first-round invalid share (an identity row). Invalid ballots partly reflect
+  mistakes, so no behavioural rule here tries to explain their change.
+- **Every modelled inflow is a blank ballot.** Predicted blank = the model's
+  predicted `blank_invalid` share minus the first-round invalid share. Whatever a
+  model sends to `blank_invalid` (H0a, H0b, H2-blank, H3) is counted as blank.
+- The score is the same weighted area MAE, over five outcomes. The invalid error
+  is therefore identical for all models, and the four-outcome score stays the
+  primary score. The split does not exist before 2017 and is never imputed.
 
 ## Out of scope
 

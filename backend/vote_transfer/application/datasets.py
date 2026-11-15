@@ -16,6 +16,7 @@ from vote_transfer.infrastructure.official import SUPPORTED_YEARS, sha256
 DATA_FILES = ("areas.parquet", "outcomes.parquet", "options.parquet")
 BUNDLE_FILES = (*DATA_FILES, "quality_report.json")
 PREDICTION_FILES = ("predictions.parquet", "evaluation_report.json")
+CROSSCHECK_RECORD = "crosscheck_{year}.json"  # dated summary written by `vote-transfer crosscheck`
 MAX_BUNDLE_BYTES = 2_000_000  # Deliberately small enough for ordinary Git tracking.
 
 
@@ -165,3 +166,9 @@ def snapshot_drift(root: Path) -> list[str]:
         for label, ours, theirs in pairs
         if ours.is_file() and theirs.is_file() and sha256(ours) != sha256(theirs)
     ]
+
+
+def load_crosscheck(root: Path, year: int) -> dict | None:
+    """The last recorded comparison with published national totals, if one was made."""
+    record = root / "bundled" / CROSSCHECK_RECORD.format(year=year)
+    return json.loads(record.read_text()) if record.is_file() else None

@@ -101,3 +101,4 @@ data/bundled/**
 !data/bundled/*/quality_report.json
 !data/bundled/predictions.parquet
 !data/bundled/evaluation_report.json
+!data/bundled/crosscheck_*.json

@@ -113,6 +113,8 @@ between rounds and H0a error; flagged areas are retained.
 
 `national_crosscheck.json` (local only, from `vote-transfer crosscheck`) compares
 our station-level sums with the Ministry's published national summaries.
+The same command writes a short dated record, `data/bundled/crosscheck_2022.json`
+(versioned), which the report cites.
 
 ## Versioned aggregates
 
