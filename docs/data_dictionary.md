@@ -38,49 +38,96 @@ review; there is no implied party or bloc classification.
 
 ## Processed tables
 
-`data/processed/<year>/department_results.parquet` has one row per
-`(year, round, department_code, option)`:
+Each election has three normalised tables in `data/processed/<year>/`. Every fact
+is stored once; a relational schema would declare the same keys.
 
-- `option`: `candidate:<candidate_id>`, `blank_invalid` or `abstention`;
-- `label`: display name;
-- `count`: votes or abstaining people;
-- `registered`: the unit/round denominator, repeated on each outcome row;
-- `polling_stations`: number of source station rows in the unit/round;
-- `share`: `count / registered`, a fraction in `[0, 1]`.
+**`areas.parquet`** — one row per `(year, round, area_code)`:
 
-Do not sum repeated `registered` across options. Sum once per unit and round.
-`department_name` accompanies each row. Original reporting units are preserved;
-not every unit is administratively a department.
+| Field | Type | Meaning |
+|---|---|---|
+| `year`, `round` | integer | Election and round (1 or 2) |
+| `area_code` | string | Original Ministry reporting-unit code (`01`, `2A`, `ZZ`); not every unit is a département |
+| `area_name` | string | Published label, or `Reporting area <code>` before 2017 |
+| `registered` | integer | Registered voters: the denominator of every share in that area and round |
+| `polling_stations` | integer | Number of source station rows aggregated |
+| `blank`, `invalid` | nullable integer | Published separately in 2017 and 2022; null before 2017, never zero-filled |
 
-`h0_evaluation.parquet` has one row per unit and second-round outcome:
-`year`, `department_code`, `department_name`, `option`, `label`, `registered`
-(round two), `actual_share`, `predicted_share`, and `absolute_error_pp`.
+**`outcomes.parquet`** — one row per `(year, round, area_code, option)`:
 
-`quality_report.json` records checks, row counts, registration changes, input
-hashes, build time, limitations and output checksums. `derived_fields` states which
-counts are computed rather than published (abstentions and blank/invalid before
-2017). `diagnostics.stations_by_round` measures completeness, key uniqueness,
-zero-registration/zero-voter stations and station-level turnout outliers.
-`diagnostics.reporting_units` lists areas flagged by within-election IQR fences on
-first-round abstention, registration change between rounds and H0 error; flagged
-areas are retained. `application/quality.py` recomputes the per-area flags from the
-aggregate tables, so the bundled snapshots support the same analysis.
+| Field | Type | Meaning |
+|---|---|---|
+| `option` | string | `candidate:<candidate_id>`, `blank_invalid` or `abstention` |
+| `count` | integer | Votes, combined blank/invalid ballots, or abstaining voters |
 
-`national_crosscheck.json` (local only, from `vote-transfer crosscheck`) compares our
-station-level sums with the Ministry's published national summaries, field by field. The app reads these three
-processed files. It never reprocesses raw results during a page rerun.
+**`options.parquet`** — one row per `(year, option)` with its display `label`.
 
+Constraints checked on every write and every load (`processing.validate_tables`):
+unique keys; every outcome has a label; `areas` and `outcomes` cover the same
+areas and rounds; counts in an area sum exactly to `registered`; where published,
+`blank + invalid` equals the `blank_invalid` count.
+
+**Shares are not stored.** `share = count / registered` is computed when needed.
+The primary outcome is the combined `blank_invalid` in every year; the separate
+columns exist so 2017 and 2022 can be examined on blank ballots alone.
+
+### Derived view
+
+`processing.results_view(areas, outcomes, options)` returns the wide table the
+app uses: one row per outcome with `label`, `department_name`, `registered`,
+`polling_stations` and the computed `share`. It keeps the historical column name
+`department_code` for `area_code`. It is a view built on load, not a file. In it
+`registered` repeats on every outcome row, so sum it once per area and round, or
+read it from `areas`.
+
+### Predictions
+
+`data/processed/predictions.parquet` is one long table for every model, variant
+and election, with one row per `(year, area_code, model, variant, outcome)`:
+
+| Field | Type | Meaning |
+|---|---|---|
+| `year`, `area_code` | integer, string | Election and reporting area |
+| `model` | string | `H0a`, `H0b`, `H1`, `H2-abst`, `H2-blank`, `H3(H1)`, `H3(H2-abst)`, `H3(H2-blank)` |
+| `variant` | string | `default` for H0a/H0b; otherwise `positions=<primary\|alternative>;tie=<split\|abstention>` |
+| `train_elections` | string | Comma-separated training years for H3; empty for parameter-free models |
+| `outcome` | string | One of the four second-round options |
+| `predicted_share`, `actual_share` | float | Shares of round-two registered voters |
+| `registered_r2` | integer | Round-two registered voters: the area's weight in the primary score |
+
+For H3 the table holds **held-out predictions only**: the row's `year` never
+appears in its `train_elections`. `evaluation_report.json` beside it records the
+coding status of the candidate table, each election's finalists, the candidates
+that fell back to the H0b row, every H3 fold (training years, fitted `p`, training
+and held-out scores), the hash of the predictions file and the hashes of all its
+inputs (the fifteen election tables and `candidate_positions.csv`).
+`vote-transfer evaluate --all-models --all-years` regenerates both files.
+
+`quality_report.json` (per election) records checks, row counts, registration
+changes, input hashes, build time, limitations and output checksums.
+`derived_fields` states which counts are computed rather than published
+(abstentions and blank/invalid before 2017). `diagnostics.stations_by_round`
+measures completeness, key uniqueness, zero-registration/zero-voter stations and
+station-level turnout outliers. `diagnostics.reporting_units` lists areas flagged
+by within-election IQR fences on first-round abstention, registration change
+between rounds and H0a error; flagged areas are retained.
+
+`national_crosscheck.json` (local only, from `vote-transfer crosscheck`) compares
+our station-level sums with the Ministry's published national summaries.
 
 ## Versioned aggregates
 
-`data/bundled/<year>/` contains exact verified copies of the two processed Parquet
-tables and their quality report. The report preserves input provenance and output
-hashes. `vote-transfer bundle` enforces a 2 MB per-year ceiling and copies only
-these three allowlisted files. It never copies polling-station records.
+`data/bundled/<year>/` contains exact verified copies of the three processed
+tables and their quality report; `data/bundled/predictions.parquet` and
+`evaluation_report.json` are copies of the evaluation. `vote-transfer bundle
+--all-years` copies only these allowlisted files, enforces a 2 MB ceiling per
+election and for the predictions, and never copies polling-station records.
 
-The app prefers a complete local processed year, falling back to its bundled
-snapshot otherwise. A custom `VOTE_TRANSFER_DATA_DIR` uses only election datasets
-under that root, with no hidden fallback to another project's election outputs.
+The app prefers a complete local processed election, falling back to its bundled
+snapshot otherwise. Two copies can diverge if someone reprocesses and forgets to
+bundle. `vote-transfer check-snapshots` (part of `make check`) fails when a
+processed file and its bundled copy differ, or when the elections or the
+candidate table changed after the last evaluation; the app shows the same warning
+at start-up. A custom `VOTE_TRANSFER_DATA_DIR` uses only datasets under that root.
 
 ## Manual candidate reference
 
@@ -96,7 +143,15 @@ all explanatory fields use English. A missing score remains null, never zero.
 
 This static project reference ships with the code and is read from the repository,
 independently of `VOTE_TRANSFER_DATA_DIR`, which selects election outputs only.
-It is not merged into the checksum-protected aggregate files and does not affect H0.
+It does not affect H0a or H0b. Its hash is recorded in `evaluation_report.json`.
+
+**Why this table stays a CSV although the results are Parquet.** It is the one
+table edited by hand: 61 rows that reviewers must read, change and discuss. A text
+file gives line-by-line diffs in Git, so every change to a code is attributable.
+The weakness of CSV, untyped columns, is covered at the boundary: `positions.py`
+parses the file once, enforces types, keys, allowed families, score/family
+agreement and known source IDs, and the rest of the code only sees the validated
+frame.
 
 ## Evaluation summaries
 
@@ -105,4 +160,5 @@ from actual and predicted shares, counts registration once per area, and returns
 `mean_error_pp`, `weight` and `weighted_error_pp` alongside year, area code and
 registration. Weights sum to one within each selected election. The total of
 weighted contributions is the primary score; the error after pooling the
-outcome shares remains a separate diagnostic. No new processed files are required.
+outcome shares remains a separate diagnostic. `score_predictions(predictions)`
+applies the same function to every model and variant in the long table.

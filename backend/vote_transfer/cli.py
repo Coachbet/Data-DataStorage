@@ -7,7 +7,14 @@ from pathlib import Path
 import requests
 
 from vote_transfer.application.crosscheck import crosscheck_national
-from vote_transfer.application.datasets import bundle_year, snapshot_drift
+from vote_transfer.application.datasets import (
+    PREDICTION_FILES,
+    build_predictions,
+    bundle_predictions,
+    bundle_year,
+    snapshot_drift,
+    stale_predictions,
+)
 from vote_transfer.application.processing import process_year
 from vote_transfer.config import data_root
 from vote_transfer.infrastructure.official import SUPPORTED_YEARS, acquire_official
@@ -33,6 +40,11 @@ def check_snapshots(root: Path) -> None:
             + ", ".join(differing)
             + ". Run `vote-transfer bundle --all-years` and review the changed snapshots."
         )
+    if stale_predictions(root):
+        raise ValueError(
+            "The elections or the candidate table changed after the last evaluation. "
+            "Run `vote-transfer evaluate --all-models --all-years`, then `bundle --all-years`."
+        )
     print("Processed and bundled snapshots are consistent.")
 
 
@@ -47,10 +59,18 @@ def main() -> None:
         sub.add_argument("--data-root", type=Path, default=data_root())
     sub = subparsers.add_parser("check-snapshots", help="compare processed/ with bundled/")
     sub.add_argument("--data-root", type=Path, default=data_root())
+    sub = subparsers.add_parser("evaluate", help="run every model on every election")
+    # Evaluation is cross-election by design (H3 trains on four elections and tests on
+    # the fifth), so there is no partial mode. The flags make command lines explicit.
+    sub.add_argument("--all-models", action="store_true", help="always on")
+    sub.add_argument("--all-years", action="store_true", help="always on")
+    sub.add_argument("--data-root", type=Path, default=data_root())
     args = parser.parse_args()
     try:
         if args.command == "check-snapshots":
             return check_snapshots(args.data_root)
+        if args.command == "evaluate":
+            return print(json.dumps(build_predictions(args.data_root), indent=2))
         action = {
             "acquire": acquire_official,
             "process": process_year,
@@ -62,6 +82,9 @@ def main() -> None:
         for year in years:
             report = action(year, args.data_root)
             print(json.dumps(report, indent=2))
+        local = [args.data_root / "processed" / name for name in PREDICTION_FILES]
+        if args.command == "bundle" and args.all_years and all(p.is_file() for p in local):
+            print(json.dumps(bundle_predictions(args.data_root), indent=2))
     except (OSError, ValueError, requests.RequestException) as error:
         parser.exit(1, f"{args.command} failed: {error}\n")
 
