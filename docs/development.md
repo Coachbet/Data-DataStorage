@@ -53,24 +53,33 @@ about source coverage and model performance must remain traceable to real checks
 The project team owns methodological decisions, final interpretation and submission.
 
 
-## Guided frontend
+## Frontend
 
-The Streamlit app presents four views: Start here, Explore results, Understand the
-model, and Sources & limits. Navigation uses native controls and preserves the
-selected election/area. Detailed tables, mathematical notation, provenance JSON
-and reproduction commands are expandable rather than placed on arrival.
+The Streamlit app has five pages: The answer, Evidence, Explore the data,
+2027 scenarios, and Method & sources. `site/app.py` loads the data and dispatches
+to one module per page in `site/views/`. Election and area pickers appear only on
+the pages they change, and keep their value across pages.
 
-`site/styles.css` provides local editorial styling, responsive font sizes and
-visible keyboard focus. No fonts, scripts or imagery are fetched externally.
-The homepage mini-chart also exposes its numbers in an HTML table and gives its
-stacked bars accessible descriptions. Exploratory charts include explicit value
-labels, named series, tooltips and a downloadable table alternative.
+Design tokens (colours, spacing, type scale, fonts) are defined once in
+`site/theme.py`; the stylesheet variables and the Vega-Lite theme are both built
+from them. `site/styles.css` holds the rules, with a comment on every override
+of a Streamlit internal. Every chart is built in `site/charts.py`. Fonts are
+vendored in `site/assets/fonts/` with their licences and embedded in the page:
+nothing is fetched from the network.
 
-`application/exploration.py` supplies registered-electorate summaries and weighted
-model-error readings. The H0 algorithm and stored datasets are unchanged. The
-100-voter example on the model page is explicitly illustrative, not historical data.
+Sentences and number formats shown on the site come from
+`application/presentation.py`, which only formats and reshapes generated results
+(`fmt_pp`, `fmt_pct`, the answer sentences, the findings); it computes no new
+result. `application/exploration.py` supplies registered-electorate summaries and
+weighted model-error readings. The 100-voter example on the Evidence page is
+explicitly illustrative, not historical data.
 
-UI tests cover all four views for all five shipped elections without acquisition
-network access, area navigation, missing-area resets, empty/corrupt data states and
-Vega-Lite schema validation. Native Chrome inspection timed out during this
-redesign; desktop/mobile visual verification remains outstanding.
+UI tests cover all five pages on the bundled snapshots with HTTP blocked: the
+honesty statements on each page, picker persistence, missing-area resets,
+empty/corrupt/drifted data states, the scenario defaults, schema validation of
+every chart, and the contrast of the text colours.
+
+The design audit, brief, verification record and before/after screenshots are in
+`docs/design/`. To recapture screenshots with the app running on port 8501:
+`uv run --with playwright python docs/design/capture.py docs/design/after`
+(Playwright is not a project dependency; the script uses the installed Chrome).
