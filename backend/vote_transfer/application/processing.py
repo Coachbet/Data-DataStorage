@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import tempfile
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -75,35 +74,125 @@ def validate_results(turnout: pd.DataFrame, votes: pd.DataFrame) -> None:
             raise ValueError(f"Inconsistent {label} for the same identifier.")
 
 
-def aggregate_results(turnout: pd.DataFrame, votes: pd.DataFrame) -> pd.DataFrame:
-    """Long-form department results, with every share divided by registered voters."""
+AREA_KEY = ["year", "round", "area_code"]
+
+
+def aggregate_tables(
+    turnout: pd.DataFrame, votes: pd.DataFrame
+) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame]:
+    """Normalised area-level tables: each fact is stated once.
+
+    ``areas`` holds what belongs to an area and round (its denominator, its number
+    of stations, the published blank/invalid split). ``outcomes`` holds one count per
+    option. ``options`` holds each option's display label. Shares are not stored.
+    """
     validate_results(turnout, votes)
-    keys = ["year", "round", "department_code"]
-    totals = turnout.groupby(keys, as_index=False).agg(
+    stations = turnout.rename(columns={"department_code": "area_code"})
+    grouped = stations.groupby(AREA_KEY)
+    totals = grouped.agg(
         **{column: (column, "sum") for column in COUNTS},
-        department_name=("department_name", "first"),
+        area_name=("department_name", "first"),
         polling_stations=("station_code", "size"),
     )
+    for column in ("blank", "invalid"):
+        # min_count keeps "not published" (null) distinct from a published zero.
+        totals[column] = (
+            grouped[column].sum(min_count=1).astype("Int64")
+            if column in stations
+            else pd.array([pd.NA] * len(totals), dtype="Int64")
+        )
+    totals = totals.reset_index()
     if (totals.registered <= 0).any():
         raise ValueError("Cannot calculate shares for a unit with no registered voters.")
-    candidates = votes.groupby([*keys, "candidate_id", "candidate"], as_index=False).votes.sum()
+    candidates = (
+        votes.rename(columns={"department_code": "area_code"})
+        .groupby([*AREA_KEY, "candidate_id", "candidate"], as_index=False)
+        .votes.sum()
+    )
     candidates["option"] = "candidate:" + candidates.candidate_id
     candidates = candidates.rename(columns={"candidate": "label", "votes": "count"})
-    rows = [candidates[[*keys, "option", "label", "count"]]]
+    rows = [candidates[[*AREA_KEY, "option", "count"]]]
+    labels = [candidates[["year", "option", "label"]].drop_duplicates()]
     for option, label, counts in (
         ("blank_invalid", "Blank / invalid", totals.blank_invalid),
         ("abstention", "Abstention", totals.abstentions),
     ):
-        row = totals[keys].copy()
-        row["option"], row["label"], row["count"] = option, label, counts
+        row = totals[AREA_KEY].copy()
+        row["option"], row["count"] = option, counts
         rows.append(row)
-    result = pd.concat(rows, ignore_index=True).merge(
-        totals[[*keys, "department_name", "registered", "polling_stations"]],
-        on=keys,
+        labels.append(
+            pd.DataFrame({"year": totals.year.unique(), "option": option, "label": label})
+        )
+    areas = totals[[*AREA_KEY, "area_name", "registered", "polling_stations", "blank", "invalid"]]
+    outcomes = pd.concat(rows, ignore_index=True).sort_values([*AREA_KEY, "option"])
+    options = pd.concat(labels, ignore_index=True).sort_values(["year", "option"])
+    tables = (
+        areas.reset_index(drop=True),
+        outcomes.reset_index(drop=True),
+        options.reset_index(drop=True),
+    )
+    validate_tables(*tables)
+    return tables
+
+
+def validate_tables(areas: pd.DataFrame, outcomes: pd.DataFrame, options: pd.DataFrame) -> None:
+    """Enforce the keys and identities a relational schema would declare."""
+    if areas.empty or outcomes.empty or options.empty:
+        raise ValueError("Processed tables must be nonempty.")
+    if areas.duplicated(AREA_KEY).any():
+        raise ValueError("Duplicate area and round.")
+    if outcomes.duplicated([*AREA_KEY, "option"]).any():
+        raise ValueError("Duplicate outcome for an area and round.")
+    if options.duplicated(["year", "option"]).any():
+        raise ValueError("Duplicate option label.")
+    if (areas.registered <= 0).any() or (outcomes["count"] < 0).any():
+        raise ValueError("Registered voters must be positive and counts nonnegative.")
+    labelled = outcomes[["year", "option"]].merge(options, how="left", on=["year", "option"])
+    if labelled.label.isna().any():
+        raise ValueError("Every outcome option needs a label.")
+    totals = outcomes.groupby(AREA_KEY, as_index=False)["count"].sum()
+    joined = areas.merge(totals, how="outer", on=AREA_KEY, indicator=True)
+    if (joined._merge != "both").any():
+        raise ValueError("Areas and outcomes cover different areas or rounds.")
+    if (joined["count"] != joined.registered).any():
+        raise ValueError("Outcome counts must sum to registered voters in every area.")
+    split = areas[["blank", "invalid"]]
+    if (split.isna().any(axis=1) != split.isna().all(axis=1)).any():
+        raise ValueError("Blank and invalid counts must both be present or both be missing.")
+    combined = outcomes[outcomes.option == "blank_invalid"].set_index(AREA_KEY)["count"]
+    published = areas.dropna(subset=["blank", "invalid"]).set_index(AREA_KEY)
+    if (published.blank + published.invalid != combined.reindex(published.index)).any():
+        raise ValueError("Blank and invalid counts must equal the combined outcome.")
+
+
+def results_view(
+    areas: pd.DataFrame, outcomes: pd.DataFrame, options: pd.DataFrame
+) -> pd.DataFrame:
+    """The wide table used by the app: one row per outcome, with its share computed.
+
+    This is a view. ``registered`` repeats on every outcome row here, so sum it once
+    per area and round, or read it from ``areas`` instead.
+    """
+    validate_tables(areas, outcomes, options)
+    view = outcomes.merge(options, on=["year", "option"], validate="many_to_one").merge(
+        areas[[*AREA_KEY, "area_name", "registered", "polling_stations"]],
+        on=AREA_KEY,
         validate="many_to_one",
     )
-    result["share"] = result["count"] / result.registered
-    return result.sort_values([*keys, "option"]).reset_index(drop=True)
+    view = view.rename(columns={"area_code": "department_code", "area_name": "department_name"})
+    view["share"] = view["count"] / view.registered
+    keys = ["year", "round", "department_code"]
+    columns = [*keys, "option", "label", "count", "department_name", "registered"]
+    return (
+        view[[*columns, "polling_stations", "share"]]
+        .sort_values([*keys, "option"])
+        .reset_index(drop=True)
+    )
+
+
+def aggregate_results(turnout: pd.DataFrame, votes: pd.DataFrame) -> pd.DataFrame:
+    """Long-form area results, with every share divided by registered voters."""
+    return results_view(*aggregate_tables(turnout, votes))
 
 
 def process_year(year: int, root: Path) -> dict:
@@ -130,14 +219,16 @@ def process_year(year: int, root: Path) -> dict:
         pd.concat(turnouts, ignore_index=True),
         pd.concat(candidates, ignore_index=True),
     )
-    results = aggregate_results(turnout, votes)
-    evaluation = evaluate_h0(results)
+    areas, outcomes, options = aggregate_tables(turnout, votes)
+    results = results_view(areas, outcomes, options)
+    evaluation = evaluate_h0(results)  # for the diagnostics only; not stored
     coverage = turnout.groupby(["round", "department_code"]).registered.sum().unstack("round")
     report = {
         "year": year,
-        "processed_at_utc": datetime.now(UTC).isoformat(),
         "source": "Ministry original files",
-        "schema_version": 2,
+        # No wall-clock time: a rebuild from the same raw bytes must be byte-identical.
+        # Provenance is the raw hashes and retrieval dates in the acquisition manifests.
+        "schema_version": 4,
         "territorial_units": int(results.department_code.nunique()),
         "polling_station_round_rows": len(turnout),
         "candidate_rows": len(votes),
@@ -201,8 +292,8 @@ def process_year(year: int, root: Path) -> dict:
     # An existing complete build is kept until all validation and staging succeed.
     with tempfile.TemporaryDirectory(dir=parent, prefix=".build-") as temporary:
         staging = Path(temporary)
-        results.to_parquet(staging / "department_results.parquet", index=False)
-        evaluation.to_parquet(staging / "h0_evaluation.parquet", index=False)
+        for name, table in (("areas", areas), ("outcomes", outcomes), ("options", options)):
+            table.to_parquet(staging / f"{name}.parquet", index=False)
         report["outputs"] = {p.name: sha256(p) for p in staging.glob("*.parquet")}
         (staging / "quality_report.json").write_text(json.dumps(report, indent=2) + "\n")
         target.mkdir(exist_ok=True)

@@ -1,8 +1,7 @@
 {
   "year": 2007,
-  "processed_at_utc": "2026-10-31T15:43:02.377699+00:00",
   "source": "Ministry original files",
-  "schema_version": 2,
+  "schema_version": 4,
   "territorial_units": 101,
   "polling_station_round_rows": 131234,
   "candidate_rows": 918638,
@@ -233,7 +232,8 @@
     "Partial national coverage: some overseas areas and voters abroad are absent. Aggregated results describe only the covered units."
   ],
   "outputs": {
-    "h0_evaluation.parquet": "298b0735a8ab4eac8c6d86972316216aa440a2434ca64a37a0f5fd83e46e8481",
-    "department_results.parquet": "2c82ea7cc1c8203d8eefb1eec72e80699d686e22fecc581252b298a41ea942e0"
+    "outcomes.parquet": "99d55447bc519a887d12c1403d427adfce52f2521d1321ae4f9cdae501d245f2",
+    "areas.parquet": "2f3e37d3b4bb90dfcd418485ec08636078105a6d41d48176a0b5884bfa663b62",
+    "options.parquet": "274ae675435871fb456eeb413958c3cb8fdd149833b3b049b6345511aa8281c6"
   }
 }

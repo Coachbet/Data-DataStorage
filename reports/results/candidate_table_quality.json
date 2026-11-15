@@ -1,0 +1,95 @@
+{
+  "rows": 61,
+  "review_status": {
+    "draft": 59,
+    "unresolved": 2
+  },
+  "rows_with_alternative": 41,
+  "accuracy": {
+    "status": "pending: two-coder review not done"
+  },
+  "consistency": {
+    "rule": "the same party label carries the same family in every election",
+    "parties_checked": 33,
+    "parties_coded_differently": [
+      {
+        "party": "PS",
+        "rows": [
+          {
+            "year": 2002,
+            "candidate": "Lionel Jospin",
+            "family": "Centre-left"
+          },
+          {
+            "year": 2007,
+            "candidate": "Ségolène Royal",
+            "family": "Centre-left"
+          },
+          {
+            "year": 2012,
+            "candidate": "François Hollande",
+            "family": "Centre-left"
+          },
+          {
+            "year": 2017,
+            "candidate": "Benoît Hamon",
+            "family": "Left"
+          },
+          {
+            "year": 2022,
+            "candidate": "Anne Hidalgo",
+            "family": "Centre-left"
+          }
+        ]
+      },
+      {
+        "party": "UDF",
+        "rows": [
+          {
+            "year": 2002,
+            "candidate": "François Bayrou",
+            "family": "Centre-right"
+          },
+          {
+            "year": 2007,
+            "candidate": "François Bayrou",
+            "family": "Centre"
+          }
+        ]
+      }
+    ],
+    "candidates_coded_differently": [
+      {
+        "candidate_id": "francois-bayrou",
+        "rows": [
+          {
+            "year": 2002,
+            "family": "Centre-right"
+          },
+          {
+            "year": 2007,
+            "family": "Centre"
+          },
+          {
+            "year": 2012,
+            "family": "Centre"
+          }
+        ]
+      }
+    ]
+  },
+  "completeness": {
+    "rows_without_score": 2,
+    "missing": [
+      {
+        "year": 2012,
+        "candidate_id": "jacques-cheminade"
+      },
+      {
+        "year": 2017,
+        "candidate_id": "jacques-cheminade"
+      }
+    ],
+    "treatment": "H1 and H2 use the H0b row for these candidates"
+  }
+}

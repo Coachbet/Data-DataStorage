@@ -49,9 +49,8 @@ uv run python -m vote_transfer.infrastructure.collect_year --year 2017 --dry-run
 
 The generic collector is retained for reference datasets. Original primary sources
 must use `vote-transfer acquire` to get the correct files and manifest contract.
-The old partial `data/raw/2017/` download is consolidated API data, not a primary
-original-file dataset. It is not consumed by the new pipeline.
-Older acquired data were preserved in `data/archive/legacy/`, excluded from Git.
+Earlier exploratory downloads (a partial 2017 collection from the consolidated API)
+were never part of the repository and are not consumed by the pipeline.
 
 ## Upcoming sources
 

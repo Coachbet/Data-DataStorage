@@ -16,7 +16,7 @@ def test_reference_exactly_covers_the_five_official_candidate_rosters():
     }
     root = Path(__file__).resolve().parents[1] / "data/bundled"
     for year, candidates in positions.groupby("year"):
-        results = pd.read_parquet(root / str(year) / "department_results.parquet")
+        results = pd.read_parquet(root / str(year) / "outcomes.parquet")
         official = results.loc[
             (results["round"] == 1) & results.option.str.startswith("candidate:"), "option"
         ].str.removeprefix("candidate:")

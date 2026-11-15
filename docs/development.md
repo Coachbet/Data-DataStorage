@@ -10,8 +10,9 @@ The app is launched by file path and imports the installed `vote_transfer` libra
 of the interface so the CLI, tests and future report can reproduce the same numbers.
 A separate FastAPI service is unnecessary for this single-process application.
 
-Four direct runtime dependencies are sufficient: Streamlit, pandas, PyArrow and
-requests. Development adds pytest and Ruff. `uv.lock` and `.python-version` are
+Five direct runtime dependencies are sufficient: Streamlit, pandas, PyArrow,
+requests and Matplotlib (added on 15 November 2026 for the report's static PNG and
+SVG figures; the app's interactive charts still use Streamlit's Vega-Lite). Development adds pytest and Ruff. `uv.lock` and `.python-version` are
 tracked; `.venv/` is not. Add dependencies only when an implemented feature needs them.
 
 ## Checks
@@ -36,7 +37,9 @@ depending on local raw downloads. Bundled-data tests exercise all five years wit
   `docs/references/` under stable English filenames. Original source documents
   remain unchanged.
 - `reports/` and `presentation/` → `docs/archive/` so they do not clutter the root.
-- `old_data/` → `data/archive/legacy/`; no historical data were deleted.
+- `old_data/` was moved to an ignored local folder on the machine that did the
+  migration. It is not part of the repository or of any archive; nothing in the
+  workflow reads it.
 - The previous placeholder interface is also retained locally in ignored
   `tmp/legacy_webapp/` during this migration. Git history retains its tracked version.
 

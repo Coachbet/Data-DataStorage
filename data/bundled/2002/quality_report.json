@@ -1,8 +1,7 @@
 {
   "year": 2002,
-  "processed_at_utc": "2026-10-31T15:42:56.972262+00:00",
   "source": "Ministry original files",
-  "schema_version": 2,
+  "schema_version": 4,
   "territorial_units": 100,
   "polling_station_round_rows": 128282,
   "candidate_rows": 1154538,
@@ -241,7 +240,8 @@
     "Partial national coverage: some overseas areas and voters abroad are absent. Aggregated results describe only the covered units."
   ],
   "outputs": {
-    "h0_evaluation.parquet": "cb71e543e38713f226afd0272993f641335894d343a1837e4c962efc15cff4d5",
-    "department_results.parquet": "5c9650a97b656c6754a61ddabc2b5b23084843a722f5cf929d1359d295f41294"
+    "outcomes.parquet": "0642a767c2f77e64b87e7f2a4de1d15e0b14d36d66acbf5e96fe8cb2348a124d",
+    "areas.parquet": "fedb175d738a1aadcfd15d1e52e55e15229306d3e38b3f77d9e325259f4bba41",
+    "options.parquet": "d1a47a5f734b7f32a25326e7f289f664486ef8ad2733bb013552656bedb31558"
   }
 }

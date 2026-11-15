@@ -1,0 +1,1099 @@
+{
+  "coding_status": "draft coding",
+  "main_variant": "positions=primary;tie=split",
+  "elections": {
+    "2002": {
+      "finalist_a": "candidate:jacques-chirac",
+      "finalist_b": "candidate:jean-marie-le-pen",
+      "areas": 100
+    },
+    "2007": {
+      "finalist_a": "candidate:nicolas-sarkozy",
+      "finalist_b": "candidate:segolene-royal",
+      "areas": 101
+    },
+    "2012": {
+      "finalist_a": "candidate:francois-hollande",
+      "finalist_b": "candidate:nicolas-sarkozy",
+      "areas": 107
+    },
+    "2017": {
+      "finalist_a": "candidate:emmanuel-macron",
+      "finalist_b": "candidate:marine-le-pen",
+      "areas": 107
+    },
+    "2022": {
+      "finalist_a": "candidate:emmanuel-macron",
+      "finalist_b": "candidate:marine-le-pen",
+      "areas": 107
+    }
+  },
+  "h0b_fallbacks": [
+    {
+      "year": 2012,
+      "option": "candidate:jacques-cheminade",
+      "rule": "no score: H0b row"
+    },
+    {
+      "year": 2017,
+      "option": "candidate:jacques-cheminade",
+      "rule": "no score: H0b row"
+    }
+  ],
+  "h3_folds": [
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.86,
+      "train_score_pp": 2.94241165904567,
+      "heldout_score_pp": 12.016004693832521
+    },
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.02,
+      "train_score_pp": 4.39163816278222,
+      "heldout_score_pp": 4.074989100160004
+    },
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.1,
+      "train_score_pp": 4.81921684600099,
+      "heldout_score_pp": 2.135667539863745
+    },
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.11,
+      "train_score_pp": 3.6592358236925,
+      "heldout_score_pp": 6.762852107509709
+    },
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 0.08,
+      "train_score_pp": 4.39124588374731,
+      "heldout_score_pp": 3.883585575191178
+    },
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=split",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.21,
+      "train_score_pp": 4.271468914078961,
+      "heldout_score_pp": null
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.91,
+      "train_score_pp": 2.909402366215476,
+      "heldout_score_pp": 13.931292640120592
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.98,
+      "train_score_pp": 6.00431048391346,
+      "heldout_score_pp": 1.4111170848195032
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.97,
+      "train_score_pp": 5.998827166737936,
+      "heldout_score_pp": 1.4264106755001333
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.97,
+      "train_score_pp": 4.8214946459918355,
+      "heldout_score_pp": 6.135740758484535
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 1.0,
+      "train_score_pp": 5.620270782133913,
+      "heldout_score_pp": 3.0012902803749144
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=split",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.97,
+      "train_score_pp": 5.084343868490375,
+      "heldout_score_pp": null
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.85,
+      "train_score_pp": 2.7523482268273294,
+      "heldout_score_pp": 14.234809980335216
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.94,
+      "train_score_pp": 5.981854502187125,
+      "heldout_score_pp": 1.2570383494728832
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.91,
+      "train_score_pp": 5.934789145451664,
+      "heldout_score_pp": 1.3872696912232498
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.89,
+      "train_score_pp": 4.744673193880332,
+      "heldout_score_pp": 6.15345172125623
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=split",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 1.0,
+      "train_score_pp": 5.620270782133913,
+      "heldout_score_pp": 3.0012902803749144
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=split",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.9,
+      "train_score_pp": 5.025063904609122,
+      "heldout_score_pp": null
+    },
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.86,
+      "train_score_pp": 2.94241165904567,
+      "heldout_score_pp": 12.016004693832521
+    },
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.02,
+      "train_score_pp": 4.39163816278222,
+      "heldout_score_pp": 4.074989100160004
+    },
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.1,
+      "train_score_pp": 4.81921684600099,
+      "heldout_score_pp": 2.135667539863745
+    },
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.11,
+      "train_score_pp": 3.6592358236925,
+      "heldout_score_pp": 6.762852107509709
+    },
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 0.08,
+      "train_score_pp": 4.39124588374731,
+      "heldout_score_pp": 3.883585575191178
+    },
+    {
+      "base": "H1",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.21,
+      "train_score_pp": 4.271468914078961,
+      "heldout_score_pp": null
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.91,
+      "train_score_pp": 2.909402366215476,
+      "heldout_score_pp": 13.931292640120592
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.98,
+      "train_score_pp": 6.00431048391346,
+      "heldout_score_pp": 1.4111170848195032
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.97,
+      "train_score_pp": 5.998827166737936,
+      "heldout_score_pp": 1.4264106755001333
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.97,
+      "train_score_pp": 4.8214946459918355,
+      "heldout_score_pp": 6.135740758484535
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 1.0,
+      "train_score_pp": 5.620270782133913,
+      "heldout_score_pp": 3.0012902803749144
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.97,
+      "train_score_pp": 5.084343868490375,
+      "heldout_score_pp": null
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.85,
+      "train_score_pp": 2.7523482268273294,
+      "heldout_score_pp": 14.234809980335216
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.94,
+      "train_score_pp": 5.981854502187125,
+      "heldout_score_pp": 1.2570383494728832
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.91,
+      "train_score_pp": 5.934789145451664,
+      "heldout_score_pp": 1.3872696912232498
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.89,
+      "train_score_pp": 4.744673193880332,
+      "heldout_score_pp": 6.15345172125623
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 1.0,
+      "train_score_pp": 5.620270782133913,
+      "heldout_score_pp": 3.0012902803749144
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=primary;tie=abstention",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.9,
+      "train_score_pp": 5.025063904609122,
+      "heldout_score_pp": null
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.85,
+      "train_score_pp": 2.9198686538721033,
+      "heldout_score_pp": 11.913995259100483
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.32,
+      "train_score_pp": 4.631877494676797,
+      "heldout_score_pp": 3.9949770204903174
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.36,
+      "train_score_pp": 4.85749059370258,
+      "heldout_score_pp": 2.9499075549929428
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.48,
+      "train_score_pp": 4.374570090333935,
+      "heldout_score_pp": 4.635481899330673
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 0.24,
+      "train_score_pp": 4.659396767344532,
+      "heldout_score_pp": 4.224071917203097
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=split",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.52,
+      "train_score_pp": 4.42263205572968,
+      "heldout_score_pp": null
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.91,
+      "train_score_pp": 2.847811687356854,
+      "heldout_score_pp": 13.87229036124641
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.92,
+      "train_score_pp": 5.9175306327612445,
+      "heldout_score_pp": 1.560950953265368
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.91,
+      "train_score_pp": 5.916147121524627,
+      "heldout_score_pp": 1.5989486245753197
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.99,
+      "train_score_pp": 4.828392508240746,
+      "heldout_score_pp": 6.074710660382502
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 0.97,
+      "train_score_pp": 5.608452663246024,
+      "heldout_score_pp": 2.8328694633246436
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=split",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.94,
+      "train_score_pp": 5.041887115924633,
+      "heldout_score_pp": null
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.84,
+      "train_score_pp": 2.376491491837887,
+      "heldout_score_pp": 14.182729075456795
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.86,
+      "train_score_pp": 5.59911241512477,
+      "heldout_score_pp": 1.2383841516463154
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.85,
+      "train_score_pp": 5.692316527404764,
+      "heldout_score_pp": 0.8796727697499692
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.88,
+      "train_score_pp": 4.599226510696324,
+      "heldout_score_pp": 5.309182023180971
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=split",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 0.86,
+      "train_score_pp": 5.344561374518314,
+      "heldout_score_pp": 2.2565883140721406
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=split",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.86,
+      "train_score_pp": 4.726966762429079,
+      "heldout_score_pp": null
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.85,
+      "train_score_pp": 2.9198686538721033,
+      "heldout_score_pp": 11.913995259100483
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.32,
+      "train_score_pp": 4.631877494676797,
+      "heldout_score_pp": 3.9949770204903174
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.36,
+      "train_score_pp": 4.85749059370258,
+      "heldout_score_pp": 2.9499075549929428
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.48,
+      "train_score_pp": 4.374570090333935,
+      "heldout_score_pp": 4.635481899330673
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 0.24,
+      "train_score_pp": 4.659396767344532,
+      "heldout_score_pp": 4.224071917203097
+    },
+    {
+      "base": "H1",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.52,
+      "train_score_pp": 4.42263205572968,
+      "heldout_score_pp": null
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.91,
+      "train_score_pp": 2.847811687356854,
+      "heldout_score_pp": 13.87229036124641
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.92,
+      "train_score_pp": 5.9175306327612445,
+      "heldout_score_pp": 1.560950953265368
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.91,
+      "train_score_pp": 5.916147121524627,
+      "heldout_score_pp": 1.5989486245753197
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.99,
+      "train_score_pp": 4.828392508240746,
+      "heldout_score_pp": 6.074710660382502
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 0.97,
+      "train_score_pp": 5.608452663246024,
+      "heldout_score_pp": 2.8328694633246436
+    },
+    {
+      "base": "H2-abst",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.94,
+      "train_score_pp": 5.041887115924633,
+      "heldout_score_pp": null
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2002,
+      "train_elections": [
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.84,
+      "train_score_pp": 2.376491491837887,
+      "heldout_score_pp": 14.182729075456795
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2007,
+      "train_elections": [
+        2002,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.86,
+      "train_score_pp": 5.59911241512477,
+      "heldout_score_pp": 1.2383841516463154
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2012,
+      "train_elections": [
+        2002,
+        2007,
+        2017,
+        2022
+      ],
+      "p": 0.85,
+      "train_score_pp": 5.692316527404764,
+      "heldout_score_pp": 0.8796727697499692
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2017,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2022
+      ],
+      "p": 0.88,
+      "train_score_pp": 4.599226510696324,
+      "heldout_score_pp": 5.309182023180971
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": 2022,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017
+      ],
+      "p": 0.86,
+      "train_score_pp": 5.344561374518314,
+      "heldout_score_pp": 2.2565883140721406
+    },
+    {
+      "base": "H2-blank",
+      "variant": "positions=alternative;tie=abstention",
+      "test_year": null,
+      "train_elections": [
+        2002,
+        2007,
+        2012,
+        2017,
+        2022
+      ],
+      "p": 0.86,
+      "train_score_pp": 4.726966762429079,
+      "heldout_score_pp": null
+    }
+  ],
+  "rows": 54288,
+  "inputs": {
+    "elections": {
+      "2002": {
+        "outcomes.parquet": "0642a767c2f77e64b87e7f2a4de1d15e0b14d36d66acbf5e96fe8cb2348a124d",
+        "areas.parquet": "fedb175d738a1aadcfd15d1e52e55e15229306d3e38b3f77d9e325259f4bba41",
+        "options.parquet": "d1a47a5f734b7f32a25326e7f289f664486ef8ad2733bb013552656bedb31558"
+      },
+      "2007": {
+        "outcomes.parquet": "99d55447bc519a887d12c1403d427adfce52f2521d1321ae4f9cdae501d245f2",
+        "areas.parquet": "2f3e37d3b4bb90dfcd418485ec08636078105a6d41d48176a0b5884bfa663b62",
+        "options.parquet": "274ae675435871fb456eeb413958c3cb8fdd149833b3b049b6345511aa8281c6"
+      },
+      "2012": {
+        "outcomes.parquet": "1ed884f469f6c6f3b85ed9fc269427ef0e820416eadb615f13018489a3dac917",
+        "areas.parquet": "f611fea8fc968c4344ac360711da8210da14d589247dfb138bf63ac3ab851924",
+        "options.parquet": "eec359f020b5e31f325d5ee7947559eefa2433ea72a41d8d7d01fda2aa835529"
+      },
+      "2017": {
+        "outcomes.parquet": "8f5b168fe53e3c516411d88188baafe48742e539f6cbc996dd3ef2aad5e43a1b",
+        "areas.parquet": "8fcf45e604f1402a0663e7ab8ac59727edad7db7601fb81c2cae5c9537452a4a",
+        "options.parquet": "6f068f076ac947b9baa7aa8da867543050453a9cec4ddc2ff3159edc79a427be"
+      },
+      "2022": {
+        "outcomes.parquet": "b79caa59060885773955c62b4952013666867b4cd71c79f4c1a73fadb04ef87f",
+        "areas.parquet": "5803c331433def871aa2441cc5b38257d44f4e63c08ceefe4df71d157a1f4533",
+        "options.parquet": "7e1c04d5ec35f0ce90ab02f6881add59835af23e37f242d907c5e2b67daf0bdd"
+      }
+    },
+    "candidate_positions_sha256": "dda017c7ee8fc22d911a4d8b066ef4555960e47974788760ab1d020756f0a684"
+  },
+  "outputs": {
+    "predictions.parquet": "29a23ccf3358b032fcc388afa1e3369a63bad20893991f4543eca44928c8ead4"
+  }
+}

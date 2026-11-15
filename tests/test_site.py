@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 from vote_transfer.application.processing import process_year
+from vote_transfer.application.scenario import SCENARIO_MODELS
 
 APP = Path(__file__).resolve().parents[1] / "site" / "app.py"
 
@@ -26,6 +27,8 @@ def test_loaded_app_filters_round_and_territory(raw_dataset, monkeypatch):
         "Home",
         "Explore",
         "Understand the model",
+        "Compare models",
+        "2027 scenarios",
         "Sources & limits",
     ]
     assert app.radio(key="page").proto.horizontal
@@ -45,7 +48,7 @@ def test_loaded_app_filters_round_and_territory(raw_dataset, monkeypatch):
 def test_app_rejects_modified_processed_outputs(raw_dataset, monkeypatch):
     process_year(2022, raw_dataset)
     monkeypatch.setenv("VOTE_TRANSFER_DATA_DIR", str(raw_dataset))
-    path = raw_dataset / "processed/2022/department_results.parquet"
+    path = raw_dataset / "processed/2022/outcomes.parquet"
     path.write_bytes(b"corrupt")
     app = AppTest.from_file(str(APP)).run(timeout=20)
     assert not app.exception
@@ -151,3 +154,135 @@ def test_exploration_charts_have_valid_vega_schema(raw_dataset, monkeypatch):
     app.radio(key="page").set_value("Understand the model").run()
     assert not app.exception
     assert len(specs) == 2
+
+
+def test_app_warns_when_processed_and_bundled_copies_differ(raw_dataset, monkeypatch):
+    from vote_transfer.application.datasets import bundle_year
+
+    process_year(2022, raw_dataset)
+    bundle_year(2022, raw_dataset)
+    monkeypatch.setenv("VOTE_TRANSFER_DATA_DIR", str(raw_dataset))
+    app = AppTest.from_file(str(APP)).run(timeout=20)
+    assert not any("differ from the bundled" in item.value for item in app.warning)
+    stale = raw_dataset / "bundled/2022/outcomes.parquet"
+    stale.write_bytes(stale.read_bytes() + b"x")
+    app = AppTest.from_file(str(APP)).run(timeout=20)
+    assert not app.exception
+    assert any("differ from the bundled" in item.value for item in app.warning)
+
+
+@pytest.fixture
+def offline_app(tmp_path, monkeypatch):
+    """The app on bundled snapshots only, with HTTP blocked: a fresh clone, offline."""
+    import shutil
+
+    shutil.copytree(APP.parent.parent / "data/bundled", tmp_path / "bundled")
+    monkeypatch.setenv("VOTE_TRANSFER_DATA_DIR", str(tmp_path))
+
+    def reject_network(*args, **kwargs):
+        raise AssertionError("The offline app must not make HTTP requests.")
+
+    monkeypatch.setattr("requests.Session.request", reject_network)
+    return AppTest.from_file(str(APP)).run(timeout=30)
+
+
+def test_compare_page_shows_every_model_with_honesty_notes(offline_app):
+    app = offline_app
+    app.radio(key="page").set_value("Compare models").run(timeout=30)
+    assert not app.exception
+    table = app.dataframe[0].value
+    assert table.Model.tolist() == [
+        "H0a",
+        "H0b",
+        "H1",
+        "H2-abst",
+        "H2-blank",
+        "H3(H1)",
+        "H3(H2-abst)",
+        "H3(H2-blank)",
+    ]
+    assert {"2002", "2007", "2012", "2017", "2022", "Mean", "Mean without 2002"} <= set(table)
+    assert round(table.set_index("Model").loc["H0a", "2022"], 2) == 6.12
+    assert any("Draft coding" in item.value for item in app.warning)
+    assert any("not individual transfers" in item.value for item in app.warning)
+    assert any("2002 and 2007" in item.value for item in app.info)
+    assert app.selectbox(key="compare_model").value == table.loc[table.Mean.idxmin(), "Model"]
+    app.selectbox(key="compare_model").select("H2-blank").run(timeout=30)
+    assert not app.exception
+    folds = app.dataframe[1].value
+    assert len(folds) == 15 and set(folds["Tested on"]) == {"2002", "2007", "2012", "2017", "2022"}
+
+
+def test_scenario_page_works_offline_with_permanent_banner(offline_app):
+    app = offline_app
+    app.radio(key="page").set_value("2027 scenarios").run(timeout=30)
+    assert not app.exception
+
+    def banner():
+        return [item.value for item in app.warning if "not a forecast" in item.value]
+
+    assert banner() and "2022 electorate" in banner()[0] and "Draft coding" in banner()[0]
+    assert app.selectbox(key="scenario_a").value == "candidate:emmanuel-macron"
+    assert app.selectbox(key="scenario_b").value == "candidate:marine-le-pen"
+    # Team decision: H0b is the default, with the reason stated on the page.
+    assert app.selectbox(key="scenario_model").value == "H0b"
+    assert any("H0b is the default" in c.value and "2002" in c.value for c in app.caption)
+    assert any("candidates only" in c.value and "no map" in c.value for c in app.caption)
+    national = app.dataframe[0].value
+    assert list(national.columns) == ["Outcome", "H0b (%)"]
+    assert national["H0b (%)"].sum() == pytest.approx(100)
+    app.checkbox(key="scenario_all").check().run(timeout=30)
+    assert not app.exception and banner()
+    national = app.dataframe[0].value
+    assert list(national.columns) == ["Outcome", *(f"{m} (%)" for m in SCENARIO_MODELS)]
+    assert national.drop(columns="Outcome").sum().tolist() == pytest.approx([100] * 8)
+    app.checkbox(key="scenario_all").uncheck().run(timeout=30)
+    assert national.Outcome.tolist()[:2] == ["Emmanuel Macron", "Marine Le Pen"]
+    assert len(app.dataframe[1].value) == 107  # area-level table
+    assert any(b.label == "Download this scenario (CSV)" for b in app.get("download_button"))
+
+    app.selectbox(key="scenario_b").select("candidate:jean-luc-melenchon").run(timeout=30)
+    app.selectbox(key="scenario_model").select("H3(H1)").run(timeout=30)
+    assert not app.exception and banner()
+    national = app.dataframe[0].value
+    assert national.Outcome.tolist()[:2] == ["Emmanuel Macron", "Jean-Luc Mélenchon"]
+    assert list(national.columns) == ["Outcome", "H3(H1) (%)", "H0b (%)"]
+    assert any("fitted on the five historical elections" in c.value for c in app.caption)
+
+    app.selectbox(key="scenario_model").select("H0b").run(timeout=30)
+    assert list(app.dataframe[0].value.columns) == ["Outcome", "H0b (%)"]
+    app.selectbox(key="scenario_b").select("candidate:emmanuel-macron").run(timeout=30)
+    assert not app.exception and banner()
+    assert any("two different candidates" in item.value for item in app.error)
+
+
+def test_new_pages_explain_missing_evaluation_instead_of_failing(raw_dataset, monkeypatch):
+    process_year(2022, raw_dataset)
+    monkeypatch.setenv("VOTE_TRANSFER_DATA_DIR", str(raw_dataset))
+    app = AppTest.from_file(str(APP)).run(timeout=20)
+    for page in ("Compare models", "2027 scenarios"):
+        app.radio(key="page").set_value(page).run(timeout=20)
+        assert not app.exception
+        assert any("vote-transfer evaluate" in item.value for item in app.info)
+    assert any("not a forecast" in item.value for item in app.warning)
+
+
+def test_signed_error_chart_has_a_valid_vega_schema(offline_app, monkeypatch):
+    import altair as alt
+    import streamlit as st
+
+    original = st.vega_lite_chart
+    specs = []
+
+    def validated_chart(data, spec, **kwargs):
+        if "facet" in spec:
+            alt.FacetChart.from_dict({**spec, "data": {"values": data.to_dict("records")}})
+            specs.append((spec, data))
+        return original(data, spec, **kwargs)
+
+    monkeypatch.setattr(st, "vega_lite_chart", validated_chart)
+    offline_app.radio(key="page").set_value("Compare models").run(timeout=30)
+    assert not offline_app.exception
+    ((spec, data),) = specs
+    assert set(data.model) == {"H0a", "H0b", offline_app.selectbox(key="compare_model").value}
+    assert len(data) == 3 * 5 * 4  # three models, five elections, four outcomes

@@ -3,13 +3,26 @@
 These are real aggregate results derived from the original Ministry files, not
 synthetic demo data. All five elections (2002, 2007, 2012, 2017, 2022) are included.
 The application can read them directly after cloning and installing dependencies.
-The 15 dataset files total about 336 KB; no Git LFS or external hosting is needed.
+The files are small enough for ordinary Git tracking; no Git LFS or external
+hosting is needed.
 
 Each year contains only:
 
-- `department_results.parquet`: aggregate observed outcomes for both rounds;
-- `h0_evaluation.parquet`: H0 outputs and errors;
-- `quality_report.json`: source URLs, dates, checksums, processing checks and limitations.
+- `areas.parquet`: one row per area and round (registered voters, stations, and the
+  separate blank and invalid counts where published);
+- `outcomes.parquet`: one count per area, round and option;
+- `options.parquet`: display labels;
+- `quality_report.json`: source URLs, retrieval dates, checksums, processing checks and
+  limitations. It holds no processing time, so a rebuild is byte-identical.
+
+Beside the year folders:
+
+- `predictions.parquet`: every model, variant and election in one long table;
+- `evaluation_report.json`: coding status, finalists, H3 folds and input hashes.
+- `crosscheck_2022.json`: date and outcome of the last `vote-transfer crosscheck` run
+  against the Ministry's published national totals (needs network to refresh).
+
+Shares and the wide table used by the app are computed on load, not stored.
 
 The exporter verifies output hashes and enforces a 2 MB limit per year. Source
 licence metadata is retained literally in the quality reports. Raw files and
@@ -18,8 +31,12 @@ station-level data stay outside Git.
 Regenerate from a successful local build with:
 
 ```bash
+uv run vote-transfer evaluate --all-models --all-years
 uv run vote-transfer bundle --all-years
 ```
+
+`make check` fails if these snapshots differ from a local `data/processed/` build
+or if the predictions are older than their inputs.
 
 This operation updates local files; it does not commit or push them. Review the
 changed snapshots and reports before including them in a commit. The complete

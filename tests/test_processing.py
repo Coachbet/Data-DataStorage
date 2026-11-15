@@ -74,7 +74,7 @@ def test_complete_pipeline_and_raw_integrity(raw_dataset):
     report = process_year(2022, raw_dataset)
     assert report["territorial_units"] == 2
     assert report["registered_by_round"] == {"1": 300, "2": 300}
-    output = raw_dataset / "processed" / "2022" / "department_results.parquet"
+    output = raw_dataset / "processed" / "2022" / "outcomes.parquet"
     assert len(pd.read_parquet(output)) == 18  # 2 * (5 round-one + 4 round-two outcomes)
     previous = output.read_bytes()
     source = raw_dataset / "raw" / "official" / "2022" / "round_1.txt"

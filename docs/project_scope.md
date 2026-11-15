@@ -47,35 +47,31 @@ This is a deliberate change to the approved plan and must be presented as such:
   in the notes. `alternative_family` supports a sensitivity analysis, and CHES
   can still serve as an external check where it covers a party.
 
-Until this review is done, every row stays `draft` and no model reads the scores.
+Until this review is done, every row stays `draft`. Since 15 November 2026 the
+models H1–H3 read the draft scores so the pipeline can be built and tested, and
+every output that depends on them is labelled "draft coding". The review kit is
+in `data/reference/review/`.
 
 ## Model sequence
 
+Status on 15 November 2026 (decisions recorded in `docs/methodology.md`):
+
 | Hypothesis | Assumption | Implementation status |
 |---|---|---|
-| H0 | Eliminated support splits like the remaining electorate | First-round-only operational definition implemented; see methodology |
-| H1 | Nearest finalist in an ordinal left–right ordering | Pending documented positions and tie rules |
-| H2 | Nearest finalist in 1D/2D ideological distance, with an abstention/blank threshold | Pending positions, scales and threshold definition |
-| H3 | A calibrated fraction does not follow the closest-candidate rule | Pending fitting protocol and election-level holdout |
-| H4 | Strategic first-round voting masks broader preferences | Extension, pending Voter Autrement 2017 |
-| H5 | Transfers learned by political family | Extension, pending preference data and fitting protocol |
+| H0a | Eliminated support splits like the remaining electorate, abstainers included | Implemented (the original H0, unchanged) |
+| H0b | Eliminated support splits between the finalists and blank/invalid only | Implemented; added after the second peer review |
+| H1 | Nearest finalist on the 1–7 scale; ties split 50/50 | Implemented on the draft coding |
+| H2 | As H1, with a non-vote when at least two steps from both finalists (abstention or blank variants) | Implemented on the draft coding; one-dimensional only |
+| H3 | A calibrated share does not follow the closest-candidate rule | Implemented with leave-one-election-out; professor's approval pending |
+| H4 | Strategic first-round voting masks broader preferences | **Dropped** (first peer review); future work |
+| H5 | Transfers learned by political family | **Dropped** (first peer review); future work |
 
-## Next milestones
+## Remaining milestones
 
-1. Completed: original-file adapters for 2002, 2007, 2012, 2017 and 2022, with
-   year-specific schemas, coverage notes and small versioned aggregate snapshots.
-2. Automate comparisons with consolidated results and independent published totals.
-   Preserve discrepancies rather than forcing sources to agree.
-3. Review the versioned manual candidate-to-party/family table. Resolve missing
-   positions and agree on tie and threshold rules. If CHES is used as a sensitivity
-   reference, select historically appropriate waves and document party mappings.
-4. Implement H1/H2 and evaluate each assumption using the same outcome definitions.
-5. Fit eligible models on whole elections and test on held-out elections; never
-   randomly split departments from one election across training and test sets.
-6. Scope Voter Autrement, alternative 2D positions and dated 2027 polling tables.
-7. Build the 2027 simulation interface only after its inputs and assumptions exist.
+See `docs/handoff.md` for the checklist. In short: the two-coder review of the
+candidate table, the professor's answer on H3, and the final editing of the
+report and slides. Cross-source comparison with the consolidated results for
+2002–2017 remains optional further validation.
 
-The current pipeline covers all five elections: acquisition → validation →
-processing → H0 → app. Curated aggregates in `data/bundled/` allow review without
-raw downloads. 2002 and 2007 have partial national coverage. Cross-source checking,
-matched-geography comparison and H1–H5 remain research work.
+2002 and 2007 have partial national coverage. Every historical summary must say
+"covered areas", not "France".
