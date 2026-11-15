@@ -112,7 +112,7 @@ every result.
   `docs/methodology.md`.
 
 Further reading: [methodology](docs/methodology.md), [data contracts](docs/data_dictionary.md),
-[acquisition](docs/data_acquisition.md), [quality and cleaning](docs/data_quality_and_cleaning.md),
+[acquisition](docs/data_acquisition.md), [quality and cleaning](docs/data_quality_and_cleaning.md), [candidate table quality](docs/candidate_table_quality.md),
 [validation record](docs/validation.md), [development notes](docs/development.md),
 [scope](docs/project_scope.md). The [2 October acquisition note](docs/references/data-acquisition-note.pdf)
 revises the [original proposal](docs/references/project-proposal.pdf).
