@@ -1,10 +1,16 @@
+# Colours and radii mirror site/theme.py; fonts are embedded by the app itself.
 [theme]
 base = "light"
-primaryColor = "#0071E3"
-backgroundColor = "#F5F5F7"
-secondaryBackgroundColor = "#E8E8ED"
-textColor = "#1D1D1F"
-font = "sans serif"
+primaryColor = "#0B5F66"
+backgroundColor = "#FBFAF7"
+secondaryBackgroundColor = "#F1EFE9"
+textColor = "#14171C"
+linkColor = "#0B5F66"
+borderColor = "#D9D7D0"
+font = "'Source Sans 3', -apple-system, 'Segoe UI', 'Helvetica Neue', Arial, sans-serif"
+headingFont = "'Source Serif 4', Georgia, 'Times New Roman', serif"
+baseRadius = "3px"
+showWidgetBorder = true
 
 [browser]
 gatherUsageStats = false

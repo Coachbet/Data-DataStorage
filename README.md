@@ -54,7 +54,11 @@ No credentials are required and `.env` files are not loaded.
 ## Where things are
 
 ```text
-site/app.py                 Streamlit app: explore, H0a explained, compare models, 2027 scenarios
+site/app.py                 Streamlit app entry: navigation, data loading, page dispatch
+site/views/                 The five pages: answer, evidence, explore, scenarios, method
+site/theme.py, styles.css   Design tokens (one source for CSS and charts) and the stylesheet
+site/charts.py              Every chart, on one shared Vega-Lite theme
+docs/design/                Design audit, brief, verification and before/after screenshots
 backend/vote_transfer/
   infrastructure/           Download with pinned hashes; parsers for the three file layouts
   application/processing.py Validation and the normalised areas/outcomes/options tables
