@@ -46,6 +46,7 @@ RENDERED = {
     "findings.md": "reports/results/findings.md",
     "report.md": "docs/report/report.md",
     "presentation_outline.md": "docs/presentation_outline.md",
+    "storage_comparison.md": "docs/storage_comparison.md",
 }
 PLACEHOLDER = re.compile(r"\{\{\s*([^}|]+?)\s*(?:\|\s*([^}]+?)\s*)?\}\}")
 
@@ -396,6 +397,47 @@ def build_numbers(
     return n
 
 
+def storage_numbers(
+    root: Path, manifests: Path = PROJECT_ROOT / "data" / "raw" / "official"
+) -> dict:
+    """Measured sizes for the storage comparison: raw text, Parquet, and the same tables as CSV."""
+    folders = available_datasets(root)
+    raw_bytes, parquet_bytes, csv_bytes, rows = 0, 0, 0, {"areas": 0, "outcomes": 0, "options": 0}
+    stations = candidates = 0
+    for year, folder in folders.items():
+        manifest = json.loads((manifests / year / "manifest.json").read_text())
+        raw_bytes += sum({item["file"]: item["bytes"] for item in manifest["files"]}.values())
+        *tables, quality = load_tables(folder)
+        stations += quality["polling_station_round_rows"]
+        candidates += quality["candidate_rows"]
+        for name, table in zip(rows, tables, strict=True):
+            rows[name] += len(table)
+            parquet_bytes += (folder / f"{name}.parquet").stat().st_size
+            csv_bytes += len(table.to_csv(index=False).encode())
+    predictions, _ = load_predictions(root)
+    layer = "processed" if (root / "processed" / "predictions.parquet").is_file() else "bundled"
+    predictions_bytes = (root / layer / "predictions.parquet").stat().st_size
+    predictions_csv = len(predictions.to_csv(index=False).encode())
+    return {
+        "storage.raw_mb": raw_bytes / 1e6,
+        "storage.station_rows": stations,
+        "storage.candidate_rows": candidates,
+        "storage.area_rows": rows["areas"],
+        "storage.outcome_rows": rows["outcomes"],
+        "storage.option_rows": rows["options"],
+        "storage.prediction_rows": len(predictions),
+        "storage.election_tables": 3 * len(folders),
+        "storage.elections_parquet_kb": parquet_bytes / 1e3,
+        "storage.elections_csv_kb": csv_bytes / 1e3,
+        "storage.predictions_parquet_kb": predictions_bytes / 1e3,
+        "storage.predictions_csv_kb": predictions_csv / 1e3,
+        "storage.total_parquet_kb": (parquet_bytes + predictions_bytes) / 1e3,
+        "storage.total_csv_kb": (csv_bytes + predictions_csv) / 1e3,
+        "storage.csv_to_parquet_ratio": (csv_bytes + predictions_csv)
+        / (parquet_bytes + predictions_bytes),
+    }
+
+
 # --- Templates -------------------------------------------------------------------------
 
 
@@ -477,6 +519,7 @@ def run_analysis(
     agreement = json.loads(agreement_file.read_text()) if agreement_file.is_file() else None
     quality = reference_quality(positions, agreement)
     numbers = build_numbers(predictions, report, positions, tables, quality)
+    numbers |= storage_numbers(root)
     files = {
         "model_comparison.csv": tables["comparison"].reset_index(),
         "signed_errors.csv": tables["errors"],

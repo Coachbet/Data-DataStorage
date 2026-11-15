@@ -10,8 +10,9 @@ The app is launched by file path and imports the installed `vote_transfer` libra
 of the interface so the CLI, tests and future report can reproduce the same numbers.
 A separate FastAPI service is unnecessary for this single-process application.
 
-Four direct runtime dependencies are sufficient: Streamlit, pandas, PyArrow and
-requests. Development adds pytest and Ruff. `uv.lock` and `.python-version` are
+Five direct runtime dependencies are sufficient: Streamlit, pandas, PyArrow,
+requests and Matplotlib (added on 15 November 2026 for the report's static PNG and
+SVG figures; the app's interactive charts still use Streamlit's Vega-Lite). Development adds pytest and Ruff. `uv.lock` and `.python-version` are
 tracked; `.venv/` is not. Add dependencies only when an implemented feature needs them.
 
 ## Checks

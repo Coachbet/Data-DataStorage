@@ -179,3 +179,54 @@ def test_bundled_snapshots_keep_the_blank_invalid_split(year):
 def test_bundled_snapshots_before_2017_have_no_split():
     areas, _, _, _ = load_tables(BUNDLED / "2012")
     assert areas[["blank", "invalid"]].isna().all().all()
+
+
+def test_same_tables_load_into_sqlite_with_declared_constraints():
+    """Evidence for docs/storage_comparison.md: the relational alternative is feasible.
+
+    The schema declares what validate_tables checks in code. A SQL join then
+    reproduces the shares of the derived view. Standard library only.
+    """
+    import sqlite3
+
+    areas, outcomes, options, _ = load_tables(BUNDLED / "2022")
+    with sqlite3.connect(":memory:") as db:
+        db.execute("PRAGMA foreign_keys = ON")
+        db.executescript(
+            """
+            CREATE TABLE areas (
+                year INTEGER, round INTEGER, area_code TEXT, area_name TEXT NOT NULL,
+                registered INTEGER NOT NULL CHECK (registered > 0),
+                polling_stations INTEGER NOT NULL, blank INTEGER, invalid INTEGER,
+                PRIMARY KEY (year, round, area_code)
+            );
+            CREATE TABLE options (
+                year INTEGER, option TEXT, label TEXT NOT NULL, PRIMARY KEY (year, option)
+            );
+            CREATE TABLE outcomes (
+                year INTEGER, round INTEGER, area_code TEXT, option TEXT,
+                count INTEGER NOT NULL CHECK (count >= 0),
+                PRIMARY KEY (year, round, area_code, option),
+                FOREIGN KEY (year, round, area_code) REFERENCES areas,
+                FOREIGN KEY (year, option) REFERENCES options
+            );
+            """
+        )
+        areas.astype(object).where(areas.notna(), None).to_sql(
+            "areas", db, if_exists="append", index=False
+        )
+        options.to_sql("options", db, if_exists="append", index=False)
+        outcomes.to_sql("outcomes", db, if_exists="append", index=False)
+        with pytest.raises(sqlite3.IntegrityError):  # an orphan outcome is refused declaratively
+            db.execute("INSERT INTO outcomes VALUES (2022, 1, '99', 'abstention', 1)")
+        rows = db.execute(
+            """
+            SELECT o.area_code, o.option, 1.0 * o.count / a.registered
+            FROM outcomes o JOIN areas a USING (year, round, area_code)
+            WHERE o.round = 2 ORDER BY o.area_code, o.option
+            """
+        ).fetchall()
+    view = results_view(areas, outcomes, options)
+    expected = view[view["round"] == 2].sort_values(["department_code", "option"])
+    assert [r[0] for r in rows] == expected.department_code.tolist()  # '01' stays text
+    assert [r[2] for r in rows] == pytest.approx(expected.share.tolist())

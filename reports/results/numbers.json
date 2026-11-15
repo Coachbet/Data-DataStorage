@@ -1017,5 +1017,20 @@
   "quality.parties_checked": 33,
   "quality.accuracy_status": "pending: two-coder review not done",
   "fallback.count": 2,
-  "fallback.years": "2012 and 2017"
+  "fallback.years": "2012 and 2017",
+  "storage.raw_mb": 293.224763,
+  "storage.station_rows": 673228,
+  "storage.candidate_rows": 4764054,
+  "storage.area_rows": 1044,
+  "storage.outcome_rows": 9475,
+  "storage.option_rows": 71,
+  "storage.prediction_rows": 54288,
+  "storage.election_tables": 15,
+  "storage.elections_parquet_kb": 138.532,
+  "storage.elections_csv_kb": 416.587,
+  "storage.predictions_parquet_kb": 304.345,
+  "storage.predictions_csv_kb": 6681.463,
+  "storage.total_parquet_kb": 442.877,
+  "storage.total_csv_kb": 7098.05,
+  "storage.csv_to_parquet_ratio": 16.027136
 }
