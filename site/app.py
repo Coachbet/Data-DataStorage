@@ -22,9 +22,12 @@ from vote_transfer.application.exploration import model_summary, round_summary
 from vote_transfer.application.positions import load_candidate_positions, load_position_sources
 from vote_transfer.application.scenario import (
     BANNER,
+    DEFAULT_MODEL,
+    LIMITS,
     SCENARIO_MODELS,
     SCENARIO_YEAR,
     scenario_candidates,
+    simulate_all,
     simulate_runoff,
 )
 from vote_transfer.application.source_catalog import SOURCES
@@ -865,7 +868,8 @@ elif page == "2027 scenarios":
         electorate = load_dataset(datasets[str(SCENARIO_YEAR)])[0]
         candidates = scenario_candidates(electorate)
         names = {row.option: row.label.title() for row in candidates.itertuples()}
-        best_model = comparison_table(predictions)["mean"].idxmin()
+        ranks = comparison_table(predictions)
+        best_model = ranks["mean"].idxmin()
         a, b, c = st.columns(3)
         first_choice = a.selectbox(
             "First finalist", list(names), index=0, key="scenario_a", format_func=names.get
@@ -876,9 +880,26 @@ elif page == "2027 scenarios":
         model_choice = c.selectbox(
             "Assumption",
             SCENARIO_MODELS,
-            index=SCENARIO_MODELS.index(best_model),
+            index=SCENARIO_MODELS.index(DEFAULT_MODEL),
             key="scenario_model",
-            help="Defaults to the assumption with the lowest five-election mean score.",
+        )
+        default_rank = ranks.loc[DEFAULT_MODEL]
+        st.caption(
+            f"{DEFAULT_MODEL} is the default: it needs no candidate coding and ranks "
+            f"{int(default_rank['rank'])} of {len(ranks)} with 2002 and "
+            f"{int(default_rank['rank_without_2002'])} without it"
+            + (
+                f", while {best_model}, the lowest five-election mean, owes its lead to 2002 "
+                f"and ranks {int(ranks.loc[best_model, 'rank_without_2002'])} without it."
+                if best_model != DEFAULT_MODEL
+                else "."
+            ),
+        )
+        show_all = st.checkbox(
+            "Show all models side by side",
+            key="scenario_all",
+            help="Every evaluated assumption for this runoff. The spread between them is the "
+            "message: none is clearly best.",
         )
         if first_choice == second_choice:
             st.error("Choose two different candidates.")
@@ -898,7 +919,12 @@ elif page == "2027 scenarios":
                 "Outcome": list(labels.values()),
                 f"{model_choice} (%)": [chosen["pooled_pct"][k] for k in labels],
             }
-            if model_choice != "H0b":
+            if show_all:
+                every = simulate_all(electorate, pair, positions, evaluation_report)
+                national = {"Outcome": list(labels.values())} | {
+                    f"{model} (%)": [every.loc[k, model] for k in labels] for model in every
+                }
+            elif model_choice != "H0b":
                 national["H0b (%)"] = [baseline["pooled_pct"][k] for k in labels]
             st.dataframe(
                 national,
@@ -958,10 +984,7 @@ elif page == "2027 scenarios":
                     mime="text/csv",
                     key="scenario_download",
                 )
-                st.caption(
-                    "No map is shown: the repository holds no boundary data, and no new "
-                    "source was added for this page."
-                )
+            st.caption(LIMITS)
 
 else:
     intro(

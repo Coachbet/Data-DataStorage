@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 from vote_transfer.application.processing import process_year
+from vote_transfer.application.scenario import SCENARIO_MODELS
 
 APP = Path(__file__).resolve().parents[1] / "site" / "app.py"
 
@@ -223,11 +224,19 @@ def test_scenario_page_works_offline_with_permanent_banner(offline_app):
     assert banner() and "2022 electorate" in banner()[0] and "Draft coding" in banner()[0]
     assert app.selectbox(key="scenario_a").value == "candidate:emmanuel-macron"
     assert app.selectbox(key="scenario_b").value == "candidate:marine-le-pen"
-    compare_default = app.selectbox(key="scenario_model").value
+    # Team decision: H0b is the default, with the reason stated on the page.
+    assert app.selectbox(key="scenario_model").value == "H0b"
+    assert any("H0b is the default" in c.value and "2002" in c.value for c in app.caption)
+    assert any("candidates only" in c.value and "no map" in c.value for c in app.caption)
     national = app.dataframe[0].value
-    assert list(national.columns) == ["Outcome", f"{compare_default} (%)", "H0b (%)"]
+    assert list(national.columns) == ["Outcome", "H0b (%)"]
     assert national["H0b (%)"].sum() == pytest.approx(100)
-    assert national[f"{compare_default} (%)"].sum() == pytest.approx(100)
+    app.checkbox(key="scenario_all").check().run(timeout=30)
+    assert not app.exception and banner()
+    national = app.dataframe[0].value
+    assert list(national.columns) == ["Outcome", *(f"{m} (%)" for m in SCENARIO_MODELS)]
+    assert national.drop(columns="Outcome").sum().tolist() == pytest.approx([100] * 8)
+    app.checkbox(key="scenario_all").uncheck().run(timeout=30)
     assert national.Outcome.tolist()[:2] == ["Emmanuel Macron", "Marine Le Pen"]
     assert len(app.dataframe[1].value) == 107  # area-level table
     assert any(b.label == "Download this scenario (CSV)" for b in app.get("download_button"))

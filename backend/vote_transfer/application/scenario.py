@@ -26,6 +26,13 @@ from vote_transfer.application.models import (
 
 SCENARIO_YEAR = 2022
 SCENARIO_MODELS = (*PARAMETER_FREE, *(h3_name(base) for base in BASES))
+# Team decision: the default is not the lowest five-election mean (H1), because that
+# lead comes from one election. H0b needs no candidate coding and no fitted parameter.
+DEFAULT_MODEL = "H0b"
+LIMITS = (
+    "Limits of this page: finalists are chosen among 2022 candidates only, not political "
+    "families, and no map is shown because the repository holds no boundary data."
+)
 BANNER = (
     "Hypothetical scenario on the 2022 electorate — not a forecast. It applies one "
     "assumption to 2022 first-round results; it uses no 2027 data and no polls."
@@ -117,3 +124,17 @@ def simulate_runoff(
         "finalist_a_valid_pct": 100 * pooled["finalist_a"] / valid,
         "areas": areas,
     }
+
+
+def simulate_all(
+    results: pd.DataFrame,
+    finalists: tuple[str, str],
+    positions: pd.DataFrame,
+    report: dict,
+) -> pd.DataFrame:
+    """Pooled shares (%) under every assumption: one row per outcome, one column per model."""
+    columns = {
+        model: simulate_runoff(results, finalists, model, positions, report)["pooled_pct"]
+        for model in SCENARIO_MODELS
+    }
+    return pd.DataFrame(columns)

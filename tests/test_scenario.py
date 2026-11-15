@@ -4,9 +4,11 @@ import pytest
 from vote_transfer.application.datasets import load_dataset, load_predictions
 from vote_transfer.application.positions import load_candidate_positions
 from vote_transfer.application.scenario import (
+    DEFAULT_MODEL,
     SCENARIO_MODELS,
     scenario_candidates,
     scenario_election,
+    simulate_all,
     simulate_runoff,
 )
 
@@ -71,3 +73,13 @@ def test_invalid_finalists_and_models_are_rejected(inputs):
         simulate_runoff(inputs[0], (MACRON, "blank_invalid"), "H0b", *inputs[1:])
     with pytest.raises(ValueError, match="Unknown model"):
         simulate_runoff(inputs[0], (MACRON, LE_PEN), "H9", *inputs[1:])
+
+
+def test_all_models_side_by_side_match_the_single_runs_and_default_is_h0b(inputs):
+    results, positions, report = inputs
+    table = simulate_all(results, (MACRON, MELENCHON), positions, report)
+    assert DEFAULT_MODEL == "H0b"
+    assert list(table.columns) == list(SCENARIO_MODELS)
+    assert table.sum().tolist() == pytest.approx([100] * len(SCENARIO_MODELS))
+    single = simulate_runoff(results, (MACRON, MELENCHON), "H1", positions, report)
+    assert table["H1"].to_dict() == pytest.approx(single["pooled_pct"])
