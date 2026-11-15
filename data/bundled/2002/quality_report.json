@@ -1,8 +1,7 @@
 {
   "year": 2002,
-  "processed_at_utc": "2026-11-15T14:04:27.690384+00:00",
   "source": "Ministry original files",
-  "schema_version": 3,
+  "schema_version": 4,
   "territorial_units": 100,
   "polling_station_round_rows": 128282,
   "candidate_rows": 1154538,

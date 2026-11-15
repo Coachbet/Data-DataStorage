@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 import tempfile
-from datetime import UTC, datetime
 from pathlib import Path
 
 import pandas as pd
@@ -226,9 +225,10 @@ def process_year(year: int, root: Path) -> dict:
     coverage = turnout.groupby(["round", "department_code"]).registered.sum().unstack("round")
     report = {
         "year": year,
-        "processed_at_utc": datetime.now(UTC).isoformat(),
         "source": "Ministry original files",
-        "schema_version": 3,
+        # No wall-clock time: a rebuild from the same raw bytes must be byte-identical.
+        # Provenance is the raw hashes and retrieval dates in the acquisition manifests.
+        "schema_version": 4,
         "territorial_units": int(results.department_code.nunique()),
         "polling_station_round_rows": len(turnout),
         "candidate_rows": len(votes),

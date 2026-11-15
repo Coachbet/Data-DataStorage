@@ -230,3 +230,17 @@ def test_same_tables_load_into_sqlite_with_declared_constraints():
     expected = view[view["round"] == 2].sort_values(["department_code", "option"])
     assert [r[0] for r in rows] == expected.department_code.tolist()  # '01' stays text
     assert [r[2] for r in rows] == pytest.approx(expected.share.tolist())
+
+
+def test_processing_twice_gives_byte_identical_outputs_and_no_wall_clock_time(raw_dataset):
+    def snapshot():
+        folder = raw_dataset / "processed" / "2022"
+        return {path.name: path.read_bytes() for path in sorted(folder.iterdir())}
+
+    process_year(2022, raw_dataset)
+    first = snapshot()
+    process_year(2022, raw_dataset)
+    assert snapshot() == first
+    report = json.loads(first["quality_report.json"])
+    assert "processed_at_utc" not in report
+    assert report["outputs"] and report["schema_version"] == 4
