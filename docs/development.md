@@ -33,10 +33,9 @@ depending on local raw downloads. Bundled-data tests exercise all five years wit
 
 - `src/` → `backend/`, with editable-package configuration updated.
 - Replaced the French placeholder `webapp/` with `site/app.py`.
-- `Doc/` → `docs/references/archive/`; copied the two supplied PDFs into
-  `docs/references/` under stable English filenames. Original source documents
-  remain unchanged.
-- `reports/` and `presentation/` → `docs/archive/` so they do not clutter the root.
+- `Doc/` → `docs/references/` and `reports/`, `presentation/` → `docs/archive/`;
+  both folders were removed on 20 November 2026 (course documents are kept outside
+  the repository).
 - `old_data/` was moved to an ignored local folder on the machine that did the
   migration. It is not part of the repository or of any archive; nothing in the
   workflow reads it.
@@ -55,8 +54,8 @@ The project team owns methodological decisions, final interpretation and submiss
 
 ## Frontend
 
-The Streamlit app has five pages: The answer, Evidence, Explore the data,
-2027 scenarios, and Method & sources. `site/app.py` loads the data and dispatches
+The Streamlit app has four pages: The answer, Evidence, Explore the data, and
+Method & sources (the 2027 scenarios page was removed on 20 November 2026). `site/app.py` loads the data and dispatches
 to one module per page in `site/views/`. Election and area pickers appear only on
 the pages they change, and keep their value across pages.
 
@@ -74,12 +73,12 @@ result. `application/exploration.py` supplies registered-electorate summaries an
 weighted model-error readings. The 100-voter example on the Evidence page is
 explicitly illustrative, not historical data.
 
-UI tests cover all five pages on the bundled snapshots with HTTP blocked: the
+UI tests cover all four pages on the bundled snapshots with HTTP blocked: the
 honesty statements on each page, picker persistence, missing-area resets,
-empty/corrupt/drifted data states, the scenario defaults, schema validation of
-every chart, and the contrast of the text colours.
+empty/corrupt/drifted data states, schema validation of every chart, and the
+contrast of the text colours.
 
-The design audit, brief, verification record and before/after screenshots are in
-`docs/design/`. To recapture screenshots with the app running on port 8501:
+The design audit, brief and verification record are in `docs/design/`; the
+before/after screenshots were removed from the repository on 20 November 2026. To recapture screenshots with the app running on port 8501:
 `uv run --with playwright python docs/design/capture.py docs/design/after`
 (Playwright is not a project dependency; the script uses the installed Chrome).
