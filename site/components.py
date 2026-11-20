@@ -273,10 +273,11 @@ def candidate_reference(year: str) -> None:
 
 def coding_banner(report: dict) -> None:
     st.warning(
-        f"**{report['coding_status'].capitalize()}.** H1, H2 and H3 read hand-coded candidate "
-        "positions. Until two coders have reviewed them independently, treat every result "
-        "that depends on them as provisional. Scores describe aggregate patterns, "
-        "not individual transfers."
+        f"**{report['coding_status'].capitalize()}.** H1, H2 and H3 place candidates with the "
+        "left-to-right orders published by polling institutes, not with hand-coded "
+        "positions. The earlier hand-coded 1-7 scale is kept only as a comparison "
+        f"({report.get('comparison_coding_status', 'draft coding')}). Scores describe "
+        "aggregate patterns, not individual transfers."
     )
 
 

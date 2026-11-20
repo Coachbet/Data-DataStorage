@@ -26,11 +26,14 @@ from vote_transfer.application.evaluation import score_predictions
 from vote_transfer.application.models import (
     BASES,
     CODINGS,
+    MAIN_CODING,
     MAIN_VARIANT,
     NO_VARIANT,
     SETTINGS,
     THRESHOLD,
+    TOLERANCE,
     Election,
+    at_least,
     build_election,
     election_scores,
     h3_name,
@@ -136,7 +139,7 @@ def tied_groups(positions: pd.DataFrame, report: dict) -> pd.DataFrame:
             for option, score in scores.items():
                 if option in election.values() or score is None:
                     continue
-                if abs(score - a) == abs(score - b):
+                if abs(abs(score - a) - abs(score - b)) <= TOLERANCE:
                     rows.append(
                         {
                             "positions": coding,
@@ -145,7 +148,7 @@ def tied_groups(positions: pd.DataFrame, report: dict) -> pd.DataFrame:
                             "score": score,
                             "finalist_a_score": a,
                             "finalist_b_score": b,
-                            "beyond_h2_threshold": abs(score - a) >= THRESHOLD,
+                            "beyond_h2_threshold": at_least(abs(score - a)),
                         }
                     )
     columns = [
@@ -161,16 +164,16 @@ def tied_groups(positions: pd.DataFrame, report: dict) -> pd.DataFrame:
 
 
 def threshold_table(elections: dict[int, Election], positions: pd.DataFrame) -> pd.DataFrame:
-    """What the fixed H2 threshold does in each election, under the primary coding.
+    """What the fixed H2 threshold does in each election, under the main (poll-based) scale.
 
     For every election: the finalists' scores and the pooled first-round share of
-    registered voters in eliminated groups at least ``THRESHOLD`` steps from both
+    registered voters in eliminated groups at least ``THRESHOLD`` (on the 0-1 scale) from both
     finalists (sent to a non-vote by H2), with the part that sits exactly on the
     threshold. Areas are pooled with the election's registration weights.
     """
     rows = []
     for year, election in sorted(elections.items()):
-        scores = election_scores(positions, year, "primary")
+        scores = election_scores(positions, year, MAIN_CODING)
         a, b = (scores[f] for f in election.finalists)
         weights = election.registered_r2 / election.registered_r2.sum()
         pooled = dict(zip(election.groups, (weights @ election.first * 100).tolist(), strict=True))
@@ -179,8 +182,8 @@ def threshold_table(elections: dict[int, Election], positions: pd.DataFrame) -> 
             for g in election.eliminated
             if scores.get(g) is not None
         }
-        far = {g for g, d in distance.items() if d >= THRESHOLD}
-        on_threshold = {g for g in far if distance[g] == THRESHOLD}
+        far = {g for g, d in distance.items() if at_least(d)}
+        on_threshold = {g for g in far if abs(distance[g] - THRESHOLD) <= TOLERANCE}
         rows.append(
             {
                 "year": year,
@@ -190,7 +193,7 @@ def threshold_table(elections: dict[int, Election], positions: pd.DataFrame) -> 
                 "beyond_threshold_pct": sum(pooled[g] for g in far),
                 "exactly_on_threshold_pct": sum(pooled[g] for g in on_threshold),
                 "scores_exactly_on_threshold": ",".join(
-                    str(v) for v in sorted({scores[g] for g in on_threshold})
+                    f"{v:.3f}" for v in sorted({round(scores[g], 9) for g in on_threshold})
                 ),
                 "eliminated_scored_pct": sum(pooled[g] for g in distance),
             }
@@ -299,7 +302,11 @@ def build_numbers(
     comparison, errors, sensitivity = tables["comparison"], tables["errors"], tables["sensitivity"]
     without = f"mean_without_{OUTLIER_YEAR}"
     years = [int(y) for y in report["elections"]]
-    n: dict[str, object] = {"coding_status": report["coding_status"], "n.elections": len(years)}
+    n: dict[str, object] = {
+        "coding_status": report["coding_status"],
+        "comparison_coding_status": report["comparison_coding_status"],
+        "n.elections": len(years),
+    }
     n["n.models"] = len(MODEL_ORDER)
     n["n.candidacies"] = len(positions)
     names = positions.set_index(["year", "candidate_id"]).candidate_name
@@ -425,8 +432,8 @@ def build_numbers(
     for row in tables["threshold"].itertuples():
         key = f"h2.{row.year}"
         n[f"{key}.finalist_a_score"], n[f"{key}.finalist_b_score"] = (
-            int(row.finalist_a_score),
-            int(row.finalist_b_score),
+            round(float(row.finalist_a_score), 3),
+            round(float(row.finalist_b_score), 3),
         )
         n[f"{key}.beyond_pct"] = row.beyond_threshold_pct
         n[f"{key}.on_threshold_pct"] = row.exactly_on_threshold_pct

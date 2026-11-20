@@ -5,7 +5,7 @@
 Victor Henz, Edgar Gusching, Louis Bettelli, Lucas Magret Delord, Oscar Moulet ·
 Data, Data Storage, Data Collection · final report, draft of the analysis branch
 
-> **Status: draft coding.** Results for H1, H2 and H3 use candidate positions
+> **Status: poll-based scale.** Results for H1, H2 and H3 use candidate positions
 > that have not yet been reviewed by two coders. `[PENDING: coder agreement]`
 
 ## 1. Question
@@ -97,11 +97,11 @@ elections, and be reproduced exactly by a reader with no setup. A database would
 add what we lack, **declarative keys and constraints**; we verified that our
 tables load into SQLite with primary keys, foreign keys and checks. It would cost
 what we value most: files that rebuild byte for byte, can be hashed, and are
-small enough to version (443 kB in all, against
-7098 kB as CSV). PostgreSQL would also add a server for
+small enough to version (584 kB in all, against
+10158 kB as CSV). PostgreSQL would also add a server for
 every reader. DuckDB is not a different store but a query engine over our files;
 it becomes useful if the predictions grow well beyond their
-54,288 rows. **Limits of our choice:** constraints are
+79,344 rows. **Limits of our choice:** constraints are
 enforced by code on every write and load, not by the storage engine; joins live
 in Python; and two copies of the snapshots can diverge, which a check detects.
 The hand-edited candidate table stays a CSV, so that changes are reviewed line by
@@ -156,33 +156,33 @@ observed result. H3 is held-out.*
    8.6 to 30.0 pp (Figure 2). H0b,
    which removes that one channel, scores lower in 5 of
    5 elections (mean 5.1 against 8.7 pp).
-2. **The lowest five-election mean is H1** (4.3 pp), ahead of
+2. **The lowest five-election mean is H1** (4.7 pp), ahead of
    H0b (5.1 pp). But H1 beats H0b in only
-   1 of 5 elections: 2002, where it scores
-   4.3 pp against 13.5.
+   2 of 5 elections: 2002, where it scores
+   4.4 pp against 13.5.
 3. **Without 2002 the order changes.** H1 falls to rank
-   5 of 8 (4.4 pp); H0b is at
+   7 of 8 (4.8 pp); H0b is at
    3.0 pp and the lowest mean is
-   H3(H2-blank) (2.95 pp), a
+   H0b (3.01 pp), a
    mixture that is almost entirely H0b.
 4. **The distance threshold makes things worse.** H2-abst and H2-blank have the
-   highest means (10.5 and 9.4 pp). They beat
-   H0b in 0 and 0 of 5 elections.
-   In 2017 and 2022 the finalists are coded 4 and
-   7, so every group coded 2 is exactly 2
+   highest means (7.6 and 7.2 pp). They beat
+   H0b in 1 and 1 of 5 elections.
+   In 2017 and 2022 the finalists are coded 0.5 and
+   0.9, so every group coded none is exactly 0.3
    steps from the nearer one and is sent to a non-vote:
-   19.7% and 20.8% of registered
-   voters. In 2002 (finalists at 6 and
-   7) the rule removes 31.2%; in 2007 and
-   2012, 4.8% and 1.3%.
+   0.0% and 0.0% of registered
+   voters. In 2002 (finalists at 0.8 and
+   0.9) the rule removes 29.9%; in 2007 and
+   2012, 1.4% and 0.4%.
 5. **H3 adds little** `[PENDING: professor approval]`**.** On the H2 bases the fitted `p` is between
-   0.85 and 1.00: the fit discards the H2 rule. On
-   H1, `p` is at most 0.11 in four folds and 0.86 when 2002
+   0.77 and 1.00: the fit discards the H2 rule. On
+   H1, `p` is at most 0.34 in four folds and 0.83 when 2002
    is held out, and held-out H3(H1) is worse than H1 itself
-   (5.8 against 4.3 pp).
+   (5.6 against 4.7 pp).
 6. **Blank and invalid ballots are under-predicted** in 2017 and 2022 by every
    model except H2-blank, which over-predicts them by
-   14.4 and 17.2 pp.
+   -5.2 and -2.0 pp.
    Invalid ballots are 26% of the category
    in 2017 and 26% in 2022; their error is the
    same for every model (-1.6 and
@@ -196,7 +196,7 @@ covered areas, for both baselines and H1.*
 **Sensitivity.** With the alternative coding the order of models
 changes: the lowest mean becomes
 H3(H2-blank), H1 moves by
-+0.67 pp and H0b ranks
++0.27 pp and H0b ranks
 3. The tie rule has no effect: 0
 ties occur under the primary coding and 0 under the
 alternative. With blank ballots scored alone, the order of models
@@ -207,8 +207,8 @@ is unchanged in 2017 and is unchanged in 2022.
 *Figure 3. H1 against observed shares by area, 2022. Overseas areas
 (Z-codes) and voters abroad (ZZ) are highlighted.*
 
-In 2022, H1 scores 4.0 pp in metropolitan
-areas and 7.6 pp overseas, where H0b scores
+In 2022, H1 scores 4.3 pp in metropolitan
+areas and 8.1 pp overseas, where H0b scores
 3.3 pp.
 
 **Interpretation.** These readings go beyond the numbers and carry the caveats of
@@ -252,9 +252,9 @@ No 2027 first-round data exists and we collect no polls. The app's "2027
 scenarios" page takes the **2022 first-round results by area** as the electorate,
 lets the user name two 2022 candidates as stand-ins for the finalists, and
 applies one assumption. The default is H0b, not H1:
-H1's lead comes from 2002 alone (rank 5 of
+H1's lead comes from 2002 alone (rank 7 of
 8 without it), while H0b needs no candidate coding and ranks
-2 with 2002 and 3 without. An option shows every
+2 with 2002 and 1 without. An option shows every
 model side by side. Since the assumptions disagree and none is clearly best, the
 spread between them is the message, not a prediction. Limits: finalists are
 candidates, not political families, and there is no map (we hold no boundary

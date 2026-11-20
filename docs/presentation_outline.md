@@ -3,7 +3,7 @@
 # Presentation outline (2 December, 15 minutes)
 
 Draft for the team to turn into slides. Twelve slides, about 75 seconds each.
-Numbers are filled from `reports/results/numbers.json`. Status: **draft coding**.
+Numbers are filled from `reports/results/numbers.json`. Status: **poll-based scale**.
 `[PENDING: coder agreement]` on slides 5, 8 and 10.
 
 ## Slides
@@ -41,7 +41,7 @@ Numbers are filled from `reports/results/numbers.json`. Status: **draft coding**
 **6. Storage: normalised Parquet, compared with a database**
 - `areas`, `outcomes`, `options`, one long `predictions` table; shares computed, not stored.
 - A database gives declarative constraints; we tested our tables in SQLite.
-- We keep files: byte-identical rebuilds, hashes, 443 kB in Git; constraints enforced in code.
+- We keep files: byte-identical rebuilds, hashes, 584 kB in Git; constraints enforced in code.
 - Figure: schema diagram with the derived view.
 
 **7. Five assumptions, each one sentence**
@@ -57,16 +57,16 @@ Numbers are filled from `reports/results/numbers.json`. Status: **draft coding**
 - Figure: `reports/figures/signed_error_by_outcome.png`.
 
 **9. Result 2: no stable winner**
-- Lowest five-election mean: H1 (4.3 pp), but it beats H0b in only 1 election.
-- Without 2002, H1 ranks 5 of 8; H0b is at 3.0 pp.
-- H2 has the highest errors: with finalists at 4 and 7, every group coded 2 is exactly 2 steps away and is sent to a non-vote (20.8% of registered voters in 2022). A finding about thresholds on a coarse scale.
-- The fitted H3 throws the H2 rule away (`p` from 0.85 to 1.00).
+- Lowest five-election mean: H1 (4.7 pp), but it beats H0b in only 2 election.
+- Without 2002, H1 ranks 7 of 8; H0b is at 3.0 pp.
+- H2 has the highest errors: with finalists at 0.5 and 0.9, every group coded none is exactly 0.3 steps away and is sent to a non-vote (0.0% of registered voters in 2022). A finding about thresholds on a coarse scale.
+- The fitted H3 throws the H2 rule away (`p` from 0.77 to 1.00).
 - Figure: `reports/figures/model_comparison.png`.
 
 **10. How fragile is it?**
 - Alternative coding: the order of models changes; lowest mean becomes H3(H2-blank).
 - Tie rule: irrelevant, 0 ties occur.
-- Overseas areas in 2022: H1 7.6 pp, H0b 3.3 pp.
+- Overseas areas in 2022: H1 8.1 pp, H0b 3.3 pp.
 - Figure: `reports/figures/predicted_vs_observed_2022.png`.
 
 **11. A 2027 scenario, not a forecast**

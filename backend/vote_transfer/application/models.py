@@ -22,17 +22,26 @@ from dataclasses import dataclass
 import numpy as np
 import pandas as pd
 
-from vote_transfer.application.positions import FAMILY_SCORES
+from vote_transfer.application.positions import FAMILY_SCORES, family_to_unit
 
 NON_VOTE = ("blank_invalid", "abstention")
-THRESHOLD = 2  # H2: "far" means at least this distance from both finalists (decision D4)
+# H2: "far" means at least this distance from both finalists, on the 0-1 scale.
+# It is the original rule (two steps out of six on the 1-7 scale, decision D4), fixed
+# before any poll-based result was seen.
+THRESHOLD = 1 / 3
+TOLERANCE = 1e-9  # scores are fractions: distances that are equal on paper must count as ties
 FAR_OUTCOME = {"H1": None, "H2-abst": "abstention", "H2-blank": "blank_invalid"}
 BASES = tuple(FAR_OUTCOME)  # models that read candidate scores; each is an H3 base
 PARAMETER_FREE = ("H0a", "H0b", *BASES)
 TIES = ("split", "abstention")
-CODINGS = ("primary", "alternative")
+# "polls" is the main scale (candidate_scores.csv); "primary" and "alternative" are the
+# hand-coded 1-7 families and their alternatives, kept as comparisons.
+CODINGS = ("polls", "primary", "alternative")
+MAIN_CODING = CODINGS[0]
 # (coding, tie) pairs evaluated for every scored model. The first is the main analysis.
 SETTINGS = (
+    ("polls", "split"),
+    ("polls", "abstention"),
     ("primary", "split"),
     ("primary", "abstention"),
     ("alternative", "split"),
@@ -116,25 +125,35 @@ def build_election(results: pd.DataFrame) -> Election:
     )
 
 
-def election_scores(positions: pd.DataFrame, year: int, coding: str) -> dict[str, int | None]:
-    """Map each candidate option to its 1-7 score, or None where no score is coded.
+def election_scores(positions: pd.DataFrame, year: int, coding: str) -> dict[str, float | None]:
+    """Map each candidate option to its 0-1 score, or None where the candidate is not placed.
 
-    ``alternative`` replaces the primary family by ``alternative_family`` on every
-    row that lists one: a single alternative scenario, not a search over codings.
+    ``polls`` reads the poll-based scale. ``primary`` reads the hand-coded 1-7 family,
+    put on the 0-1 scale. ``alternative`` replaces that family by ``alternative_family``
+    on every row that lists one: a single alternative scenario, not a search over codings.
     """
     if coding not in CODINGS:
         raise ValueError(f"Unknown coding: {coding!r}. Use one of {CODINGS}.")
     scores = {}
     for row in positions[positions.year == year].itertuples():
-        score = None if pd.isna(row.ideology_score) else int(row.ideology_score)
-        if coding == "alternative" and row.alternative_family:
-            score = FAMILY_SCORES[row.alternative_family]
+        if coding == "polls":
+            score = None if pd.isna(row.poll_score) else float(row.poll_score)
+        else:
+            family = None if pd.isna(row.ideology_score) else int(row.ideology_score)
+            if coding == "alternative" and row.alternative_family:
+                family = FAMILY_SCORES[row.alternative_family]
+            score = None if family is None else family_to_unit(family)
         scores[f"candidate:{row.candidate_id}"] = score
     return scores
 
 
+def at_least(distance: float, threshold: float = THRESHOLD) -> bool:
+    """``distance >= threshold``, without letting rounding break the rule."""
+    return distance >= threshold - TOLERANCE
+
+
 def proximity_row(
-    score: int | None, score_a: int, score_b: int, *, tie: str, far: str | None
+    score: float | None, score_a: float, score_b: float, *, tie: str, far: str | None
 ) -> np.ndarray | None:
     """One eliminated group's row under H1 (``far`` is None) or H2.
 
@@ -146,11 +165,11 @@ def proximity_row(
         return None
     row = np.zeros(4)
     distance_a, distance_b = abs(score - score_a), abs(score - score_b)
-    if far is not None and distance_a >= THRESHOLD and distance_b >= THRESHOLD:
+    if far is not None and at_least(distance_a) and at_least(distance_b):
         row[2 + NON_VOTE.index(far)] = 1
-    elif distance_a < distance_b:
+    elif distance_a < distance_b - TOLERANCE:
         row[0] = 1
-    elif distance_b < distance_a:
+    elif distance_b < distance_a - TOLERANCE:
         row[1] = 1
     elif tie == "split":
         row[:2] = 0.5
@@ -162,7 +181,7 @@ def proximity_row(
 def transfer_tensor(
     election: Election,
     model: str,
-    scores: dict[str, int | None] | None = None,
+    scores: dict[str, float | None] | None = None,
     tie: str = "split",
 ) -> np.ndarray:
     """Transfer matrices for every area: an (areas, groups, 4) array.
@@ -206,7 +225,7 @@ def transfer_matrix(
     election: Election,
     model: str,
     area: str,
-    scores: dict[str, int | None] | None = None,
+    scores: dict[str, float | None] | None = None,
     tie: str = "split",
 ) -> pd.DataFrame:
     """One area's matrix with labelled rows and columns, for inspection and tests."""
@@ -277,9 +296,12 @@ def prediction_rows(
 
 
 def coding_status(positions: pd.DataFrame) -> str:
-    """What every output must say about the candidate table (decision D6)."""
+    """What every output must say about the hand-coded 1-7 comparison (decision D6)."""
     scored = positions[positions.ideology_score.notna()]
     return "reviewed coding" if scored.review_status.eq("reviewed").all() else "draft coding"
+
+
+SCALE_STATUS = "poll-based scale"  # what every output says about the main positions
 
 
 def evaluate_models(
@@ -345,7 +367,8 @@ def evaluate_models(
                 if scores[year][option] is None
             ]
     report = {
-        "coding_status": coding_status(positions),
+        "coding_status": SCALE_STATUS,
+        "comparison_coding_status": coding_status(positions),
         "main_variant": MAIN_VARIANT,
         "elections": {
             str(year): {

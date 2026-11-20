@@ -2,7 +2,7 @@
 
 # Findings
 
-Status of the candidate table: **draft coding**. Every result for H1, H2 and
+Status of the candidate table: **poll-based scale**. Every result for H1, H2 and
 H3 depends on it and will change when the two-coder review is merged.
 `[PENDING: coder agreement]`
 
@@ -22,34 +22,34 @@ What the numbers show. No explanation is offered in this section.
 |---|---:|---:|---:|---:|---:|---:|---:|
 | H0a | 19.0 | 4.3 | 5.6 | 8.6 | 6.1 | 8.7 | 6.2 |
 | H0b | 13.5 | 1.5 | 1.4 | 6.1 | 3.0 | 5.1 | 3.0 |
-| H1 | 4.3 | 4.2 | 2.3 | 6.9 | 4.1 | 4.3 | 4.4 |
-| H2-abst | 19.9 | 4.1 | 2.3 | 15.5 | 10.4 | 10.5 | 8.1 |
-| H2-blank | 19.0 | 3.1 | 1.7 | 14.0 | 9.2 | 9.4 | 7.0 |
-| H3(H1) | 12.0 | 4.1 | 2.1 | 6.8 | 3.9 | 5.8 | 4.2 |
-| H3(H2-abst) | 13.9 | 1.4 | 1.4 | 6.1 | 3.0 | 5.2 | 3.0 |
-| H3(H2-blank) | 14.2 | 1.3 | 1.4 | 6.2 | 3.0 | 5.2 | 2.9 |
+| H1 | 4.4 | 5.0 | 4.1 | 5.8 | 4.4 | 4.7 | 4.8 |
+| H2-abst | 19.4 | 5.5 | 4.2 | 5.2 | 3.7 | 7.6 | 4.7 |
+| H2-blank | 18.4 | 5.0 | 4.1 | 5.2 | 3.1 | 7.2 | 4.3 |
+| H3(H1) | 11.7 | 4.5 | 3.5 | 4.8 | 3.7 | 5.6 | 4.1 |
+| H3(H2-abst) | 14.4 | 1.9 | 1.4 | 6.1 | 3.0 | 5.4 | 3.1 |
+| H3(H2-blank) | 14.6 | 2.0 | 1.5 | 6.1 | 3.0 | 5.4 | 3.2 |
 
-- Order by mean score over the five elections, best first: **H1 < H0b < H3(H2-abst) < H3(H2-blank) < H3(H1) < H0a < H2-blank < H2-abst**.
-- The lowest mean is **H1** (4.35 pp).
+- Order by mean score over the five elections, best first: **H1 < H0b < H3(H2-abst) < H3(H2-blank) < H3(H1) < H2-blank < H2-abst < H0a**.
+- The lowest mean is **H1** (4.74 pp).
 - H0b is below H0a in 5 of 5 elections; its mean is
   -3.63 pp relative to H0a.
-- H1 is below H0b in 1 of 5 elections and below H0a in
-  5.
-- H2-abst is below H0a in 2 of 5 elections and
-  H2-blank in 3. Neither is below H0b in more than
-  0 election(s) (H2-abst: 0).
+- H1 is below H0b in 2 of 5 elections and below H0a in
+  4.
+- H2-abst is below H0a in 3 of 5 elections and
+  H2-blank in 4. Neither is below H0b in more than
+  1 election(s) (H2-abst: 1).
 
 ### 2. 2002 with and without
 
 - 2002 has the largest score of every model except H1: H0a 19.0,
-  H0b 13.5, H1 4.3 pp.
+  H0b 13.5, H1 4.4 pp.
 - In 2002 abstention fell between rounds. H0a predicts 49.7%
   abstention against 19.7% observed; H0b and H1 predict
   27.9%.
-- Order by mean score **without 2002**: **H3(H2-blank) < H3(H2-abst) < H0b < H3(H1) < H1 < H0a < H2-blank < H2-abst**.
+- Order by mean score **without 2002**: **H0b < H3(H2-abst) < H3(H2-blank) < H3(H1) < H2-blank < H2-abst < H1 < H0a**.
 - Without 2002, H1 is no longer first: it ranks
-  5 of 8 (4.36 pp), and the
-  lowest mean is H3(H2-blank) (2.95 pp).
+  7 of 8 (4.82 pp), and the
+  lowest mean is H0b (3.01 pp).
   H0b is at 3.01 pp.
 - Among the parameter-free models, the lowest mean is
   H1 with 2002 and
@@ -69,33 +69,33 @@ covered areas.
 - Every model in the main set under-predicts blank/invalid in 2017 and 2022 except
   H2-blank (H0b: -4.3 and
   -3.1 pp; H2-blank:
-  +14.4 and +17.2 pp).
+  -5.2 and -2.0 pp).
 - In 2017, H0b and H1 over-predict finalist B (Le Pen) by
-  +11.7 and +13.3 pp.
+  +11.7 and -1.5 pp.
 - In 2022, H1 over-predicts finalist A (Macron) by
-  +6.9 pp; H0b over-predicts finalist B by
+  +8.0 pp; H0b over-predicts finalist B by
   +4.3 pp.
-- H2-abst over-predicts abstention by +17.8 pp in 2017
-  and +20.1 pp in 2022.
+- H2-abst over-predicts abstention by -1.9 pp in 2017
+  and +0.9 pp in 2022.
 
 ### 4. H3: fitted share `p` per fold (`h3_folds.csv`)
 
 | Base | Test 2002 | Test 2007 | Test 2012 | Test 2017 | Test 2022 | All five (scenario page only) |
 |---|---:|---:|---:|---:|---:|---:|
-| H1 | 0.86 | 0.02 | 0.10 | 0.11 | 0.08 | 0.21 |
-| H2-abst | 0.91 | 0.98 | 0.97 | 0.97 | 1.00 | 0.97 |
-| H2-blank | 0.85 | 0.94 | 0.91 | 0.89 | 1.00 | 0.90 |
+| H1 | 0.83 | 0.15 | 0.19 | 0.34 | 0.21 | 0.44 |
+| H2-abst | 0.80 | 0.86 | 0.98 | 1.00 | 1.00 | 1.00 |
+| H2-blank | 0.77 | 0.81 | 0.95 | 1.00 | 1.00 | 0.98 |
 
 - `p` is the share of each eliminated group that splits as in H0b instead of
   following the base rule. `p = 1` is H0b.
-- On the H2 bases the fitted `p` is between 0.85 and
+- On the H2 bases the fitted `p` is between 0.77 and
   1.00 in every fold.
-- On H1, `p` is between 0.02 and 0.11 in four folds and
-  0.86 in the fold that tests on 2002 (that is, when 2002 is not in the
+- On H1, `p` is between 0.15 and 0.34 in four folds and
+  0.83 in the fold that tests on 2002 (that is, when 2002 is not in the
   training data).
 - Held-out, H3(H1) has a higher mean score than H1 itself
-  (5.77 against 4.35 pp); the difference comes
-  from 2002 (12.0 against 4.3 pp).
+  (5.63 against 4.74 pp); the difference comes
+  from 2002 (11.7 against 4.4 pp).
 
 ### 5. Sensitivity (`sensitivity.csv`, `tied_groups.csv`, `blank_only.csv`)
 
@@ -105,20 +105,20 @@ list one:
 - order by mean: H3(H2-blank) < H1 < H0b < H3(H2-abst) < H3(H1) < H0a < H2-blank < H2-abst;
 - the ranking changes; the lowest mean belongs
   to a different model (H3(H2-blank));
-- H1's mean moves by +0.67 pp, H2-abst by
-  +0.14 pp, H2-blank by
-  -0.04 pp;
+- H1's mean moves by +0.27 pp, H2-abst by
+  +2.99 pp, H2-blank by
+  +2.19 pp;
 - H2-abst and H2-blank rank 8 and
   7 of 8 under the alternative coding,
-  against 8 and 7 under the primary coding;
+  against 7 and 6 under the primary coding;
 - H0b and H0a rank 3 and
   6 under the alternative coding, against
-  2 and 6.
+  2 and 8.
 
 **Ties.** Number of eliminated candidates equidistant from both finalists:
 0 under the primary coding and 0 under
 the alternative coding. The largest change in any model's mean score between
-`tie=split` and `tie=abstention` is 0.00 pp.
+`tie=split` and `tie=abstention` is 2.85 pp.
 
 **Blank ballots alone (2017 and 2022).** With blank and invalid ballots scored as
 separate outcomes (first-round invalid ballots kept as invalid, every modelled
@@ -129,8 +129,8 @@ inflow counted as blank):
 - every model under-predicts invalid ballots by the same amount:
   -1.6 pp in 2017 and -1.1 pp
   in 2022;
-- on blank ballots alone, H2-blank's error is +16.0 pp
-  (2017) and +18.3 pp (2022); H0b's is
+- on blank ballots alone, H2-blank's error is -3.6 pp
+  (2017) and -0.9 pp (2022); H0b's is
   -2.7 and -1.9 pp;
 - the order of models is unchanged in 2017 and
   is unchanged in 2022 when the five-outcome score replaces the
@@ -142,12 +142,12 @@ inflow counted as blank):
 |---|---:|---:|---:|
 | H0a | 5.8 | 11.3 | 8.5 |
 | H0b | 3.0 | 3.3 | 1.7 |
-| H1 | 4.0 | 7.6 | 2.6 |
+| H1 | 4.3 | 8.1 | 2.0 |
 
 ### 7. Candidate table (`candidate_table_quality.json`)
 
 - 61 rows; 59 draft, 0 reviewed,
-  2 without a score (2012 and 2017; H0b row used).
+  2 without a score (2012 and 2017 and 2017; H0b row used).
 - Consistency: of 33 party labels, those coded with more than
   one family across elections are PS, UDF.
 - Accuracy (two-coder agreement): pending: two-coder review not done.
@@ -159,27 +159,27 @@ Shares are first-round shares of registered voters, all covered areas pooled,
 under the primary coding. H2 sends these groups to abstention (H2-abst) or to a
 blank ballot (H2-blank) in full.
 
-| Election | Finalist scores (A, B) | Eliminated supporters at least 2 steps from both finalists | …of which exactly 2 steps away (scores) |
+| Election | Finalist scores (A, B) | Eliminated supporters at least 0.3 steps from both finalists | …of which exactly 0.3 steps away (scores) |
 |---|---|---:|---:|
-| 2002 | 6, 7 | 31.2% | 1.3% (4) |
-| 2007 | 6, 3 | 4.8% | 4.8% (1) |
-| 2012 | 3, 6 | 1.3% | 1.3% (1) |
-| 2017 | 4, 7 | 21.0% | 19.7% (2) |
-| 2022 | 4, 7 | 21.8% | 20.8% (2) |
+| 2002 | 0.8, 0.9 | 29.9% | 3.7% (0.467) |
+| 2007 | 0.8, 0.5 | 1.4% | 0.0% (none) |
+| 2012 | 0.4, 0.8 | 0.4% | 0.0% (none) |
+| 2017 | 0.5, 0.9 | 1.3% | 0.0% (none) |
+| 2022 | 0.5, 0.9 | 2.6% | 0.0% (none) |
 
-- In 2017 and 2022 the finalists are coded 4 and
-  7. A group coded 2 is exactly 2 steps
-  from the nearer finalist, so the rule "at least 2 steps from both"
-  applies to it: 19.7% of registered voters in 2017 and
-  20.8% in 2022 sit exactly on the threshold.
-- In 2002 the finalists are coded 6 and
-  7, and 31.2% of registered voters are in
+- In 2017 and 2022 the finalists are coded 0.5 and
+  0.9. A group coded none is exactly 0.3 steps
+  from the nearer finalist, so the rule "at least 0.3 steps from both"
+  applies to it: 0.0% of registered voters in 2017 and
+  0.0% in 2022 sit exactly on the threshold.
+- In 2002 the finalists are coded 0.8 and
+  0.9, and 29.9% of registered voters are in
   groups beyond the threshold.
-- In 2007 and 2012 the corresponding shares are 4.8% and
-  1.3%.
-- H2-abst and H2-blank score 4.1 and 3.1 pp in
-  2007 and 2.3 and 1.7 pp in 2012, against
-  15.5 and 14.0 pp in 2017.
+- In 2007 and 2012 the corresponding shares are 1.4% and
+  0.4%.
+- H2-abst and H2-blank score 5.5 and 5.0 pp in
+  2007 and 4.2 and 4.1 pp in 2012, against
+  5.2 and 5.2 pp in 2017.
 
 ## Interpretations
 
@@ -205,13 +205,13 @@ under a draft coding, not a statement about how individuals voted.
 3. **A fixed threshold on a coarse ordinal scale is fragile: this is a finding
    about thresholds, not about voters.** H2 fits badly where the threshold removes
    a large group in one piece, and the mechanism is arithmetic (observation 8).
-   With finalists at 4 and 7,
-   every group coded 2 is exactly 2 steps
-   from the nearer finalist, so the "at least 2 steps" rule sends the
+   With finalists at 0.5 and 0.9,
+   every group coded none is exactly 0.3 steps
+   from the nearer finalist, so the "at least 0.3 steps" rule sends the
    whole left to a non-vote; on a seven-point scale one step is the difference
    between "all of them vote for the nearer finalist" and "none of them do". Where
    few voters are beyond the threshold (2007, 2012), H2 stays close to H1
-   (2.3 against 2.3 pp in 2012). H3 agrees:
+   (4.2 against 4.1 pp in 2012). H3 agrees:
    allowed to ignore the H2 rule for a share `p`, the fit puts nearly everyone in
    that share. The threshold and the equal spacing of the scale were fixed before
    any result was computed and were not changed afterwards. We add no variant with

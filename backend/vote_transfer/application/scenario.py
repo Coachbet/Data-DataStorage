@@ -13,6 +13,7 @@ import pandas as pd
 
 from vote_transfer.application.models import (
     BASES,
+    MAIN_CODING,
     MAIN_VARIANT,
     NON_VOTE,
     PARAMETER_FREE,
@@ -87,7 +88,7 @@ def simulate_runoff(
     if model not in SCENARIO_MODELS:
         raise ValueError(f"Unknown model: {model!r}.")
     election = scenario_election(results, finalists)
-    scores = election_scores(positions, election.year, "primary")
+    scores = election_scores(positions, election.year, MAIN_CODING)
     h0b = predict(election, transfer_tensor(election, "H0b"))
     p = None
     if model.startswith("H3"):

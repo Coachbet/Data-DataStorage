@@ -98,7 +98,8 @@ def test_cross_election_evaluation_needs_all_five_elections(raw_dataset):
 
 def test_predictions_are_written_once_verified_and_bundled(five_elections):
     summary = build_predictions(five_elections)
-    assert summary["coding_status"] == "draft coding"
+    assert summary["coding_status"] == "poll-based scale"
+    assert summary["comparison_coding_status"] == "draft coding"
     predictions, report = load_predictions(five_elections)
     assert len(predictions) == summary["rows"] == report["rows"]
     assert set(report["inputs"]["elections"]) == {"2002", "2007", "2012", "2017", "2022"}
@@ -131,14 +132,31 @@ def test_editing_the_candidate_table_marks_predictions_stale(five_elections, tmp
     assert stale_predictions(five_elections, reference)
 
 
+def test_editing_the_poll_based_scale_marks_predictions_stale(five_elections, tmp_path):
+    reference = tmp_path / "reference"
+    shutil.copytree(REFERENCE_DIR, reference)
+    build_predictions(five_elections, reference)
+    scale = reference / "candidate_scores.csv"
+    scale.write_text(scale.read_text(encoding="utf-8") + "\n", encoding="utf-8")
+    assert stale_predictions(five_elections, reference)
+
+
 def test_shipped_predictions_are_reproduced_from_the_shipped_inputs(five_elections):
     build_predictions(five_elections)
     rebuilt, report = load_predictions(five_elections)
     shipped, shipped_report = load_predictions(BUNDLED.parent)
     pd.testing.assert_frame_equal(rebuilt, pd.read_parquet(BUNDLED / "predictions.parquet"))
     bundled_report = json.loads((BUNDLED / "evaluation_report.json").read_text())
-    assert report["h3_folds"] == bundled_report["h3_folds"]
-    assert shipped_report["coding_status"] == "draft coding" and len(shipped)
+    # Same folds and parameters; scores may differ in the last digit between operating
+    # systems (floating-point summation order), so they are compared with a tolerance.
+    assert len(report["h3_folds"]) == len(bundled_report["h3_folds"])
+    for ours, theirs in zip(report["h3_folds"], bundled_report["h3_folds"], strict=True):
+        for key, value in ours.items():
+            if isinstance(value, float):
+                assert value == pytest.approx(theirs[key], rel=1e-12, abs=1e-12), key
+            else:
+                assert value == theirs[key], key
+    assert shipped_report["coding_status"] == "poll-based scale" and len(shipped)
 
 
 def test_scores_from_the_long_table_match_the_per_election_h0a(five_elections):

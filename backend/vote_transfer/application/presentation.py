@@ -12,6 +12,7 @@ import pandas as pd
 
 from vote_transfer.application.models import (
     BASES,
+    MAIN_CODING,
     MAIN_VARIANT,
     NON_VOTE,
     PARAMETER_FREE,
@@ -217,7 +218,7 @@ def ladder_example(election: Election, positions: pd.DataFrame, report: dict) ->
     The row of the transfer matrix for that group, pooled over areas with the
     group's own size as weight. H3 uses the share fitted with this election held out.
     """
-    scores = election_scores(positions, election.year, "primary")
+    scores = election_scores(positions, election.year, MAIN_CODING)
     weights = election.registered_r2 / election.registered_r2.sum()
     index = {group: i for i, group in enumerate(election.groups)}
     scored = [g for g in election.eliminated if scores.get(g) is not None]

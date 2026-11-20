@@ -211,7 +211,7 @@ def test_answer_page_states_the_answer_from_the_generated_results(offline_app):
         assert fmt_pp(numbers[f"score.{model}.mean"]) in text
     assert not app.metric and not app.selectbox
     status = app.warning[0].value
-    for phrase in ("Draft coding", "[PENDING", "2002 and 2007", "not individual transfers"):
+    for phrase in ("Poll-based scale", "polling", "[PENDING", "2002 and 2007", "not individual"):
         assert phrase in status
     app.button(key="finding_1").click().run(timeout=30)
     assert not app.exception
@@ -232,7 +232,7 @@ def test_evidence_page_shows_every_model_with_honesty_notes(offline_app):
         "Mean without 2002",
     ]
     assert round(table.loc["2022", "H0a"], 2) == 6.12
-    assert any("Draft coding" in item.value for item in app.warning)
+    assert any("Poll-based scale" in item.value for item in app.warning)
     assert any("not individual transfers" in item.value for item in app.warning)
     assert any("2002 and 2007" in item.value for item in app.info)
     assert app.selectbox(key="compare_model").value == table.loc["Mean"].idxmin()
@@ -250,7 +250,7 @@ def test_scenario_page_works_offline_with_permanent_banner(offline_app):
     def banner():
         return [item.value for item in app.warning if "not a forecast" in item.value]
 
-    assert banner() and "2022 electorate" in banner()[0] and "Draft coding" in banner()[0]
+    assert banner() and "2022 electorate" in banner()[0] and "Poll-based scale" in banner()[0]
     assert "Hypothetical · 2022 electorate · not a forecast" in page_text(app)
     assert app.selectbox(key="scenario_a").value == "candidate:emmanuel-macron"
     assert app.selectbox(key="scenario_b").value == "candidate:marine-le-pen"
