@@ -1,6 +1,6 @@
 # Presentation outline (2 December, 15 minutes)
 
-Draft for the team to turn into slides. Twelve slides, about 75 seconds each.
+Draft for the team to turn into slides. Eleven slides, about 80 seconds each.
 Numbers are filled from `reports/results/numbers.json`. Candidate positions: **{{coding_status}}**.
 
 ## Slides
@@ -68,13 +68,7 @@ Numbers are filled from `reports/results/numbers.json`. Candidate positions: **{
 - Overseas areas in 2022: {{best.model}} {{territory.overseas.H1.2022}} pp, H0b {{territory.overseas.H0b.2022}} pp.
 - Figure: `reports/figures/predicted_vs_observed_2022.png`.
 
-**11. A 2027 scenario, not a forecast**
-- The 2022 first-round electorate, two stand-in finalists, one assumption. Default H0b; one option shows all models side by side.
-- No 2027 data, no polls.
-- The spread between assumptions is the message.
-- Figure: live demo or screenshot of the "2027 scenarios" page.
-
-**12. Answer, limits, and what we changed**
+**11. Answer, limits, and what we changed**
 - Answer: inconclusive. Proximity explains 2002; elsewhere a proportional split among voters does as well.
 - Limits: aggregate inference, an order not a distance, one institute for 2002, one dimension, five elections.
 - Changed after feedback: second baseline, candidate positions from polling institutes, normalised storage, cross-election charts.
@@ -119,14 +113,10 @@ on one side. H0a predicts {{predicted.H0a.2002.abstention}}% abstention against
 Written once, read by column, small, and it must rebuild byte for byte for a
 reader with no setup. We lose declarative constraints and enforce them in code.
 
-**Could the 2027 page predict the election?**
-No. It applies an assumption to the 2022 electorate. Different candidates, a
-different electorate and a different campaign are all outside it.
-
 **What about voters abroad and overseas areas?**
 Kept and flagged. Missing from the 2002 and 2007 files, so those years describe
 covered areas only. They fit worse under H1 in 2022.
 
 **How was AI used?**
-For code, tests and drafting. Decisions, the coding of candidates and the
+For code, tests and drafting. Decisions, the collection of the poll orders and the
 interpretation are the team's.

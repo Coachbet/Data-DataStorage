@@ -629,9 +629,7 @@ def run_analysis(
     tables, predictions, report = analysis_tables(root, positions)
     results = project / "reports" / "results"
     results.mkdir(parents=True, exist_ok=True)
-    agreement_file = results / "coding_agreement.json"
-    agreement = json.loads(agreement_file.read_text()) if agreement_file.is_file() else None
-    quality = reference_quality(positions, agreement)
+    quality = reference_quality(positions)
     numbers = build_numbers(predictions, report, positions, tables, quality)
     numbers |= storage_numbers(root)
     numbers |= crosscheck_numbers(load_crosscheck(root, CROSSCHECK_YEAR))

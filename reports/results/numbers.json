@@ -1137,7 +1137,7 @@
   "quality.reviewed_rows": 0,
   "quality.inconsistent_parties": "PS, UDF",
   "quality.parties_checked": 33,
-  "quality.accuracy_status": "pending: two-coder review not done",
+  "quality.accuracy_status": "not reviewed: kept only as a comparison for the poll-based scale",
   "fallback.count": 3,
   "fallback.years": "2012 and 2017 and 2017",
   "storage.raw_mb": 293.224763,

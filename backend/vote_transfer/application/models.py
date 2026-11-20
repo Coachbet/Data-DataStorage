@@ -310,7 +310,7 @@ def evaluate_models(
     """Run every model on every election; H3 is fitted leave-one-election-out.
 
     For H3 only held-out predictions enter the table. The fit on all elections is
-    reported separately for the 2027 scenario, where no election is being scored.
+    reported separately as a description of all five elections; it is never scored.
     """
     elections = {year: build_election(results_by_year[year]) for year in sorted(results_by_year)}
     if len(elections) < 2:

@@ -281,21 +281,7 @@ describe overseas electorates poorly; this is a hypothesis.
   the "best" is partly a selection effect. We dropped the planned H4 and H5 and
   two-dimensional distances, which needed data we could not justify.
 
-## 8. A 2027 scenario, not a forecast
-
-No 2027 first-round data exists and we collect no polls. The app's "2027
-scenarios" page takes the **2022 first-round results by area** as the electorate,
-lets the user name two 2022 candidates as stand-ins for the finalists, and
-applies one assumption. The default is H0b, not {{best.model}}:
-{{best.model}}'s lead comes from 2002 alone (rank {{best.rank_without_2002}} of
-{{n.models}} without it), while H0b needs no candidate coding and ranks
-{{rank.H0b}} with 2002 and {{rank_without_2002.H0b}} without. An option shows every
-model side by side. Since the assumptions disagree and none is clearly best, the
-spread between them is the message, not a prediction. Limits: finalists are
-candidates, not political families, and there is no map (we hold no boundary
-data).
-
-## 9. Reproducibility and response to feedback
+## 8. Reproducibility and response to feedback
 
 ```bash
 uv sync --locked --dev      # environment from the lock file

@@ -82,7 +82,7 @@ covered areas.
 
 ### 4. H3: fitted share `p` per fold (`h3_folds.csv`)
 
-| Base | Test 2002 | Test 2007 | Test 2012 | Test 2017 | Test 2022 | All five (scenario page only) |
+| Base | Test 2002 | Test 2007 | Test 2012 | Test 2017 | Test 2022 | Fitted on all five (description only) |
 |---|---:|---:|---:|---:|---:|---:|
 | H1 | 0.83 | 0.15 | 0.19 | 0.34 | 0.21 | 0.44 |
 | H2-abst | 0.80 | 0.86 | 0.98 | 1.00 | 1.00 | 1.00 |
