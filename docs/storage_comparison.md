@@ -13,7 +13,7 @@ Draft for the team to edit. Sizes and row counts are measured by
 | Interim | 673,228 station-round rows and 4,764,054 candidate rows | Local only | Once per rebuild | By the cross-check |
 | Processed | `areas` (1,044 rows), `outcomes` (9,475), `options` (71) for five elections | 139 kB in 15 files | Once per rebuild | Every app page; every model |
 | Predictions | 79,344 rows: every model, variant, election, area and outcome | 446 kB | Once per evaluation | Analysis, app |
-| Reference | 61 hand-coded candidacies | CSV | By hand | By every scored model |
+| Reference | 22 collected poll orders and the 61-row scale built from them; the hand-coded 1–7 comparison table | CSV | By hand (polls), by the notebook (scale) | By every scored model |
 
 The operations are few and regular:
 
@@ -88,7 +88,7 @@ many more variants) or if readers want to explore it in SQL.
 ## Decision and limits
 
 **We keep Parquet files as the storage layer, with normalised tables, a derived
-view and executable constraints. We keep the hand-edited reference table as CSV.**
+view and executable constraints. We keep the small reference tables as CSV.**
 
 Why: the data is written once by one process, read by column, small, and must be
 reproduced exactly by a reader with no setup. Parquet keeps the types that CSV
@@ -105,9 +105,13 @@ Limits we accept and state:
 3. **Two copies exist** (`processed/` and `bundled/`). They can diverge; we detect
    it (`vote-transfer check-snapshots`, run by `make check` and at app start-up)
    and do not prevent it.
-4. **One table is still CSV.** `candidate_positions.csv` is edited by hand and
-   reviewed line by line in Git; its types are enforced when it is read
-   (`positions.py`). This is a deliberate exception, not an inconsistency.
+4. **The reference tables are still CSV.** `polling_axes.csv` is typed in by hand
+   from the institutes' reports, `candidate_scores.csv` is written by the notebook,
+   and `candidate_positions.csv` (the hand-coded comparison) is edited by hand. All
+   three are small and reviewed line by line in Git; their types and rules are
+   enforced when they are read (`positions.py`), and a test checks that the scale
+   matches the polls. The scale keeps every decimal, because rounding would break
+   exact ties. This is a deliberate exception, not an inconsistency.
 5. **This choice does not scale to concurrent writers.** If the project became a
    service with several people writing results, a database would be the right
    answer.

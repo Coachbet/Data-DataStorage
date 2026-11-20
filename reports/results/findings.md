@@ -2,9 +2,11 @@
 
 # Findings
 
-Status of the candidate table: **poll-based scale**. Every result for H1, H2 and
-H3 depends on it and will change when the two-coder review is merged.
-`[PENDING: coder agreement]`
+Candidate positions: **poll-based scale**. H1, H2 and H3 place candidates with
+the left-to-right orders of 22 polls by 9 polling
+institutes (`data/reference/polling_axes.csv`, built into
+`data/reference/candidate_scores.csv` by `notebooks/candidate_scale.ipynb`). The
+hand-coded 1–7 scale is kept as a comparison (draft coding).
 
 All numbers below are read from `reports/results/numbers.json`, written by
 `vote-transfer analyse`. Scores are the primary score in percentage points (pp):
@@ -66,17 +68,17 @@ covered areas.
 - H0b's abstention error lies between -3.2 and
   +8.2 pp. The same holds for H1, which shares H0b's
   abstention prediction by construction.
-- Every model in the main set under-predicts blank/invalid in 2017 and 2022 except
-  H2-blank (H0b: -4.3 and
+- Every model in the main set under-predicts blank/invalid in 2017 and 2022,
+  H2-blank included (H0b: -4.3 and
   -3.1 pp; H2-blank:
   -5.2 and -2.0 pp).
-- In 2017, H0b and H1 over-predict finalist B (Le Pen) by
-  +11.7 and -1.5 pp.
-- In 2022, H1 over-predicts finalist A (Macron) by
-  +8.0 pp; H0b over-predicts finalist B by
-  +4.3 pp.
-- H2-abst over-predicts abstention by -1.9 pp in 2017
-  and +0.9 pp in 2022.
+- Error on finalist B (Le Pen) in 2017: H0b +11.7 pp,
+  H1 -1.5 pp.
+- Error on finalist A (Macron) in 2022: H1 +8.0 pp;
+  error on finalist B: H0b +4.3 pp.
+- H2-abst's error on abstention is -1.9 pp in 2017
+  and +0.9 pp in 2022, against
+  +38.1 pp in 2002.
 
 ### 4. H3: fitted share `p` per fold (`h3_folds.csv`)
 
@@ -99,26 +101,33 @@ covered areas.
 
 ### 5. Sensitivity (`sensitivity.csv`, `tied_groups.csv`, `blank_only.csv`)
 
-**Coding.** With `alternative_family` on the 41 rows that
-list one:
+**Candidate positions.** Every model is rerun on the hand-coded 1–7 scale (put on
+0–1, same threshold) and on its alternative families. Changes are relative to the
+main, poll-based results.
 
-- order by mean: H3(H2-blank) < H1 < H0b < H3(H2-abst) < H3(H1) < H0a < H2-blank < H2-abst;
-- the ranking changes; the lowest mean belongs
-  to a different model (H3(H2-blank));
-- H1's mean moves by +0.27 pp, H2-abst by
-  +2.99 pp, H2-blank by
-  +2.19 pp;
+- Hand-coded 1–7 scale: order by mean H1 < H0b < H3(H2-abst) < H3(H2-blank) < H3(H1) < H0a < H2-blank < H2-abst; the ranking
+  changes and the lowest mean belongs to
+  the same model (H1). H1's mean
+  moves by -0.39 pp, H2-abst by
+  +2.85 pp, H2-blank by
+  +2.23 pp. Without 2002 the lowest mean is
+  H3(H2-blank).
+- Alternative families (41 rows that list one): order by
+  mean H3(H2-blank) < H1 < H0b < H3(H2-abst) < H3(H1) < H0a < H2-blank < H2-abst; the lowest mean belongs to
+  a different model (H3(H2-blank)).
+  H1's mean moves by +0.27 pp, H2-abst by
+  +2.99 pp.
 - H2-abst and H2-blank rank 8 and
-  7 of 8 under the alternative coding,
-  against 7 and 6 under the primary coding;
-- H0b and H0a rank 3 and
-  6 under the alternative coding, against
-  2 and 8.
+  7 of 8 on the 1–7 scale, against
+  7 and 6 on the poll-based scale. H0b ranks
+  2 on the poll-based scale, 2 on the 1–7 scale
+  and 3 under the alternative families.
 
-**Ties.** Number of eliminated candidates equidistant from both finalists:
-0 under the primary coding and 0 under
-the alternative coding. The largest change in any model's mean score between
-`tie=split` and `tie=abstention` is 2.85 pp.
+**Ties.** On the poll-based scale, 2 eliminated candidates are
+exactly equidistant from both finalists (2002, 2007); on the 1–7 scale
+0, and 0 under the alternative families.
+Sending tied groups to abstention instead of splitting them changes no model's mean
+by more than 0.10 pp.
 
 **Blank ballots alone (2017 and 2022).** With blank and invalid ballots scored as
 separate outcomes (first-round invalid ballots kept as invalid, every modelled
@@ -144,22 +153,28 @@ inflow counted as blank):
 | H0b | 3.0 | 3.3 | 1.7 |
 | H1 | 4.3 | 8.1 | 2.0 |
 
-### 7. Candidate table (`candidate_table_quality.json`)
+### 7. Candidate positions (`candidate_scores.csv`, `candidate_table_quality.json`)
 
-- 61 rows; 59 draft, 0 reviewed,
-  2 without a score (2012 and 2017 and 2017; H0b row used).
-- Consistency: of 33 party labels, those coded with more than
-  one family across elections are PS, UDF.
-- Accuracy (two-coder agreement): pending: two-coder review not done.
-  `[PENDING: coder agreement]`
+- Poll-based scale: 22 polls (1 in 2002,
+  3 in 2007, 3 in 2012, 7 in
+  2017, 8 in 2022); 7 taken from the institutes'
+  reports and 15 from the compilation by Delemazure, Dong, Peters
+  and Tydrichová (2024). `[PENDING: poll orders checked against sources]`
+- 3 candidacies unplaced (Cheminade 2012, Cheminade 2017, Lassalle 2017; H0b row used).
+  Largest disagreement between institutes for a placed candidate:
+  0.36 (unplaced above 0.4).
+- Comparison scale (hand-coded 1–7): 61 rows; 59
+  draft, 0 reviewed, 2 without a score.
+  Party labels coded with more than one family across elections:
+  PS, UDF.
 
 ### 8. What the H2 threshold removes (`h2_threshold.csv`)
 
 Shares are first-round shares of registered voters, all covered areas pooled,
-under the primary coding. H2 sends these groups to abstention (H2-abst) or to a
+on the poll-based scale (0 = left, 1 = right). H2 sends these groups to abstention (H2-abst) or to a
 blank ballot (H2-blank) in full.
 
-| Election | Finalist scores (A, B) | Eliminated supporters at least 0.3 steps from both finalists | …of which exactly 0.3 steps away (scores) |
+| Election | Finalist scores (A, B) | Eliminated supporters at least one third of the scale from both finalists | …of which exactly one third away (scores) |
 |---|---|---:|---:|
 | 2002 | 0.8, 0.9 | 29.9% | 3.7% (0.467) |
 | 2007 | 0.8, 0.5 | 1.4% | 0.0% (none) |
@@ -167,16 +182,14 @@ blank ballot (H2-blank) in full.
 | 2017 | 0.5, 0.9 | 1.3% | 0.0% (none) |
 | 2022 | 0.5, 0.9 | 2.6% | 0.0% (none) |
 
-- In 2017 and 2022 the finalists are coded 0.5 and
-  0.9. A group coded none is exactly 0.3 steps
-  from the nearer finalist, so the rule "at least 0.3 steps from both"
-  applies to it: 0.0% of registered voters in 2017 and
-  0.0% in 2022 sit exactly on the threshold.
-- In 2002 the finalists are coded 0.8 and
-  0.9, and 29.9% of registered voters are in
-  groups beyond the threshold.
-- In 2007 and 2012 the corresponding shares are 1.4% and
-  0.4%.
+- In 2002 both finalists are on the right of the scale
+  (0.80 and 0.93), and
+  29.9% of registered voters are in groups at least one third away
+  from both, the whole left among them. 3.7% sit exactly on
+  the threshold (Noël Mamère, 0.467).
+- In the other elections the threshold removes little: 1.4% in
+  2007, 0.4% in 2012, 1.3% in 2017 and
+  2.6% in 2022.
 - H2-abst and H2-blank score 5.5 and 5.0 pp in
   2007 and 4.2 and 4.1 pp in 2012, against
   5.2 and 5.2 pp in 2017.
@@ -184,7 +197,7 @@ blank ballot (H2-blank) in full.
 ## Interpretations
 
 What the observations may mean. Each point is a reading of aggregate patterns
-under a draft coding, not a statement about how individuals voted.
+on the poll-based scale, not a statement about how individuals voted.
 
 1. **The original baseline was weak for one identifiable reason.** H0a sends part
    of every eliminated group to abstention, and it over-predicts abstention in
@@ -202,19 +215,20 @@ under a draft coding, not a statement about how individuals voted.
    from a single-election effect. **The evidence does not support naming one
    assumption as the best explanation.**
 
-3. **A fixed threshold on a coarse ordinal scale is fragile: this is a finding
-   about thresholds, not about voters.** H2 fits badly where the threshold removes
-   a large group in one piece, and the mechanism is arithmetic (observation 8).
-   With finalists at 0.5 and 0.9,
-   every group coded none is exactly 0.3 steps
-   from the nearer finalist, so the "at least 0.3 steps" rule sends the
-   whole left to a non-vote; on a seven-point scale one step is the difference
-   between "all of them vote for the nearer finalist" and "none of them do". Where
-   few voters are beyond the threshold (2007, 2012), H2 stays close to H1
-   (4.2 against 4.1 pp in 2012). H3 agrees:
+3. **"Too far from both, so stay home" fails in the one election where it bites.**
+   H2 fits badly where the threshold removes a large group in one piece
+   (observation 8). In 2002 both finalists were on the right, so the rule sends the
+   whole left to a non-vote, while the left voted for Chirac against Le Pen:
+   H2-abst scores 19.4 pp against 4.4 for H1. Where few
+   voters are beyond the threshold, H2 stays close to H1
+   (4.2 against 4.1 pp in 2012). The size of the
+   failure also depends on where candidates are placed: on the hand-coded 1–7 scale,
+   the left of 2017 and 2022 sat exactly on the threshold and H2 was much worse
+   (+2.9 pp on average). H3 agrees:
    allowed to ignore the H2 rule for a share `p`, the fit puts nearly everyone in
-   that share. The threshold and the equal spacing of the scale were fixed before
-   any result was computed and were not changed afterwards. We add no variant with
+   that share. The threshold (one third, the original two steps out of six) and the
+   equal spacing were fixed before any result was computed and not changed
+   afterwards. We add no variant with
    another threshold: choosing one after seeing these scores would be tuning on
    the evaluation elections.
 
@@ -223,23 +237,26 @@ under a draft coding, not a statement about how individuals voted.
    (2002) pulls it. This is a useful negative result: one fitted parameter is
    already more than five elections can pin down.
 
-5. **Blank and invalid ballots.** All models but H2-blank under-predict the rise
-   of blank/invalid ballots in 2017 and 2022, and H2-blank over-predicts it by
-   far more. About a quarter of the combined category is invalid ballots, whose
+5. **Blank and invalid ballots.** Every model, H2-blank included, under-predicts
+   the rise of blank/invalid ballots in 2017 and 2022. About a quarter of the combined category is invalid ballots, whose
    rise no rule here addresses. A model for the rise of blank voting is still
    missing; we do not claim one.
 
 6. **Overseas areas fit worse under H1 than under H0b in 2022.** Their
    first-round patterns differ from metropolitan areas (the scatter shows H1
    placing too much on finalist A and too little on finalist B there). A
-   left–right scale coded for national politics may describe these electorates
+   left–right scale built from national polls may describe these electorates
    poorly. This is a hypothesis, not a finding.
 
-7. **The coding matters.** Under the alternative coding the order of models
-   changes. Conclusions that depend on the
-   position of H1 relative to H0b should be treated as provisional until the
-   two-coder review is done. The tie rule, in contrast, is irrelevant in practice:
-   no tie occurs under either coding.
+7. **The placement of candidates matters for H2, less for the main conclusion.**
+   On the hand-coded 1–7 scale the order of models
+   changes (H2 falls), and under its alternative
+   families it changes again; but on every scale
+   H1 leads over five elections only because of 2002, and H0b or an H3 mixture close
+   to it leads without 2002. The tie rule matters little: 2
+   candidates sit exactly halfway between the finalists (2002, 2007),
+   and the abstention tie rule moves no mean by more than
+   0.10 pp.
 
 ## Caveats that apply to everything above
 
@@ -249,9 +266,11 @@ under a draft coding, not a statement about how individuals voted.
   107); scores describe covered areas only.
 - Naming a "best" model after comparing eight on the same five elections is
   itself a selection; no significance is claimed.
-- The scale is one-dimensional and assumed equally spaced.
-- The alternative coding moves all 41 listed rows at once,
-  finalists included. It is a single alternative scenario, not a per-candidate
-  sensitivity analysis.
+- The scale is one-dimensional and is an order: within a poll, candidates are
+  equally spaced whatever their real ideological gap.
+- 2002 rests on one institute (1 poll), and
+  15 of 22 orders come from a published compilation.
+- The comparison 1–7 scale is an unreviewed draft; its alternative coding moves all
+  41 listed rows at once.
 - H3 is reported pending approval of its fitted parameter.
   `[PENDING: professor approval]`

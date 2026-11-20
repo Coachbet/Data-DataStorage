@@ -39,7 +39,11 @@ from vote_transfer.application.models import (
     h3_name,
     variant_name,
 )
-from vote_transfer.application.positions import load_candidate_positions
+from vote_transfer.application.positions import (
+    REFERENCE_DIR,
+    load_candidate_positions,
+    load_poll_scores,
+)
 from vote_transfer.application.quality import territory_type
 from vote_transfer.application.review import reference_quality
 from vote_transfer.config import PROJECT_ROOT
@@ -309,6 +313,7 @@ def build_numbers(
     }
     n["n.models"] = len(MODEL_ORDER)
     n["n.candidacies"] = len(positions)
+    n.update(scale_numbers())
     names = positions.set_index(["year", "candidate_id"]).candidate_name
     weights = predictions.drop_duplicates(["year", "area_code"]).groupby("year").registered_r2
     for year in years:
@@ -585,6 +590,32 @@ def analysis_tables(root: Path, positions: pd.DataFrame) -> tuple[dict, pd.DataF
         ),
     }
     return tables, predictions, report
+
+
+def scale_numbers(folder: Path = REFERENCE_DIR) -> dict[str, object]:
+    """What the report says about the poll-based scale, read from the shipped files."""
+    polls = pd.read_csv(folder / "polling_axes.csv")
+    scores = load_poll_scores(folder)
+    placed, unplaced = scores[scores.status == "placed"], scores[scores.status == "unplaced"]
+    names = {
+        "jacques-cheminade": "Cheminade",
+        "jean-lassalle": "Lassalle",
+    }
+    n: dict[str, object] = {
+        "scale.polls": len(polls),
+        "scale.institutes": polls.institute.nunique(),
+        "scale.unplaced": len(unplaced),
+        "scale.unplaced_list": ", ".join(
+            f"{names.get(row.candidate_id, row.candidate_id)} {row.year}"
+            for row in unplaced.sort_values(["year", "candidate_id"]).itertuples()
+        ),
+        "scale.max_range_placed": float(placed["range"].max()),
+        "scale.from_reports": int(polls.source_type.ne("compiled table").sum()),
+        "scale.from_paper": int(polls.source_type.eq("compiled table").sum()),
+    }
+    for year, of_year in polls.groupby("year"):
+        n[f"scale.polls.{year}"] = len(of_year)
+    return n
 
 
 def run_analysis(
