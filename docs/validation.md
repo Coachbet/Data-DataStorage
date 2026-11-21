@@ -74,9 +74,11 @@ processing report and output hashes are in `data/processed/2022/quality_report.j
 
 ## Limits
 
-Original-file ingestion and H0 now cover 2002, 2007, 2012, 2017 and 2022. H0 is a
-provisional baseline and has not been compared with H1–H5. There is no fitted
-model, cross-election generalisation claim or completed 2027 simulation.
+Original-file ingestion covers 2002, 2007, 2012, 2017 and 2022, and every model
+(H0a, H0b, H1, H1-soft, H2, H3) is scored on all five (`docs/report/report.md`).
+The only fitted parameter is H3's `p`, fitted leave-one-election-out. With five
+elections we make no significance claim. The 2027 scenario was dropped on
+20 November 2026.
 
 
 ## Historical integration and offline handoff

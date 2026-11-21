@@ -1,5 +1,10 @@
 # Design brief for the site
 
+> **Historical record.** This describes the site as it was on 15 November 2026. On
+> 20 November 2026 the screenshots were removed from the repository and the
+> "2027 scenarios" page was dropped; the site now has four pages (The answer,
+> Evidence, Explore the data, Method & sources). `capture.py` can recapture screenshots.
+
 Date: 15 November 2026. Follows [`audit.md`](audit.md). The research does not
 change: no model, number, data file or generated result is touched. Every value
 on the site is still computed from the bundled predictions and election tables.
@@ -93,7 +98,6 @@ so every page stays visible.
 | **The answer** | question; answer in two sentences; the comparison chart; three findings, each naming its evidence; status note | Home (new content) |
 | **Evidence** | the five assumptions with what each does to one real group; comparison table; signed errors; H2 threshold; predicted against observed; sensitivity; H3 folds; H0a in one election, with its formulas and example | Understand the model + Compare models |
 | **Explore the data** | election, area and round pickers on the page; both rounds side by side; one round in detail; exact figures and download | Explore + the home "snapshot" |
-| **2027 scenarios** | the simulator inside a frame labelled as hypothetical; chart per model; H0b default; all-models view | 2027 scenarios |
 | **Method & sources** | provenance, checks, storage, limits, reproduction, candidate reference, glossary, AI disclosure | Sources & limits |
 
 The election and area pickers leave the global bar. They appear only where a
@@ -139,9 +143,6 @@ scroll; one `h1`; a one-line purpose statement under it.
   annotated. Every chart has takeaway title, measure subtitle, source line.
 - **Explore the data.** The controls that change a chart sit directly above it.
   The four outcomes use the outcome colours; other candidates are grey.
-- **2027 scenarios.** No view of a result is possible without the words
-  "hypothetical" and "not a forecast" on screen with it. H0b is the default and
-  the all-models view exists.
 - **Method & sources.** Provenance, cleaning, storage, limits and reproduction
   are each reachable in one click. The AI disclosure sentence is unchanged.
 

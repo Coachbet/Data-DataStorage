@@ -44,7 +44,7 @@ Numbers are filled from `reports/results/numbers.json`. Candidate positions: **{
 
 **7. Five assumptions, each one sentence**
 - H0a: like everyone else, abstainers included. H0b: like everyone who voted.
-- H1: nearest finalist. H2: nearest, unless at least one third of the scale from both (then abstain, or vote blank).
+- H1: nearest finalist. H1-soft: both finalists, the nearer one gets more. H2: nearest, unless at least one third of the scale from both (then abstain, or vote blank).
 - H3: a fitted share `p` ignores proximity. Rules fixed before any result.
 - Figure: one transfer matrix, with identity rows highlighted.
 

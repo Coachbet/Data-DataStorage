@@ -139,6 +139,7 @@ was computed.
 | H0a | split like the rest of the electorate, abstainers included | no |
 | H0b | split between the two finalists and blank/invalid, in proportion to first-round shares; none abstain | no |
 | H1 | go to the finalist nearest on the poll-based scale (a tie splits 50/50) | no |
+| H1-soft | split between the two finalists, each getting a share inversely proportional to its distance (added after the other results were known) | no |
 | H2-abst, H2-blank | as H1, unless at least one third of the scale from both finalists: then abstention, or a blank ballot | no |
 | H3 `[PENDING: professor approval]` | a share `p` splits as in H0b, the rest follows H1 or H2 | `p` |
 
@@ -180,13 +181,19 @@ observed result. H3 is held-out.*
    H0b ({{score.H0b.mean}} pp). But {{best.model}} beats H0b in only
    {{wins.H1.vs_H0b}} of {{n.elections}} elections, and most of its lead comes from
    2002, where it scores {{score.H1.2002}} pp against {{score.H0b.2002}}.
-3. **Without 2002 the order changes.** {{best.model}} falls to rank
+3. **Splitting by distance trades 2002 for the other elections.** H1-soft averages
+   {{score.H1-soft.mean}} pp (rank {{rank.H1-soft}}) and {{score.H1-soft.mean_without_2002}} pp
+   without 2002. It is closer than H1 outside 2002 (for example {{score.H1-soft.2012}}
+   against {{score.H1.2012}} pp in 2012) but much worse in 2002 ({{score.H1-soft.2002}}
+   against {{score.H1.2002}}): on an evenly spaced scale Chirac and Le Pen are almost as
+   far from Jospin, so a large share of the left goes to Le Pen.
+4. **Without 2002 the order changes.** {{best.model}} falls to rank
    {{best.rank_without_2002}} of {{n.models}} ({{best.mean_without_2002}} pp); H0b is at
    {{score.H0b.mean_without_2002}} pp and the lowest mean is
    {{best_without_2002.model}} ({{best_without_2002.mean_without_2002|.2f}} pp), followed
    by the H3 mixtures on the H2 bases ({{score.H3(H2-abst).mean_without_2002|.2f}} and
    {{score.H3(H2-blank).mean_without_2002|.2f}} pp), which are almost entirely H0b.
-4. **The distance threshold fails in one election.** H2-abst and H2-blank have
+5. **The distance threshold fails in one election.** H2-abst and H2-blank have
    means of {{score.H2-abst.mean}} and {{score.H2-blank.mean}} pp and beat H0b in
    {{wins.H2-abst.vs_H0b}} and {{wins.H2-blank.vs_H0b}} of {{n.elections}} elections.
    The damage is in 2002: both finalists sit on the right of the scale
@@ -195,14 +202,15 @@ observed result. H3 is held-out.*
    registered voters to a non-vote; H2-abst then scores {{score.H2-abst.2002}} pp.
    In the other elections the rule removes little ({{h2.2007.beyond_pct}}% in 2007,
    {{h2.2012.beyond_pct}}% in 2012, {{h2.2017.beyond_pct}}% in 2017 and
-   {{h2.2022.beyond_pct}}% in 2022), and H2 scores close to H1.
-5. **H3 adds little** `[PENDING: professor approval]`**.** On the H2 bases the fitted `p` is between
+   {{h2.2022.beyond_pct}}% in 2022), and H2 scores close to H1. So in practice the
+   threshold is tested in one election only, and we do not claim that it helps.
+6. **H3 adds little** `[PENDING: professor approval]`**.** On the H2 bases the fitted `p` is between
    {{p.H2-blank.min|.2f}} and {{p.H2-abst.max|.2f}}: the fit almost discards the H2
    rule. On H1, `p` is between {{p.H1.min|.2f}} and {{p.H1.2017|.2f}} in four folds and
    {{p.H1.2002|.2f}} when 2002 is held out. Held-out H3(H1) is worse than H1 over five
    elections ({{score.H3(H1).mean}} against {{score.H1.mean}} pp) but better without
    2002 ({{score.H3(H1).mean_without_2002}} against {{score.H1.mean_without_2002}} pp).
-6. **Blank and invalid ballots are under-predicted** in 2017 and 2022 by every
+7. **Blank and invalid ballots are under-predicted** in 2017 and 2022 by every
    model, H2-blank included ({{signed.H2-blank.2017.blank_invalid|+.1f}} and
    {{signed.H2-blank.2022.blank_invalid|+.1f}} pp).
    Invalid ballots are {{blank.2017.invalid_share_of_combined|.0f}}% of the category

@@ -30,6 +30,7 @@ from vote_transfer.application.models import (
     MAIN_VARIANT,
     NO_VARIANT,
     SETTINGS,
+    SOFT_MODELS,
     THRESHOLD,
     TOLERANCE,
     Election,
@@ -48,7 +49,14 @@ from vote_transfer.application.quality import territory_type
 from vote_transfer.application.review import reference_quality
 from vote_transfer.config import PROJECT_ROOT
 
-MODEL_ORDER = ("H0a", "H0b", *BASES, *(h3_name(base) for base in BASES))
+MODEL_ORDER = (
+    "H0a",
+    "H0b",
+    BASES[0],
+    *SOFT_MODELS,
+    *BASES[1:],
+    *(h3_name(base) for base in BASES),
+)
 ROLES = ("finalist_a", "finalist_b", "blank_invalid", "abstention")
 OUTLIER_YEAR = 2002
 CROSSCHECK_YEAR = 2022
@@ -353,7 +361,7 @@ def build_numbers(
     n[f"text.best_without_{OUTLIER_YEAR}"] = (
         "stays first" if best == best_without else "is no longer first"
     )
-    parameter_free = comparison.loc[["H0a", "H0b", *BASES]]
+    parameter_free = comparison.loc[["H0a", "H0b", *BASES, *SOFT_MODELS]]
     n["best_parameter_free.model"] = parameter_free["mean"].idxmin()
     n[f"best_parameter_free_without_{OUTLIER_YEAR}.model"] = parameter_free[without].idxmin()
 

@@ -1,7 +1,12 @@
 # Verification of the redesign
 
-Checked against the screenshots in [`after/`](after/) (1440 px and 390 px, taken
-with `capture.py` on the bundled data) and against the test suite. The criteria
+> **Historical record.** This describes the site as it was on 15 November 2026. On
+> 20 November 2026 the screenshots were removed from the repository and the
+> "2027 scenarios" page was dropped; the site now has four pages (The answer,
+> Evidence, Explore the data, Method & sources). `capture.py` can recapture screenshots.
+
+Checked against screenshots (1440 px and 390 px, taken
+with `capture.py` on the bundled data; the screenshots are no longer in the repository) and against the test suite. The criteria
 are those of [`brief.md`](brief.md). "Pass" with a note means the criterion
 holds and the note records its limit.
 

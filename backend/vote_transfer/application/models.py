@@ -31,8 +31,12 @@ NON_VOTE = ("blank_invalid", "abstention")
 THRESHOLD = 1 / 3
 TOLERANCE = 1e-9  # scores are fractions: distances that are equal on paper must count as ties
 FAR_OUTCOME = {"H1": None, "H2-abst": "abstention", "H2-blank": "blank_invalid"}
-BASES = tuple(FAR_OUTCOME)  # models that read candidate scores; each is an H3 base
-PARAMETER_FREE = ("H0a", "H0b", *BASES)
+BASES = tuple(FAR_OUTCOME)  # all-or-nothing rules on candidate scores; each is an H3 base
+# H1-soft: each finalist gets a share that grows as it gets closer (added 21 November
+# 2026, after the other results were known; fixed formula, no parameter).
+SOFT_MODELS = ("H1-soft",)
+SCORED_MODELS = (*BASES, *SOFT_MODELS)  # every model that reads candidate scores
+PARAMETER_FREE = ("H0a", "H0b", *SCORED_MODELS)
 TIES = ("split", "abstention")
 # "polls" is the main scale (candidate_scores.csv); "primary" and "alternative" are the
 # hand-coded 1-7 families and their alternatives, kept as comparisons.
@@ -178,6 +182,25 @@ def proximity_row(
     return row
 
 
+def soft_row(score: float | None, score_a: float, score_b: float) -> np.ndarray | None:
+    """One eliminated group's row under H1-soft.
+
+    Each finalist gets a share inversely proportional to its distance:
+    ``share_A = d_B / (d_A + d_B)``. The nearer finalist gets more, an equidistant
+    group splits 50/50 by construction, and nothing goes to blank or abstention.
+    Returns None when the candidate has no score; the caller then uses the H0b row.
+    """
+    if score is None:
+        return None
+    distance_a, distance_b = abs(score - score_a), abs(score - score_b)
+    total = distance_a + distance_b
+    if total <= TOLERANCE:
+        raise ValueError("H1-soft needs two finalists at different positions.")
+    row = np.zeros(4)
+    row[0], row[1] = distance_b / total, distance_a / total
+    return row
+
+
 def transfer_tensor(
     election: Election,
     model: str,
@@ -202,7 +225,7 @@ def transfer_tensor(
         raise ValueError("H0 needs positive support among retained options.")
     h0a = retained / retained.sum(axis=1, keepdims=True)
     h0b = h0b / h0b.sum(axis=1, keepdims=True)
-    if model in BASES:
+    if model in SCORED_MODELS:
         scores = scores or {}
         score_a, score_b = (scores.get(finalist) for finalist in election.finalists)
         if score_a is None or score_b is None:
@@ -215,7 +238,12 @@ def transfer_tensor(
         else:
             if group not in scores:
                 raise ValueError(f"No reference row for {group} in {election.year}.")
-            fixed = proximity_row(scores[group], score_a, score_b, tie=tie, far=FAR_OUTCOME[model])
+            if model in SOFT_MODELS:
+                fixed = soft_row(scores[group], score_a, score_b)
+            else:
+                fixed = proximity_row(
+                    scores[group], score_a, score_b, tie=tie, far=FAR_OUTCOME[model]
+                )
             row = h0b if fixed is None else fixed
         tensor[:, index[group], :] = row
     return tensor
@@ -359,6 +387,10 @@ def evaluate_models(
                         )
                     )
                 folds.append(fold)
+        for soft in SOFT_MODELS:  # no tie rule needed: a tie is already 50/50
+            for year, election in elections.items():
+                predicted = predict(election, transfer_tensor(election, soft, scores[year], tie))
+                frames.append(prediction_rows(election, predicted, soft, variant))
         if (coding, tie) == SETTINGS[0]:
             fallbacks = [
                 {"year": year, "option": option, "rule": "no score: H0b row"}

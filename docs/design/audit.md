@@ -1,8 +1,13 @@
 # Design audit of the site before the redesign
 
+> **Historical record.** This describes the site as it was on 15 November 2026. On
+> 20 November 2026 the screenshots were removed from the repository and the
+> "2027 scenarios" page was dropped; the site now has four pages (The answer,
+> Evidence, Explore the data, Method & sources). `capture.py` can recapture screenshots.
+
 Date: 15 November 2026. State audited: `master` after the analysis merge.
-Screenshots of every page at 1440 px and 390 px are in [`before/`](before/)
-(taken with [`capture.py`](capture.py)).
+Screenshots of every page were taken at 1440 px and 390 px with
+[`capture.py`](capture.py); the screenshots are no longer in the repository.
 
 ## Summary
 

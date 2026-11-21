@@ -31,7 +31,7 @@ What the numbers show. No explanation is offered in this section.
 | H3(H2-abst) | 14.4 | 1.9 | 1.4 | 6.1 | 3.0 | 5.4 | 3.1 |
 | H3(H2-blank) | 14.6 | 2.0 | 1.5 | 6.1 | 3.0 | 5.4 | 3.2 |
 
-- Order by mean score over the five elections, best first: **H1 < H0b < H3(H2-abst) < H3(H2-blank) < H3(H1) < H2-blank < H2-abst < H0a**.
+- Order by mean score over the five elections, best first: **H1 < H0b < H1-soft < H3(H2-abst) < H3(H2-blank) < H3(H1) < H2-blank < H2-abst < H0a**.
 - The lowest mean is **H1** (4.74 pp).
 - H0b is below H0a in 5 of 5 elections; its mean is
   -3.63 pp relative to H0a.
@@ -48,9 +48,9 @@ What the numbers show. No explanation is offered in this section.
 - In 2002 abstention fell between rounds. H0a predicts 49.7%
   abstention against 19.7% observed; H0b and H1 predict
   27.9%.
-- Order by mean score **without 2002**: **H0b < H3(H2-abst) < H3(H2-blank) < H3(H1) < H2-blank < H2-abst < H1 < H0a**.
+- Order by mean score **without 2002**: **H0b < H3(H2-abst) < H3(H2-blank) < H1-soft < H3(H1) < H2-blank < H2-abst < H1 < H0a**.
 - Without 2002, H1 is no longer first: it ranks
-  7 of 8 (4.82 pp), and the
+  8 of 9 (4.82 pp), and the
   lowest mean is H0b (3.01 pp).
   H0b is at 3.01 pp.
 - Among the parameter-free models, the lowest mean is
@@ -105,7 +105,7 @@ covered areas.
 0–1, same threshold) and on its alternative families. Changes are relative to the
 main, poll-based results.
 
-- Hand-coded 1–7 scale: order by mean H1 < H0b < H3(H2-abst) < H3(H2-blank) < H3(H1) < H0a < H2-blank < H2-abst; the ranking
+- Hand-coded 1–7 scale: order by mean H1 < H0b < H3(H2-abst) < H1-soft < H3(H2-blank) < H3(H1) < H0a < H2-blank < H2-abst; the ranking
   changes and the lowest mean belongs to
   the same model (H1). H1's mean
   moves by -0.39 pp, H2-abst by
@@ -113,13 +113,13 @@ main, poll-based results.
   +2.23 pp. Without 2002 the lowest mean is
   H3(H2-blank).
 - Alternative families (41 rows that list one): order by
-  mean H3(H2-blank) < H1 < H0b < H3(H2-abst) < H3(H1) < H0a < H2-blank < H2-abst; the lowest mean belongs to
+  mean H3(H2-blank) < H1 < H0b < H3(H2-abst) < H1-soft < H3(H1) < H0a < H2-blank < H2-abst; the lowest mean belongs to
   a different model (H3(H2-blank)).
   H1's mean moves by +0.27 pp, H2-abst by
   +2.99 pp.
-- H2-abst and H2-blank rank 8 and
-  7 of 8 on the 1–7 scale, against
-  7 and 6 on the poll-based scale. H0b ranks
+- H2-abst and H2-blank rank 9 and
+  8 of 9 on the 1–7 scale, against
+  8 and 7 on the poll-based scale. H0b ranks
   2 on the poll-based scale, 2 on the 1–7 scale
   and 3 under the alternative families.
 

@@ -22,6 +22,7 @@ from vote_transfer.application.models import (
     predict,
     primary_score,
     proximity_row,
+    soft_row,
     transfer_matrix,
     transfer_tensor,
 )
@@ -124,6 +125,28 @@ def test_h2_threshold_applies_at_distance_two_exactly(far, non_vote):
     assert proximity_row(u(4), u(2), u(6), tie="split", far=far) == pytest.approx(non_vote)
     # Tie below the threshold: split as in H1.
     assert proximity_row(u(4), u(3), u(5), tie="split", far=far) == pytest.approx((A + B) / 2)
+
+
+def test_h1_soft_gives_the_nearer_finalist_the_larger_share():
+    # Distances 0.3 and 0.6: shares 0.6 / 0.9 = 2/3 and 0.3 / 0.9 = 1/3, nothing else.
+    assert soft_row(0.25, 0.55, 0.85) == pytest.approx([2 / 3, 1 / 3, 0, 0])
+    # Equidistant: 50/50 by construction, no tie rule needed.
+    assert soft_row(13 / 15, 12 / 15, 14 / 15) == pytest.approx([0.5, 0.5, 0, 0])
+    # Far from both: still split between the finalists, never sent to a non-vote.
+    assert soft_row(0.0, 0.8, 1.0).sum() == pytest.approx(1)
+    assert soft_row(None, 0.2, 0.8) is None  # no score: the caller uses the H0b row
+    with pytest.raises(ValueError):
+        soft_row(0.4, 0.4, 0.4)  # no distance at all: shares are undefined
+
+
+def test_h1_soft_rows_sum_to_one_and_ignore_the_tie_rule():
+    positions = load_candidate_positions()
+    election = build_election(load_dataset(BUNDLED / "2017")[0])
+    scores = election_scores(positions, 2017, "polls")
+    split = transfer_tensor(election, "H1-soft", scores, "split")
+    abstain = transfer_tensor(election, "H1-soft", scores, "abstention")
+    assert np.allclose(split.sum(axis=2), 1)
+    assert np.allclose(split, abstain)
 
 
 def test_exact_fraction_ties_are_ties_and_not_rounding_noise():
@@ -312,6 +335,7 @@ def test_predictions_table_has_the_documented_schema(real_evaluation):
         "H0a",
         "H0b",
         "H1",
+        "H1-soft",
         "H2-abst",
         "H2-blank",
         "H3(H1)",

@@ -1578,7 +1578,7 @@
       "heldout_score_pp": null
     }
   ],
-  "rows": 79344,
+  "rows": 91872,
   "inputs": {
     "elections": {
       "2002": {
@@ -1611,6 +1611,6 @@
     "candidate_scores_sha256": "fcd023aefeee1473adfa822c05308fb538ef442a936fe64c175c6ca1b01077ef"
   },
   "outputs": {
-    "predictions.parquet": "4a95b06aa602ec1b6a10fa2ed46eee1a4686108beb5535cb0f64f49a7e5e2be1"
+    "predictions.parquet": "1aa2732187d3a0c0cfc8ba987ba7ddf46c6ae08b6ac3c53e2b97a0ac0814ac8d"
   }
 }

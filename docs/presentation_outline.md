@@ -41,12 +41,12 @@ Numbers are filled from `reports/results/numbers.json`. Candidate positions: **p
 **6. Storage: normalised Parquet, compared with a database**
 - `areas`, `outcomes`, `options`, one long `predictions` table; shares computed, not stored.
 - A database gives declarative constraints; we tested our tables in SQLite.
-- We keep files: byte-identical rebuilds, hashes, 584 kB in Git; constraints enforced in code.
+- We keep files: byte-identical rebuilds, hashes, 629 kB in Git; constraints enforced in code.
 - Figure: schema diagram with the derived view.
 
 **7. Five assumptions, each one sentence**
 - H0a: like everyone else, abstainers included. H0b: like everyone who voted.
-- H1: nearest finalist. H2: nearest, unless at least one third of the scale from both (then abstain, or vote blank).
+- H1: nearest finalist. H1-soft: both finalists, the nearer one gets more. H2: nearest, unless at least one third of the scale from both (then abstain, or vote blank).
 - H3: a fitted share `p` ignores proximity. Rules fixed before any result.
 - Figure: one transfer matrix, with identity rows highlighted.
 
@@ -58,7 +58,7 @@ Numbers are filled from `reports/results/numbers.json`. Candidate positions: **p
 
 **9. Result 2: no stable winner**
 - Lowest five-election mean: H1 (4.7 pp), but it beats H0b in only 2 of 5 elections, mostly thanks to 2002.
-- Without 2002, H1 ranks 7 of 8; H0b is at 3.0 pp.
+- Without 2002, H1 ranks 8 of 9; H0b is at 3.0 pp.
 - H2 fails in 2002: both finalists on the right, so the whole left is "too far" and sent to a non-vote (30% of registered voters), while it voted Chirac. Elsewhere H2 is close to H1.
 - The fitted H3 throws the H2 rule away (`p` from 0.77 to 1.00).
 - Figure: `reports/figures/model_comparison.png`.

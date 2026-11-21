@@ -8,6 +8,9 @@ abroad,H0b,2022,1.748858,1
 abroad,H1,2012,1.580196,1
 abroad,H1,2017,1.069013,1
 abroad,H1,2022,2.042616,1
+abroad,H1-soft,2012,1.554595,1
+abroad,H1-soft,2017,3.2662,1
+abroad,H1-soft,2022,3.739893,1
 abroad,H2-abst,2012,1.634672,1
 abroad,H2-abst,2017,1.069013,1
 abroad,H2-abst,2022,2.311153,1
@@ -38,6 +41,11 @@ metropolitan,H1,2007,5.044358,96
 metropolitan,H1,2012,4.114199,96
 metropolitan,H1,2017,6.00549,96
 metropolitan,H1,2022,4.279846,96
+metropolitan,H1-soft,2002,12.690137,96
+metropolitan,H1-soft,2007,3.013248,96
+metropolitan,H1-soft,2012,2.231356,96
+metropolitan,H1-soft,2017,5.318313,96
+metropolitan,H1-soft,2022,3.648539,96
 metropolitan,H2-abst,2002,19.441169,96
 metropolitan,H2-abst,2007,5.580475,96
 metropolitan,H2-abst,2012,4.293008,96
@@ -78,6 +86,11 @@ overseas,H1,2007,3.883056,5
 overseas,H1,2012,4.515354,10
 overseas,H1,2017,4.65647,10
 overseas,H1,2022,8.094232,10
+overseas,H1-soft,2002,9.928796,4
+overseas,H1-soft,2007,3.447336,5
+overseas,H1-soft,2012,4.053064,10
+overseas,H1-soft,2017,3.525796,10
+overseas,H1-soft,2022,5.159052,10
 overseas,H2-abst,2002,17.535634,4
 overseas,H2-abst,2007,4.30585,5
 overseas,H2-abst,2012,4.703359,10

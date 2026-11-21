@@ -114,11 +114,11 @@ elections, and be reproduced exactly by a reader with no setup. A database would
 add what we lack, **declarative keys and constraints**; we verified that our
 tables load into SQLite with primary keys, foreign keys and checks. It would cost
 what we value most: files that rebuild byte for byte, can be hashed, and are
-small enough to version (584 kB in all, against
-10158 kB as CSV). PostgreSQL would also add a server for
+small enough to version (629 kB in all, against
+11583 kB as CSV). PostgreSQL would also add a server for
 every reader. DuckDB is not a different store but a query engine over our files;
 it becomes useful if the predictions grow well beyond their
-79,344 rows. **Limits of our choice:** constraints are
+91,872 rows. **Limits of our choice:** constraints are
 enforced by code on every write and load, not by the storage engine; joins live
 in Python; and two copies of the snapshots can diverge, which a check detects.
 The collected poll orders and the scale built from them stay CSV files: they are
@@ -141,6 +141,7 @@ was computed.
 | H0a | split like the rest of the electorate, abstainers included | no |
 | H0b | split between the two finalists and blank/invalid, in proportion to first-round shares; none abstain | no |
 | H1 | go to the finalist nearest on the poll-based scale (a tie splits 50/50) | no |
+| H1-soft | split between the two finalists, each getting a share inversely proportional to its distance (added after the other results were known) | no |
 | H2-abst, H2-blank | as H1, unless at least one third of the scale from both finalists: then abstention, or a blank ballot | no |
 | H3 `[PENDING: professor approval]` | a share `p` splits as in H0b, the rest follows H1 or H2 | `p` |
 
@@ -182,13 +183,19 @@ observed result. H3 is held-out.*
    H0b (5.1 pp). But H1 beats H0b in only
    2 of 5 elections, and most of its lead comes from
    2002, where it scores 4.4 pp against 13.5.
-3. **Without 2002 the order changes.** H1 falls to rank
-   7 of 8 (4.8 pp); H0b is at
+3. **Splitting by distance trades 2002 for the other elections.** H1-soft averages
+   5.4 pp (rank 3) and 3.6 pp
+   without 2002. It is closer than H1 outside 2002 (for example 2.3
+   against 4.1 pp in 2012) but much worse in 2002 (12.6
+   against 4.4): on an evenly spaced scale Chirac and Le Pen are almost as
+   far from Jospin, so a large share of the left goes to Le Pen.
+4. **Without 2002 the order changes.** H1 falls to rank
+   8 of 9 (4.8 pp); H0b is at
    3.0 pp and the lowest mean is
    H0b (3.01 pp), followed
    by the H3 mixtures on the H2 bases (3.13 and
    3.16 pp), which are almost entirely H0b.
-4. **The distance threshold fails in one election.** H2-abst and H2-blank have
+5. **The distance threshold fails in one election.** H2-abst and H2-blank have
    means of 7.6 and 7.2 pp and beat H0b in
    1 and 1 of 5 elections.
    The damage is in 2002: both finalists sit on the right of the scale
@@ -197,14 +204,15 @@ observed result. H3 is held-out.*
    registered voters to a non-vote; H2-abst then scores 19.4 pp.
    In the other elections the rule removes little (1.4% in 2007,
    0.4% in 2012, 1.3% in 2017 and
-   2.6% in 2022), and H2 scores close to H1.
-5. **H3 adds little** `[PENDING: professor approval]`**.** On the H2 bases the fitted `p` is between
+   2.6% in 2022), and H2 scores close to H1. So in practice the
+   threshold is tested in one election only, and we do not claim that it helps.
+6. **H3 adds little** `[PENDING: professor approval]`**.** On the H2 bases the fitted `p` is between
    0.77 and 1.00: the fit almost discards the H2
    rule. On H1, `p` is between 0.15 and 0.34 in four folds and
    0.83 when 2002 is held out. Held-out H3(H1) is worse than H1 over five
    elections (5.6 against 4.7 pp) but better without
    2002 (4.1 against 4.8 pp).
-6. **Blank and invalid ballots are under-predicted** in 2017 and 2022 by every
+7. **Blank and invalid ballots are under-predicted** in 2017 and 2022 by every
    model, H2-blank included (-5.2 and
    -2.0 pp).
    Invalid ballots are 26% of the category

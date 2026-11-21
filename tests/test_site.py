@@ -5,7 +5,17 @@ from streamlit.testing.v1 import AppTest
 from vote_transfer.application.processing import process_year
 
 PAGES = ["The answer", "Evidence", "Explore the data", "Method & sources"]
-MODELS = ["H0a", "H0b", "H1", "H2-abst", "H2-blank", "H3(H1)", "H3(H2-abst)", "H3(H2-blank)"]
+MODELS = [
+    "H0a",
+    "H0b",
+    "H1",
+    "H1-soft",
+    "H2-abst",
+    "H2-blank",
+    "H3(H1)",
+    "H3(H2-abst)",
+    "H3(H2-blank)",
+]
 APP = Path(__file__).resolve().parents[1] / "site" / "app.py"
 
 

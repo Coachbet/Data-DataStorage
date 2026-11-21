@@ -82,6 +82,20 @@ Boutin in 2002 is exactly halfway between Chirac and Le Pen).
 
 Named sensitivity variant `tie=abstention`: a tied group gets row `(0, 0, 0, 1)`.
 
+### H1-soft: a split that depends on distance
+
+Added on 21 November 2026, after the results of the other models were known; the
+formula has no parameter and was not adjusted afterwards. Instead of sending the
+whole group to the nearer finalist, each finalist gets a share inversely
+proportional to its distance:
+
+`β[g, A] = d(c, B) / (d(c, A) + d(c, B))`, `β[g, B] = d(c, A) / (d(c, A) + d(c, B))`,
+and nothing goes to `blank_invalid` or abstention.
+
+The nearer finalist always gets more than half, and an equidistant group splits
+50/50 by construction, so the tie rule does not apply. Unplaced candidates use the
+H0b row. H1-soft is not an H3 base.
+
 ### H2: nearest finalist with a distance threshold
 
 As H1, **unless** `d(c, A) ≥ 1/3` **and** `d(c, B) ≥ 1/3`. A group at least one

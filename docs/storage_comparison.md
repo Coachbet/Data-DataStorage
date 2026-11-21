@@ -12,7 +12,7 @@ Draft for the team to edit. Sizes and row counts are measured by
 | Raw | Ministry polling-station text files, pinned by hash | 293 MB | Once, by download | Once per rebuild |
 | Interim | 673,228 station-round rows and 4,764,054 candidate rows | Local only | Once per rebuild | By the cross-check |
 | Processed | `areas` (1,044 rows), `outcomes` (9,475), `options` (71) for five elections | 139 kB in 15 files | Once per rebuild | Every app page; every model |
-| Predictions | 79,344 rows: every model, variant, election, area and outcome | 446 kB | Once per evaluation | Analysis, app |
+| Predictions | 91,872 rows: every model, variant, election, area and outcome | 490 kB | Once per evaluation | Analysis, app |
 | Reference | 22 collected poll orders and the 61-row scale built from them; the hand-coded 1–7 comparison table | CSV | By hand (polls), by the notebook (scale) | By every scored model |
 
 The operations are few and regular:
@@ -35,7 +35,7 @@ The operations are few and regular:
 | Write once | Natural: one file per table, replaced atomically after validation | Works, but transactions, locking and (PostgreSQL) a server solve a concurrent-write problem we do not have | Not a storage change: DuckDB reads the files we already write |
 | Column reads | Columnar: reads only the columns asked for | Row-oriented; fine at this size, no advantage | Columnar, vectorised |
 | Joins across models and elections | Done in pandas after loading (`merge`, `groupby`); every table fits in memory many times over | SQL joins, declared once as views; the strongest argument for a database | SQL joins directly on the Parquet files, with no import step |
-| Size | 584 kB for all processed tables and predictions; the same tables as CSV take 10158 kB (17 times more) | Not measured. SQLite: one file with row storage and no column compression; PostgreSQL: a data directory outside the repository | Same files, same size |
+| Size | 629 kB for all processed tables and predictions; the same tables as CSV take 11583 kB (18 times more) | Not measured. SQLite: one file with row storage and no column compression; PostgreSQL: a data directory outside the repository | Same files, same size |
 | Reproducibility for a reader | `uv sync`, then read files. Snapshots are small enough to version in Git, and each file's SHA-256 is recorded and checked on load | SQLite: one binary file, awkward to diff and to version; byte-identical rebuilds are not guaranteed. PostgreSQL: install, create a role and a database, load a dump | One extra Python package; nothing else changes |
 | Schema enforcement | Types are stored in the file. Keys and identities are **not** declared: they are enforced by `validate_tables` on every write and every load | **Declarative** primary keys, foreign keys and `CHECK` constraints; violations are refused by the engine | None of its own on external Parquet files |
 | Text codes, integers, nulls | Preserved (string, int64, nullable Int64) | Preserved with `TEXT`/`INTEGER`; SQLite's loose typing needs `STRICT` tables to refuse a wrong type | Preserved (it reads Parquet types) |
@@ -80,7 +80,7 @@ It would let us write the model comparison as SQL (`GROUP BY model, year` over
 `predictions.parquet` joined to `areas.parquet`) with no import step and no
 server. It was in the project's early dependencies and was removed because no
 implemented feature used it. The comparison we need is a handful of `groupby`
-and `merge` calls on 79,344 rows, which pandas runs in well
+and `merge` calls on 91,872 rows, which pandas runs in well
 under a second. DuckDB becomes the right addition, with no change to storage, if
 the predictions table grows by orders of magnitude (station-level predictions,
 many more variants) or if readers want to explore it in SQL.
@@ -92,7 +92,7 @@ view and executable constraints. We keep the small reference tables as CSV.**
 
 Why: the data is written once by one process, read by column, small, and must be
 reproduced exactly by a reader with no setup. Parquet keeps the types that CSV
-loses, is 17 times smaller than CSV for our tables,
+loses, is 18 times smaller than CSV for our tables,
 and yields files that can be hashed and versioned.
 
 Limits we accept and state:
