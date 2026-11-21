@@ -12,8 +12,8 @@ Draft for the team to edit. Sizes and row counts are measured by
 | Raw | Ministry polling-station text files, pinned by hash | 293 MB | Once, by download | Once per rebuild |
 | Interim | 673,228 station-round rows and 4,764,054 candidate rows | Local only | Once per rebuild | By the cross-check |
 | Processed | `areas` (1,044 rows), `outcomes` (9,475), `options` (71) for five elections | 139 kB in 15 files | Once per rebuild | Every app page; every model |
-| Predictions | 54,288 rows: every model, variant, election, area and outcome | 304 kB | Once per evaluation | Analysis, app |
-| Reference | 61 hand-coded candidacies | CSV | By hand | By every scored model |
+| Predictions | 79,344 rows: every model, variant, election, area and outcome | 446 kB | Once per evaluation | Analysis, app |
+| Reference | 22 collected poll orders and the 61-row scale built from them; the hand-coded 1–7 comparison table | CSV | By hand (polls), by the notebook (scale) | By every scored model |
 
 The operations are few and regular:
 
@@ -35,7 +35,7 @@ The operations are few and regular:
 | Write once | Natural: one file per table, replaced atomically after validation | Works, but transactions, locking and (PostgreSQL) a server solve a concurrent-write problem we do not have | Not a storage change: DuckDB reads the files we already write |
 | Column reads | Columnar: reads only the columns asked for | Row-oriented; fine at this size, no advantage | Columnar, vectorised |
 | Joins across models and elections | Done in pandas after loading (`merge`, `groupby`); every table fits in memory many times over | SQL joins, declared once as views; the strongest argument for a database | SQL joins directly on the Parquet files, with no import step |
-| Size | 443 kB for all processed tables and predictions; the same tables as CSV take 7098 kB (16 times more) | Not measured. SQLite: one file with row storage and no column compression; PostgreSQL: a data directory outside the repository | Same files, same size |
+| Size | 584 kB for all processed tables and predictions; the same tables as CSV take 10158 kB (17 times more) | Not measured. SQLite: one file with row storage and no column compression; PostgreSQL: a data directory outside the repository | Same files, same size |
 | Reproducibility for a reader | `uv sync`, then read files. Snapshots are small enough to version in Git, and each file's SHA-256 is recorded and checked on load | SQLite: one binary file, awkward to diff and to version; byte-identical rebuilds are not guaranteed. PostgreSQL: install, create a role and a database, load a dump | One extra Python package; nothing else changes |
 | Schema enforcement | Types are stored in the file. Keys and identities are **not** declared: they are enforced by `validate_tables` on every write and every load | **Declarative** primary keys, foreign keys and `CHECK` constraints; violations are refused by the engine | None of its own on external Parquet files |
 | Text codes, integers, nulls | Preserved (string, int64, nullable Int64) | Preserved with `TEXT`/`INTEGER`; SQLite's loose typing needs `STRICT` tables to refuse a wrong type | Preserved (it reads Parquet types) |
@@ -80,7 +80,7 @@ It would let us write the model comparison as SQL (`GROUP BY model, year` over
 `predictions.parquet` joined to `areas.parquet`) with no import step and no
 server. It was in the project's early dependencies and was removed because no
 implemented feature used it. The comparison we need is a handful of `groupby`
-and `merge` calls on 54,288 rows, which pandas runs in well
+and `merge` calls on 79,344 rows, which pandas runs in well
 under a second. DuckDB becomes the right addition, with no change to storage, if
 the predictions table grows by orders of magnitude (station-level predictions,
 many more variants) or if readers want to explore it in SQL.
@@ -88,11 +88,11 @@ many more variants) or if readers want to explore it in SQL.
 ## Decision and limits
 
 **We keep Parquet files as the storage layer, with normalised tables, a derived
-view and executable constraints. We keep the hand-edited reference table as CSV.**
+view and executable constraints. We keep the small reference tables as CSV.**
 
 Why: the data is written once by one process, read by column, small, and must be
 reproduced exactly by a reader with no setup. Parquet keeps the types that CSV
-loses, is 16 times smaller than CSV for our tables,
+loses, is 17 times smaller than CSV for our tables,
 and yields files that can be hashed and versioned.
 
 Limits we accept and state:
@@ -105,9 +105,13 @@ Limits we accept and state:
 3. **Two copies exist** (`processed/` and `bundled/`). They can diverge; we detect
    it (`vote-transfer check-snapshots`, run by `make check` and at app start-up)
    and do not prevent it.
-4. **One table is still CSV.** `candidate_positions.csv` is edited by hand and
-   reviewed line by line in Git; its types are enforced when it is read
-   (`positions.py`). This is a deliberate exception, not an inconsistency.
+4. **The reference tables are still CSV.** `polling_axes.csv` is typed in by hand
+   from the institutes' reports, `candidate_scores.csv` is written by the notebook,
+   and `candidate_positions.csv` (the hand-coded comparison) is edited by hand. All
+   three are small and reviewed line by line in Git; their types and rules are
+   enforced when they are read (`positions.py`), and a test checks that the scale
+   matches the polls. The scale keeps every decimal, because rounding would break
+   exact ties. This is a deliberate exception, not an inconsistency.
 5. **This choice does not scale to concurrent writers.** If the project became a
    service with several people writing results, a database would be the right
    answer.

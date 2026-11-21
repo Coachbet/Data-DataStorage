@@ -17,6 +17,8 @@ vote-transfer = "vote_transfer.cli:main"
 
 [dependency-groups]
 dev = [
+    "ipykernel>=6.29,<8",
+    "nbconvert>=7.16,<8",
     "pytest>=8.4.0,<9",
     "ruff>=0.13.0,<1",
 ]

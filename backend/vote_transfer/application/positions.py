@@ -1,4 +1,12 @@
-"""Read the versioned manual reference without changing observed election data."""
+"""Read the versioned candidate references without changing observed election data.
+
+Two references place candidates on a left-right axis:
+
+- ``candidate_scores.csv``: the main scale, built by ``notebooks/candidate_scale.ipynb``
+  from the polling institutes' left-to-right orders in ``polling_axes.csv``
+  (0 = leftmost, 1 = rightmost; empty for candidates we cannot place).
+- ``candidate_positions.csv``: the earlier hand-coded 1-7 families, kept as a comparison.
+"""
 
 import json
 from pathlib import Path
@@ -17,6 +25,35 @@ FAMILY_SCORES = {
     "Right": 6,
     "Far right": 7,
 }
+
+
+POLL_STATUSES = ("placed", "unplaced")
+
+
+def family_to_unit(score: float) -> float:
+    """Put a 1-7 family score on the 0-1 scale of the poll-based scores (1 -> 0, 7 -> 1).
+
+    Two steps out of six become one third, so one H2 threshold serves both scales.
+    """
+    return (score - 1) / 6
+
+
+def load_poll_scores(folder: Path = REFERENCE_DIR) -> pd.DataFrame:
+    """Validate the poll-based scale written by ``notebooks/candidate_scale.ipynb``."""
+    frame = pd.read_csv(folder / "candidate_scores.csv", dtype={"candidate_id": str})
+    required = {"year", "candidate_id", "score", "n_institutes", "range", "status", "reason"}
+    if not required <= set(frame) or frame.empty:
+        raise ValueError("The poll-based scale must contain all documented columns and rows.")
+    if frame.duplicated(["year", "candidate_id"]).any():
+        raise ValueError("Duplicate keys in the poll-based scale.")
+    if not frame.status.isin(POLL_STATUSES).all():
+        raise ValueError("Unknown status in the poll-based scale.")
+    placed = frame.status.eq("placed")
+    if not frame.score.notna().equals(placed):
+        raise ValueError("Placed candidates need a score and unplaced ones must have none.")
+    if not frame.loc[placed, "score"].between(0, 1).all():
+        raise ValueError("Poll-based scores must lie between 0 and 1.")
+    return frame
 
 
 def load_position_sources(folder: Path = REFERENCE_DIR) -> dict:
@@ -73,4 +110,9 @@ def load_candidate_positions(folder: Path = REFERENCE_DIR) -> pd.DataFrame:
     for identifiers in frame.source_ids:
         if not set(identifiers.split(";")) <= sources.keys():
             raise ValueError("Unknown candidate reference source.")
-    return frame
+    polls = load_poll_scores(folder)[["year", "candidate_id", "score", "status"]]
+    polls = polls.rename(columns={"score": "poll_score", "status": "poll_status"})
+    merged = frame.merge(polls, on=["year", "candidate_id"], how="left", validate="1:1")
+    if merged.poll_status.isna().any() or len(polls) != len(frame):
+        raise ValueError("The poll-based scale and the candidate table must list the same rows.")
+    return merged

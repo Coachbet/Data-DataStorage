@@ -17,9 +17,7 @@ from vote_transfer.application.datasets import (
     snapshot_drift,
     stale_predictions,
 )
-from vote_transfer.application.positions import REFERENCE_DIR, load_candidate_positions
 from vote_transfer.application.processing import process_year
-from vote_transfer.application.review import coding_agreement, coding_sheet, load_coding_sheet
 from vote_transfer.config import PROJECT_ROOT, data_root
 from vote_transfer.infrastructure.official import SUPPORTED_YEARS, acquire_official
 from vote_transfer.infrastructure.reference import NATIONAL_SUMMARIES, acquire_national_summary
@@ -91,33 +89,6 @@ def analyse(args: argparse.Namespace) -> None:
     print(json.dumps(run_analysis(args.data_root), indent=2))
 
 
-def review_kit(args: argparse.Namespace) -> None:
-    """Write the blind sheet two coders fill independently. It contains no codes."""
-    target = REFERENCE_DIR / "review" / "coding_sheet_template.csv"
-    target.parent.mkdir(parents=True, exist_ok=True)
-    coding_sheet(load_candidate_positions()).to_csv(target, index=False)
-    print(f"Wrote {target}")
-
-
-def review_agreement(args: argparse.Namespace) -> None:
-    """Compare two filled sheets. The inputs are the coders' files; nothing is simulated."""
-    positions = load_candidate_positions()
-    sheets = [load_coding_sheet(path, positions) for path in (args.coder_a, args.coder_b)]
-    report = {
-        "coder_a_file": args.coder_a.name,
-        "coder_b_file": args.coder_b.name,
-        **coding_agreement(*sheets),
-    }
-    args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
-    kappa = report["quadratic_weighted_kappa"]
-    print(
-        f"{report['rows']} rows; agreement {report['agreement_pct']:.1f}%; "
-        f"quadratic-weighted kappa {'undefined' if kappa is None else f'{kappa:.3f}'}; "
-        f"{len(report['disagreements'])} disagreement(s). Wrote {args.output}"
-    )
-
-
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Acquire, process and analyse election results.")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -137,13 +108,6 @@ def build_parser() -> argparse.ArgumentParser:
     sub.set_defaults(run=evaluate)
     sub = subparsers.add_parser("analyse", help="regenerate figures, results and documents")
     sub.set_defaults(run=analyse)
-    sub = subparsers.add_parser("review-kit", help="write the blind coding sheet template")
-    sub.set_defaults(run=review_kit)
-    sub = subparsers.add_parser("review-agreement", help="agreement between two coders' sheets")
-    sub.add_argument("--coder-a", type=Path, required=True)
-    sub.add_argument("--coder-b", type=Path, required=True)
-    sub.add_argument("--output", type=Path, default=RESULTS_DIR / "coding_agreement.json")
-    sub.set_defaults(run=review_agreement)
     for sub in subparsers.choices.values():
         sub.add_argument("--data-root", type=Path, default=data_root())
     return parser

@@ -87,6 +87,7 @@ def prediction_inputs(root: Path, reference: Path = REFERENCE_DIR) -> dict:
             for year in SUPPORTED_YEARS
         },
         "candidate_positions_sha256": sha256(reference / "candidate_positions.csv"),
+        "candidate_scores_sha256": sha256(reference / "candidate_scores.csv"),
     }
 
 
@@ -106,7 +107,7 @@ def build_predictions(root: Path, reference: Path = REFERENCE_DIR) -> dict:
         (staging / "evaluation_report.json").write_text(json.dumps(report, indent=2) + "\n")
         for name in PREDICTION_FILES:
             (staging / name).replace(parent / name)
-    return {k: report[k] for k in ("coding_status", "rows", "outputs")}
+    return {k: report[k] for k in ("coding_status", "comparison_coding_status", "rows", "outputs")}
 
 
 def load_predictions(root: Path) -> tuple[pd.DataFrame, dict] | None:

@@ -13,6 +13,7 @@ from vote_transfer.application.analysis import (
     render_template,
     run_analysis,
 )
+from vote_transfer.application.models import SETTINGS
 from vote_transfer.application.positions import load_candidate_positions
 
 PROJECT = Path(__file__).resolve().parents[1]
@@ -52,7 +53,7 @@ def test_templates_take_numbers_only_from_the_generated_map():
 
 def test_one_command_writes_every_result_figure_and_document(generated):
     project, summary = generated
-    assert summary["coding_status"] == "draft coding"
+    assert summary["coding_status"] == "poll-based scale"
     for name in (
         "model_comparison.csv",
         "signed_errors.csv",
@@ -106,7 +107,7 @@ def test_comparison_table_means_and_ranks(tables):
 
 def test_h3_scores_in_the_comparison_are_the_held_out_scores(tables):
     folds = tables["h3_folds"]
-    main = folds[(folds.variant == "positions=primary;tie=split") & folds.test_year.notna()]
+    main = folds[(folds.variant == "positions=polls;tie=split") & folds.test_year.notna()]
     for fold in main.itertuples():
         score = tables["comparison"].loc[f"H3({fold.base})", str(int(fold.test_year))]
         assert score == pytest.approx(fold.heldout_score_pp, abs=1e-9)
@@ -134,7 +135,8 @@ def test_blank_only_table_decomposes_the_combined_error(tables):
 
 def test_sensitivity_covers_every_setting_and_keeps_baselines_fixed(tables):
     sensitivity = tables["sensitivity"]
-    assert len(sensitivity) == 4 * len(MODEL_ORDER)
+    assert len(sensitivity) == len(SETTINGS) * len(MODEL_ORDER)
+    assert set(sensitivity.positions) == {"polls", "primary", "alternative"}
     for model in ("H0a", "H0b"):
         assert sensitivity[sensitivity.model == model]["mean"].nunique() == 1
     assert sensitivity[sensitivity.model == "H1"]["mean"].nunique() > 1
@@ -150,11 +152,12 @@ def test_threshold_table_shows_what_the_fixed_h2_rule_removes(tables):
     assert list(table.index) == [int(y) for y in YEARS]
     assert (table.exactly_on_threshold_pct <= table.beyond_threshold_pct + 1e-12).all()
     assert (table.beyond_threshold_pct <= table.eliminated_scored_pct + 1e-12).all()
-    # Finalists coded 4 and 7: a group coded 2 is exactly two steps from the nearer one.
-    for year in (2017, 2022):
-        assert (table.finalist_a_score[year], table.finalist_b_score[year]) == (4, 7)
-        assert table.scores_exactly_on_threshold[year] == "2"
-        assert table.exactly_on_threshold_pct[year] > 10
+    assert table.finalist_a_score.between(0, 1).all() and table.finalist_b_score.between(0, 1).all()
+    # 2002, one poll of 16 candidates: Chirac is 12/15 and Mamère 7/15, exactly one third
+    # away, so the rule applies to him even though the subtraction is not exact in floats.
+    assert table.finalist_a_score[2002] == pytest.approx(12 / 15)
+    assert table.scores_exactly_on_threshold[2002] == "0.467"
+    assert table.exactly_on_threshold_pct[2002] > 0
 
 
 def test_crosscheck_sentence_comes_from_the_dated_record():

@@ -1,1 +1,3 @@
 positions,year,option,score,finalist_a_score,finalist_b_score,beyond_h2_threshold
+polls,2002,candidate:christine-boutin,0.866667,0.8,0.933333,False
+polls,2007,candidate:frederic-nihous,0.636364,0.818182,0.454545,False

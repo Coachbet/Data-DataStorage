@@ -22,56 +22,66 @@ explicitly so national aggregation does not silently omit overseas voters.
 | Consolidated election data | Independent validation reference only |
 | Socioeconomic indicators and media mentions | Removed from active scope |
 | Small-department shrinkage | Not assumed; revisit only with evidence |
-| Candidate positions | Manual 1–7 family scale replaces the planned CHES table (see below); draft candidate table and sources in `data/reference/`; CHES and alternative axes remain possible sensitivity references |
+| Candidate positions | Poll-based scale from polling institutes' left-to-right orders (since 20 November 2026); the hand-coded 1–7 families are kept as a comparison (see below) |
 | Individual transfers | Not observed; describe aggregate model patterns |
-| 2027 | Hypothetical simulation, not a forecast |
+| 2027 | Dropped on 20 November 2026 (see below) |
 | Fitted methods | The note plans a methodological discussion before H3/H5 fitting |
 
 ## Change from the acquisition note: candidate positions
 
 The approved note planned a candidate-to-party table built from the Chapel Hill
-Expert Survey (CHES) for H1, H2 and H5. The current input is instead a manually
-coded table of seven political families (`data/reference/candidate_positions.csv`).
-This is a deliberate change to the approved plan and must be presented as such:
+Expert Survey (CHES) for H1, H2 and H5. Two changes followed, and both must be
+presented as deliberate changes to the approved plan.
 
-- **Why:** CHES rates national parties, not candidacies. The note already expected
-  small candidates to be missing and to be "placed by bloc"; with 61 first-round
-  candidacies, including independents and minor parties, that placement becomes
-  the dominant coding step anyway. A single documented family scale applies the
-  same rule to every candidate. *The team should confirm this rationale.*
-- **Cost:** the scores are a project operationalisation, not an external expert
-  measurement. Two coders could reasonably disagree (for example PCF as Left or
-  Far left), so the coding is a potential source of measurement bias.
-- **Mitigation, before H1/H2 use:** two members code every row independently,
-  without looking at model fit; report their agreement and resolve disagreements
-  in the notes. `alternative_family` supports a sensitivity analysis, and CHES
-  can still serve as an external check where it covers a party.
+**First change (31 October 2026): a hand-coded 1–7 family scale.** CHES rates
+national parties, not candidacies, and misses most of the 61 first-round
+candidacies (independents and minor parties). The team coded seven political
+families by hand (`data/reference/candidate_positions.csv`). The second peer
+review found that no one had checked this table, although it is the only input
+H1 and H2 add to the baseline.
 
-Until this review is done, every row stays `draft`. Since 15 November 2026 the
-models H1–H3 read the draft scores so the pipeline can be built and tested, and
-every output that depends on them is labelled "draft coding". The review kit is
-in `data/reference/review/`.
+**Second change (20 November 2026): a poll-based scale.** Following the advice
+of Magdaléna Tydrichová, candidates are placed with the left-to-right orders that
+polling institutes publish in their reports, which cover every candidate:
+
+- `data/reference/polling_axes.csv`: 22 polls collected by the team (2002: 1,
+  2007: 3, 2012: 3, 2017: 7, 2022: 8), each with its source link;
+- `notebooks/candidate_scale.ipynb` turns them into a score from 0 (left) to 1
+  (right), sets aside candidates it cannot place and writes
+  `data/reference/candidate_scores.csv`.
+
+Why: the positions come from outside the team instead of our own judgement, and
+the source covers minor candidates. Cost: the scale is an order, not a measured
+distance, and 2002 rests on one institute. The 1–7 table is kept, unreviewed, as
+a sensitivity comparison; the main conclusion is the same on both scales.
+
+## Change from the proposal: the 2027 scenario
+
+The proposal's "applied version" asked what a hypothetical pair of 2027 finalists
+would imply, department by department. It was implemented as a page applying an
+assumption to the 2022 electorate, then **dropped on 20 November 2026** to keep
+the project on its main question (how eliminated candidates' voters transfer in
+the second round) and on the five elections we can evaluate.
 
 ## Model sequence
 
-Status on 15 November 2026 (decisions recorded in `docs/methodology.md`):
+Status on 20 November 2026 (decisions recorded in `docs/methodology.md`):
 
 | Hypothesis | Assumption | Implementation status |
 |---|---|---|
 | H0a | Eliminated support splits like the remaining electorate, abstainers included | Implemented (the original H0, unchanged) |
 | H0b | Eliminated support splits between the finalists and blank/invalid only | Implemented; added after the second peer review |
-| H1 | Nearest finalist on the 1–7 scale; ties split 50/50 | Implemented on the draft coding |
-| H2 | As H1, with a non-vote when at least two steps from both finalists (abstention or blank variants) | Implemented on the draft coding; one-dimensional only |
+| H1 | Nearest finalist on the poll-based scale; ties split 50/50 | Implemented |
+| H2 | As H1, with a non-vote when at least one third of the scale from both finalists (abstention or blank variants) | Implemented; one-dimensional only |
 | H3 | A calibrated share does not follow the closest-candidate rule | Implemented with leave-one-election-out; professor's approval pending |
 | H4 | Strategic first-round voting masks broader preferences | **Dropped** (first peer review); future work |
 | H5 | Transfers learned by political family | **Dropped** (first peer review); future work |
 
 ## Remaining milestones
 
-See `docs/handoff.md` for the checklist. In short: the two-coder review of the
-candidate table, the professor's answer on H3, and the final editing of the
-report and slides. Cross-source comparison with the consolidated results for
-2002–2017 remains optional further validation.
+Checking the 22 poll orders against their sources, the professor's answer on H3,
+the decision record, the final report and the slides. Cross-source comparison with
+the consolidated results for 2002–2017 remains optional further validation.
 
 2002 and 2007 have partial national coverage. Every historical summary must say
 "covered areas", not "France".

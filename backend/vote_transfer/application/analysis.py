@@ -26,17 +26,24 @@ from vote_transfer.application.evaluation import score_predictions
 from vote_transfer.application.models import (
     BASES,
     CODINGS,
+    MAIN_CODING,
     MAIN_VARIANT,
     NO_VARIANT,
     SETTINGS,
     THRESHOLD,
+    TOLERANCE,
     Election,
+    at_least,
     build_election,
     election_scores,
     h3_name,
     variant_name,
 )
-from vote_transfer.application.positions import load_candidate_positions
+from vote_transfer.application.positions import (
+    REFERENCE_DIR,
+    load_candidate_positions,
+    load_poll_scores,
+)
 from vote_transfer.application.quality import territory_type
 from vote_transfer.application.review import reference_quality
 from vote_transfer.config import PROJECT_ROOT
@@ -136,7 +143,7 @@ def tied_groups(positions: pd.DataFrame, report: dict) -> pd.DataFrame:
             for option, score in scores.items():
                 if option in election.values() or score is None:
                     continue
-                if abs(score - a) == abs(score - b):
+                if abs(abs(score - a) - abs(score - b)) <= TOLERANCE:
                     rows.append(
                         {
                             "positions": coding,
@@ -145,7 +152,7 @@ def tied_groups(positions: pd.DataFrame, report: dict) -> pd.DataFrame:
                             "score": score,
                             "finalist_a_score": a,
                             "finalist_b_score": b,
-                            "beyond_h2_threshold": abs(score - a) >= THRESHOLD,
+                            "beyond_h2_threshold": at_least(abs(score - a)),
                         }
                     )
     columns = [
@@ -161,16 +168,16 @@ def tied_groups(positions: pd.DataFrame, report: dict) -> pd.DataFrame:
 
 
 def threshold_table(elections: dict[int, Election], positions: pd.DataFrame) -> pd.DataFrame:
-    """What the fixed H2 threshold does in each election, under the primary coding.
+    """What the fixed H2 threshold does in each election, under the main (poll-based) scale.
 
     For every election: the finalists' scores and the pooled first-round share of
-    registered voters in eliminated groups at least ``THRESHOLD`` steps from both
+    registered voters in eliminated groups at least ``THRESHOLD`` (on the 0-1 scale) from both
     finalists (sent to a non-vote by H2), with the part that sits exactly on the
     threshold. Areas are pooled with the election's registration weights.
     """
     rows = []
     for year, election in sorted(elections.items()):
-        scores = election_scores(positions, year, "primary")
+        scores = election_scores(positions, year, MAIN_CODING)
         a, b = (scores[f] for f in election.finalists)
         weights = election.registered_r2 / election.registered_r2.sum()
         pooled = dict(zip(election.groups, (weights @ election.first * 100).tolist(), strict=True))
@@ -179,8 +186,8 @@ def threshold_table(elections: dict[int, Election], positions: pd.DataFrame) -> 
             for g in election.eliminated
             if scores.get(g) is not None
         }
-        far = {g for g, d in distance.items() if d >= THRESHOLD}
-        on_threshold = {g for g in far if distance[g] == THRESHOLD}
+        far = {g for g, d in distance.items() if at_least(d)}
+        on_threshold = {g for g in far if abs(distance[g] - THRESHOLD) <= TOLERANCE}
         rows.append(
             {
                 "year": year,
@@ -190,7 +197,7 @@ def threshold_table(elections: dict[int, Election], positions: pd.DataFrame) -> 
                 "beyond_threshold_pct": sum(pooled[g] for g in far),
                 "exactly_on_threshold_pct": sum(pooled[g] for g in on_threshold),
                 "scores_exactly_on_threshold": ",".join(
-                    str(v) for v in sorted({scores[g] for g in on_threshold})
+                    f"{v:.3f}" for v in sorted({round(scores[g], 9) for g in on_threshold})
                 ),
                 "eliminated_scored_pct": sum(pooled[g] for g in distance),
             }
@@ -299,9 +306,14 @@ def build_numbers(
     comparison, errors, sensitivity = tables["comparison"], tables["errors"], tables["sensitivity"]
     without = f"mean_without_{OUTLIER_YEAR}"
     years = [int(y) for y in report["elections"]]
-    n: dict[str, object] = {"coding_status": report["coding_status"], "n.elections": len(years)}
+    n: dict[str, object] = {
+        "coding_status": report["coding_status"],
+        "comparison_coding_status": report["comparison_coding_status"],
+        "n.elections": len(years),
+    }
     n["n.models"] = len(MODEL_ORDER)
     n["n.candidacies"] = len(positions)
+    n.update(scale_numbers())
     names = positions.set_index(["year", "candidate_id"]).candidate_name
     weights = predictions.drop_duplicates(["year", "area_code"]).groupby("year").registered_r2
     for year in years:
@@ -425,8 +437,8 @@ def build_numbers(
     for row in tables["threshold"].itertuples():
         key = f"h2.{row.year}"
         n[f"{key}.finalist_a_score"], n[f"{key}.finalist_b_score"] = (
-            int(row.finalist_a_score),
-            int(row.finalist_b_score),
+            round(float(row.finalist_a_score), 3),
+            round(float(row.finalist_b_score), 3),
         )
         n[f"{key}.beyond_pct"] = row.beyond_threshold_pct
         n[f"{key}.on_threshold_pct"] = row.exactly_on_threshold_pct
@@ -580,6 +592,32 @@ def analysis_tables(root: Path, positions: pd.DataFrame) -> tuple[dict, pd.DataF
     return tables, predictions, report
 
 
+def scale_numbers(folder: Path = REFERENCE_DIR) -> dict[str, object]:
+    """What the report says about the poll-based scale, read from the shipped files."""
+    polls = pd.read_csv(folder / "polling_axes.csv")
+    scores = load_poll_scores(folder)
+    placed, unplaced = scores[scores.status == "placed"], scores[scores.status == "unplaced"]
+    names = {
+        "jacques-cheminade": "Cheminade",
+        "jean-lassalle": "Lassalle",
+    }
+    n: dict[str, object] = {
+        "scale.polls": len(polls),
+        "scale.institutes": polls.institute.nunique(),
+        "scale.unplaced": len(unplaced),
+        "scale.unplaced_list": ", ".join(
+            f"{names.get(row.candidate_id, row.candidate_id)} {row.year}"
+            for row in unplaced.sort_values(["year", "candidate_id"]).itertuples()
+        ),
+        "scale.max_range_placed": float(placed["range"].max()),
+        "scale.from_reports": int(polls.source_type.ne("compiled table").sum()),
+        "scale.from_paper": int(polls.source_type.eq("compiled table").sum()),
+    }
+    for year, of_year in polls.groupby("year"):
+        n[f"scale.polls.{year}"] = len(of_year)
+    return n
+
+
 def run_analysis(
     root: Path,
     project: Path = PROJECT_ROOT,
@@ -591,9 +629,7 @@ def run_analysis(
     tables, predictions, report = analysis_tables(root, positions)
     results = project / "reports" / "results"
     results.mkdir(parents=True, exist_ok=True)
-    agreement_file = results / "coding_agreement.json"
-    agreement = json.loads(agreement_file.read_text()) if agreement_file.is_file() else None
-    quality = reference_quality(positions, agreement)
+    quality = reference_quality(positions)
     numbers = build_numbers(predictions, report, positions, tables, quality)
     numbers |= storage_numbers(root)
     numbers |= crosscheck_numbers(load_crosscheck(root, CROSSCHECK_YEAR))

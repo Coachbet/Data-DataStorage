@@ -7,7 +7,6 @@ import streamlit as st
 from theme import OUTCOME_NAMES
 from vote_transfer.application.analysis import MODEL_ORDER
 from vote_transfer.application.exploration import model_summary
-from vote_transfer.application.models import THRESHOLD
 from vote_transfer.application.presentation import (
     answer,
     count_of,
@@ -150,28 +149,31 @@ def threshold(evaluated: dict) -> None:
     components.section(
         4,
         *SECTIONS[3],
-        lead=f"H2 sends every group at least {THRESHOLD} steps from both finalists to a "
-        "non-vote. How many voters that is depends on where the finalists sit on the scale.",
+        lead="H2 sends every group at least one third of the scale away from both finalists "
+        "to a non-vote. How many voters that is depends on where the finalists sit on the scale.",
     )
     components.figure_head(
         f"In {join_years([str(y) for y in top.year])}, the threshold takes "
         f"{' and '.join(fmt_pct(v) for v in top.beyond_threshold_pct)} of registered voters "
         "away from both finalists",
-        f"First-round share of registered voters in eliminated groups at least {THRESHOLD} "
-        "steps from both finalists on the 1–7 scale, by election.",
+        "First-round share of registered voters in eliminated groups at least one third of "
+        "the scale away from both finalists, on the poll-based scale (0 = left, 1 = right), "
+        "by election.",
     )
     charts.threshold_bars(table)
     components.source(
-        "Source: first-round results and the candidate table (primary coding); our calculations."
+        "Source: first-round results and polling institutes' left-to-right orders; "
+        "our calculations."
     )
     components.note(
         "Why this happens.",
-        f"In {peak.year} the finalists are coded {peak.finalist_a_score} and "
-        f"{peak.finalist_b_score}. A group coded {peak.scores_exactly_on_threshold} is exactly "
-        f"{THRESHOLD} steps from the nearer one, so the rule applies to all of it at once: "
-        f"{fmt_pct(peak.exactly_on_threshold_pct)} of registered voters. On a seven-point "
-        "scale, one step decides between all and none. The threshold was fixed before any "
-        "result was computed and was not tuned afterwards.",
+        f"In {peak.year} the finalists score {peak.finalist_a_score:.2f} and "
+        f"{peak.finalist_b_score:.2f}. A group exactly one third of the scale from the nearer "
+        "finalist falls under the rule all at once: "
+        f"{fmt_pct(peak.exactly_on_threshold_pct)} of registered voters. A rule with a "
+        "threshold decides between all and none. The threshold (one third, the original "
+        "two steps out of six) was fixed before any result was computed and was not tuned "
+        "afterwards.",
     )
 
 

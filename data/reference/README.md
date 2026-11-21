@@ -1,19 +1,55 @@
-# Manual candidate positions
+# Candidate positions
 
-`candidate_positions.csv` contains **61 candidate-election records**: 16 in 2002,
-12 in 2007, 10 in 2012, 11 in 2017 and 12 in 2022. It covers candidates who
-actually contested the first round, not everyone who announced an intention to run.
-The candidate roster is checked against the verified Ministry aggregates.
+This folder holds the inputs that place the 61 first-round candidacies (16 in
+2002, 12 in 2007, 10 in 2012, 11 in 2017 and 12 in 2022) on a left-right axis.
+Every roster is checked against the verified Ministry aggregates. H0a and H0b use
+none of these files.
 
-Version: **0.1, 31 October 2026**. This is a manually authored research input.
-It is tracked in Git and works offline. It is not an official political
-classification, a CHES extract or a measurement of voters' individual positions.
-The team approved the scale and its direction, but has not reviewed the individual
-classifications. Every assigned row is therefore marked `draft`.
-This table replaces the CHES-based mapping planned in the acquisition note; the
-reason and the planned two-coder review are in `docs/project_scope.md`.
+| File | What it is | Who writes it |
+|---|---|---|
+| `polling_axes.csv` | **Collected data.** One row per poll: year, institute, fieldwork dates, client, source type, source link and the candidates in the institute's left-to-right order | The team, by hand, from the institutes' reports |
+| `candidate_scores.csv` | **The main scale.** One row per candidacy: score from 0 (left) to 1 (right), lowest and highest position across institutes, number of institutes, status (`placed` or `unplaced`) and reason | `notebooks/candidate_scale.ipynb` (`make scale`) |
+| `candidate_positions.csv`, `sources.json` | **Comparison scale.** The hand-coded 1–7 families used until 20 November 2026, with sources for each party affiliation | The team, by hand (version 0.1, 31 October 2026) |
 
-## Coding convention
+## The poll-based scale (main)
+
+**Sources.** The last pre-election poll we could find for each institute. 2002:
+Ipsos, 15–16 April (no other institute's original report was found). 2007:
+Ipsos, Ifop and CSA (CSA through a press article reproducing its table). 2012:
+Ifop, Harris Interactive and Ipsos. 2017 and 2022: the orders of 7 and 8
+institutes compiled by Delemazure, Dong, Peters and Tydrichová (2024),
+"Comparing Ways of Obtaining Candidate Orderings from Approval Ballots",
+arXiv 2405.04525, Tables 2 and 7. Each row of `polling_axes.csv` links to its
+source; candidate identifiers are the Ministry-derived slugs.
+
+**Score.** In a poll of `n` candidates, the candidate in place `i` (from 0) gets
+`i / (n − 1)`; the score is the mean across the election's institutes. The file
+keeps every decimal: rounding to three decimals would break exact ties (Christine
+Boutin in 2002 is exactly halfway between Chirac and Le Pen).
+
+**Unplaced candidates.** Jacques Cheminade is always unplaced, because
+institutes list him last by default, not because he is the furthest right. Any
+candidate whose positions differ by more than 0.4 between institutes is also
+unplaced (Jean Lassalle in 2017). Unplaced candidates are removed from their
+election's polls and the scale is recomputed without them; their score is empty
+and H1 and H2 use the H0b row for their voters. Both rules were fixed before any
+model was run on the scale.
+
+**Limits.** The scale is an order: neighbours in a poll are evenly spaced
+whatever their real gap, and institutes' table conventions enter it (in 2007 they
+list the PS before the Greens). Scores compare candidates within one election,
+not across elections. A test recomputes the scale from `polling_axes.csv` and
+fails if `make scale` was not rerun after an edit.
+
+## The hand-coded 1–7 families (comparison)
+
+The team approved the scale and its direction, but never reviewed the individual
+classifications, and no outside source checked them: every assigned row is
+`draft`. Since 20 November 2026 the table is used only as a sensitivity
+comparison (`positions=primary` and `positions=alternative`), put on the 0–1
+scale with `(score − 1) / 6`.
+
+### Coding convention
 
 | Family | Score | Working interpretation |
 |---|---:|---|
@@ -43,7 +79,7 @@ convention, with Far left as a sensitivity alternative. Macron is Centre in both
 years, with Centre-right as an alternative. These choices must be reviewed before
 comparing model performance, rather than adjusted to improve the observed fit.
 
-## Columns and provenance
+### Columns and provenance
 
 | Column | Meaning |
 |---|---|
@@ -72,20 +108,9 @@ and should receive a primary-source cross-check during the group's review.
 France 24 also lists some unsuccessful prospective candidates: only names present
 in the Ministry results enter this CSV. H0a and H0b do not use this table.
 
-## Review procedure
+### Checks
 
-`review/` holds the blind coding sheet and the coder instructions. Two members
-code all 61 rows independently; `vote-transfer review-agreement` then reports
-percentage agreement, quadratic-weighted kappa, the confusion matrix and every
-disagreement. Automated checks on this table (same party coded identically across
-elections; rows without a score) are written to
-`reports/results/candidate_table_quality.json` by `vote-transfer analyse`.
-
-Since 15 November 2026 the models H1, H2 and H3 read `ideology_score`. All their
-outputs say "draft coding" until every scored row is marked `reviewed`.
-`alternative_family` drives the `positions=alternative` sensitivity variant: every
-row that lists an alternative uses it, all at once.
-
-When reviewing, update the year-specific row, its notes and sources together.
-Record the reviewer and rationale in the Git change. Keep party affiliation
-separate from the chosen political family and preserve unresolved cases explicitly.
+Automated checks on this table (same party coded identically across elections;
+rows without a score) are written to `reports/results/candidate_table_quality.json`
+by `vote-transfer analyse`. `alternative_family` drives the `positions=alternative`
+variant: every row that lists an alternative uses it, all at once.

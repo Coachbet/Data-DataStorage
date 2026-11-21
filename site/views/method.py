@@ -63,9 +63,9 @@ def render(ctx) -> None:
         "3. **Ballot detail changes.** Before 2017, blank and invalid ballots are "
         "reported together. "
         "We use their combined total for every year.\n"
-        "4. **Every model is an assumption.** H1, H2 and H3 depend on hand-coded candidate "
-        "positions that are still drafts. The 2027 page explores hypothetical scenarios on "
-        "the 2022 electorate; it does not forecast an election."
+        "4. **Every model is an assumption.** H1, H2 and H3 place candidates with the "
+        "left-to-right orders published by polling institutes: an order, not a measured "
+        "ideological distance."
     )
 
     components.section(3, "Checks, cleaning and storage", "checks")

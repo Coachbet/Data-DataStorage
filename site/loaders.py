@@ -20,7 +20,6 @@ from vote_transfer.application.positions import (
     load_position_sources,
 )
 from vote_transfer.application.presentation import ladder_example
-from vote_transfer.application.scenario import simulate_all, simulate_runoff
 
 
 def stamp(*folders: Path) -> tuple:
@@ -99,18 +98,3 @@ def _evaluated(root: str, version: tuple) -> dict | None:
 def evaluated(root: Path) -> dict | None:
     """Everything derived from the cross-election predictions, or None without them."""
     return _evaluated(str(root), root_stamp(root))
-
-
-@st.cache_data(show_spinner=False, max_entries=64)
-def _scenario(folder: str, root: str, pair: tuple, model: str | None, version: tuple):
-    results = load_dataset(Path(folder))[0]
-    reference = load_candidate_positions()
-    report = load_predictions(Path(root))[1]
-    if model is None:
-        return simulate_all(results, pair, reference, report)
-    return simulate_runoff(results, pair, model, reference, report)
-
-
-def scenario(folder: Path, root: Path, pair: tuple[str, str], model: str | None = None):
-    """One assumption's implied runoff, or every assumption's pooled shares when model is None."""
-    return _scenario(str(folder), str(root), pair, model, root_stamp(root))

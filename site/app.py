@@ -5,7 +5,7 @@ from types import SimpleNamespace
 import components
 import loaders
 import streamlit as st
-from views import answer, evidence, explore, method, scenarios
+from views import answer, evidence, explore, method
 from vote_transfer.application.datasets import available_datasets, snapshot_drift
 from vote_transfer.config import data_root
 
@@ -13,7 +13,6 @@ VIEWS = {
     "The answer": answer,
     "Evidence": evidence,
     "Explore the data": explore,
-    "2027 scenarios": scenarios,
     "Method & sources": method,
 }
 PAGES = tuple(VIEWS)
@@ -26,6 +25,7 @@ LEGACY_PAGES = {
     "Understand the model": "Evidence",
     "Compare models": "Evidence",
     "Sources & limits": "Method & sources",
+    "2027 scenarios": "The answer",
 }
 
 st.set_page_config(
