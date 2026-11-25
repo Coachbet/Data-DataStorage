@@ -76,7 +76,6 @@ def render(ctx) -> None:
             ("Checks and storage", "checks"),
             ("The code on GitHub", "github"),
             ("Reproduce the results", "reproduce"),
-            ("Still open", "open"),
         ]
     )
 
@@ -164,17 +163,6 @@ def render(ctx) -> None:
         language=None,  # plain: syntax colours would add hues that mean nothing
     )
 
-    components.section(6, "Still open", "open")
-    components.important(
-        "Work that is not finished yet",
-        "<ul>"
-        "<li>We are still checking every poll order against its source.</li>"
-        "<li>We still have to compare the historical results with the consolidated "
-        "dataset of data.gouv.fr.</li>"
-        "<li>Out of scope for now: strategic voting in the first round (H4), transfers "
-        "learned by political family (H5) and positions on two dimensions.</li>"
-        "</ul>",
-    )
     st.caption(
         "AI assisted with development, documentation and tests. The project team is "
         "responsible for source verification, methodological decisions and interpretation."

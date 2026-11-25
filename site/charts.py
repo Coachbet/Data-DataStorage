@@ -5,6 +5,8 @@ Titles, subtitles and source lines are HTML around the chart (see
 technology. A builder only draws marks.
 """
 
+import hashlib
+import json
 import math
 
 import pandas as pd
@@ -19,7 +21,16 @@ INK, MUTED, PAPER = COLOUR["ink"], COLOUR["muted"], COLOUR["paper"]
 
 
 def show(data: pd.DataFrame, spec: dict) -> None:
-    st.vega_lite_chart(data, {**spec, "config": vega_config()}, width="stretch", theme=None)
+    """Draw one chart. The key changes with the data, so a new area or year always redraws it.
+
+    Without it the browser may keep the previous drawing when only the values change
+    (same columns and labels, for example when another area is picked).
+    """
+    full = {**spec, "config": vega_config()}
+    digest = hashlib.sha1(
+        json.dumps(full, sort_keys=True, default=str).encode() + data.to_csv(index=False).encode()
+    ).hexdigest()[:16]
+    st.vega_lite_chart(data, full, width="stretch", theme=None, key=f"chart_{digest}")
 
 
 def role_colour(field: str = "role") -> dict:
