@@ -113,8 +113,10 @@ line in Git, with its types enforced on load.
 one column per outcome (finalist A, finalist B, blank/invalid, abstention), rows
 summing to one. Both finalists' voters, first-round blank/invalid voters and
 abstainers keep their position in every model; models differ only in where the
-supporters of eliminated candidates go. All rules were fixed before any result
-was computed.
+supporters of eliminated candidates go. The rules of H0a, H1 and H2 were fixed
+before their results were computed. H0b was added after the second peer review,
+that is after the original baseline's failure on abstention was known, so it is a
+response to a result and not a pre-specified model.
 
 | Model | Eliminated supporters… | Fitted |
 |---|---|---|
@@ -160,7 +162,8 @@ observed result. H3 is held-out.*
    H0b (5.1 pp). But H1 beats H0b in only
    1 of 5 elections: 2002, where it scores
    4.3 pp against 13.5.
-3. **Without 2002 the order changes.** H1 falls to rank
+3. **Without 2002 the order changes** (a post-hoc check: we set 2002 aside after
+   seeing that H1 beats H0b only there). H1 falls to rank
    5 of 8 (4.4 pp); H0b is at
    3.0 pp and the lowest mean is
    H3(H2-blank) (2.95 pp), a
@@ -242,6 +245,11 @@ describe overseas electorates poorly; this is a hypothesis.
   identical geographic samples.
 - **Combined blank/invalid.** The primary outcome mixes a deliberate act with
   mistakes; the separate analysis exists for two elections only.
+- **Retained groups never move.** In every model, finalists' voters and first-round
+  blank and abstaining voters keep their position, and errors are shares of
+  registered voters averaged over four outcomes. Any real movement of retained
+  groups is an error floor shared by all models, which compresses the differences
+  between them; scores are not comparable with studies that use valid votes.
 - **Few elections and model selection.** Eight models compared on five elections:
   the "best" is partly a selection effect. We dropped the planned H4 and H5 and
   two-dimensional distances, which needed data we could not justify.

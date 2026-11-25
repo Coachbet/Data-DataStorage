@@ -476,11 +476,11 @@ def storage_numbers(
         for name, table in zip(rows, tables, strict=True):
             rows[name] += len(table)
             parquet_bytes += (folder / f"{name}.parquet").stat().st_size
-            csv_bytes += len(table.to_csv(index=False).encode())
+            csv_bytes += len(table.to_csv(index=False, lineterminator="\n").encode())
     predictions, _ = load_predictions(root)
     layer = "processed" if (root / "processed" / "predictions.parquet").is_file() else "bundled"
     predictions_bytes = (root / layer / "predictions.parquet").stat().st_size
-    predictions_csv = len(predictions.to_csv(index=False).encode())
+    predictions_csv = len(predictions.to_csv(index=False, lineterminator="\n").encode())
     return {
         "storage.raw_mb": raw_bytes / 1e6,
         "storage.station_rows": stations,
