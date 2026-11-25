@@ -212,7 +212,9 @@ def test_answer_page_states_the_answer_from_the_generated_results(offline_app):
 
     app = offline_app
     assert app.radio(key="page").value == "The answer"
-    numbers = json.loads((APP.parent.parent / "reports/results/numbers.json").read_text())
+    numbers = json.loads(
+        (APP.parent.parent / "reports/results/numbers.json").read_text(encoding="utf-8")
+    )
     text = page_text(app)
     assert "Which assumptions about voter behaviour best explain" in text
     assert "No assumption explains every election best." in text

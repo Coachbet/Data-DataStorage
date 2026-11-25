@@ -205,7 +205,7 @@ def process_year(year: int, root: Path) -> dict:
     )
 
     source = root / "raw" / "official" / str(year)
-    manifest = json.loads((source / "manifest.json").read_text())
+    manifest = json.loads((source / "manifest.json").read_text(encoding="utf-8"))
     records = {item["round"]: item for item in manifest["files"]}
     turnouts, candidates = [], []
     for round_number in (1, 2):
@@ -295,7 +295,9 @@ def process_year(year: int, root: Path) -> dict:
         for name, table in (("areas", areas), ("outcomes", outcomes), ("options", options)):
             table.to_parquet(staging / f"{name}.parquet", index=False)
         report["outputs"] = {p.name: sha256(p) for p in staging.glob("*.parquet")}
-        (staging / "quality_report.json").write_text(json.dumps(report, indent=2) + "\n")
+        (staging / "quality_report.json").write_text(
+            json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n"
+        )
         target.mkdir(exist_ok=True)
         for path in staging.iterdir():
             path.replace(target / path.name)

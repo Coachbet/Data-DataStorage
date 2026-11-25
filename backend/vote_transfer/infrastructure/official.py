@@ -98,7 +98,11 @@ def acquire_official(year: int, root: Path) -> dict:
     folder = root / "raw" / "official" / str(year)
     folder.mkdir(parents=True, exist_ok=True)
     manifest_path = folder / "manifest.json"
-    manifest = json.loads(manifest_path.read_text()) if manifest_path.exists() else {"files": []}
+    manifest = (
+        json.loads(manifest_path.read_text(encoding="utf-8"))
+        if manifest_path.exists()
+        else {"files": []}
+    )
     records = {item["round"]: item for item in manifest["files"]}
     with requests.Session() as session:
         session.headers["User-Agent"] = "vote-transfer/0.1 academic research"
@@ -168,7 +172,9 @@ def acquire_official(year: int, root: Path) -> dict:
                 "files": list(records.values()),
             }
             temporary_manifest = manifest_path.with_suffix(".json.part")
-            temporary_manifest.write_text(json.dumps(manifest, indent=2) + "\n")
+            temporary_manifest.write_text(
+                json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n"
+            )
             temporary_manifest.replace(manifest_path)
     return manifest
 

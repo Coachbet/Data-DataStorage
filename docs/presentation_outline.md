@@ -47,7 +47,7 @@ Numbers are filled from `reports/results/numbers.json`. Candidate positions: **p
 **7. Five assumptions, each one sentence**
 - H0a: like everyone else, abstainers included. H0b: like everyone who voted.
 - H1: nearest finalist. H1-soft: both finalists, the nearer one gets more. H2: nearest, unless at least one third of the scale from both (then abstain, or vote blank).
-- H3: a fitted share `p` ignores proximity. Rules fixed before any result.
+- H3: a fitted share `p` ignores proximity. H0a, H1 and H2 were fixed before any result; H0b (in response to H0a's abstention error) and H1-soft were added afterwards.
 - Figure: one transfer matrix, with identity rows highlighted.
 
 **8. Result 1: the first baseline was weak for one reason**

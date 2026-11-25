@@ -133,8 +133,11 @@ decimals, a candidate exactly halfway between the finalists (Christine Boutin in
 one column per outcome (finalist A, finalist B, blank/invalid, abstention), rows
 summing to one. Both finalists' voters, first-round blank/invalid voters and
 abstainers keep their position in every model; models differ only in where the
-supporters of eliminated candidates go. All rules were fixed before any result
-was computed.
+supporters of eliminated candidates go. The rules of H0a, H1 and H2 were fixed
+before their results were computed. H0b was added after the second peer review,
+that is after the original baseline's failure on abstention was known, so it is a
+response to a result and not a pre-specified model. H1-soft was likewise added
+after the first results, in response to a later review.
 
 | Model | Eliminated supporters… | Fitted |
 |---|---|---|
@@ -189,7 +192,8 @@ observed result. H3 is held-out.*
    against 4.1 pp in 2012) but much worse in 2002 (12.6
    against 4.4): on an evenly spaced scale Chirac and Le Pen are almost as
    far from Jospin, so a large share of the left goes to Le Pen.
-4. **Without 2002 the order changes.** H1 falls to rank
+4. **Without 2002 the order changes** (a post-hoc check: we set 2002 aside after
+   seeing that H1 beats H0b mainly there). H1 falls to rank
    8 of 9 (4.8 pp); H0b is at
    3.0 pp and the lowest mean is
    H0b (3.01 pp), followed
@@ -287,6 +291,11 @@ describe overseas electorates poorly; this is a hypothesis.
   identical geographic samples.
 - **Combined blank/invalid.** The primary outcome mixes a deliberate act with
   mistakes; the separate analysis exists for two elections only.
+- **Retained groups never move.** In every model, finalists' voters and first-round
+  blank and abstaining voters keep their position, and errors are shares of
+  registered voters averaged over four outcomes. Any real movement of retained
+  groups is an error floor shared by all models, which compresses the differences
+  between them; scores are not comparable with studies that use valid votes.
 - **Few elections and model selection.** Eight models compared on five elections:
   the "best" is partly a selection effect. We dropped the planned H4 and H5 and
   two-dimensional distances, which needed data we could not justify.

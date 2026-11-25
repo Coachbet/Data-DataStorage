@@ -16,18 +16,6 @@ VIEWS = {
     "Method & sources": method,
 }
 PAGES = tuple(VIEWS)
-# Page names of earlier versions, so an open session lands on the page that replaced them.
-LEGACY_PAGES = {
-    "Start here": "The answer",
-    "Home": "The answer",
-    "Explore results": "Explore the data",
-    "Explore": "Explore the data",
-    "Understand the model": "Evidence",
-    "Compare models": "Evidence",
-    "Sources & limits": "Method & sources",
-    "2027 scenarios": "The answer",
-}
-
 st.set_page_config(
     page_title="Vote Transfer Lab", page_icon=str(components.LOGO_PATH), layout="wide"
 )
@@ -35,8 +23,6 @@ components.inject_styles()
 
 root = data_root()
 datasets = available_datasets(root)
-if st.session_state.get("page") in LEGACY_PAGES:
-    st.session_state["page"] = LEGACY_PAGES[st.session_state["page"]]
 page = components.navigation(PAGES)
 
 if not datasets:
