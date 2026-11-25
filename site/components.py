@@ -38,7 +38,7 @@ def navigation(pages: tuple[str, ...]) -> str:
     with st.container(key="topbar"):
         html(
             f'<div class="brand"><img src="data:image/svg+xml;base64,{logo}" alt="" width="22" '
-            'height="22"><span>Vote Transfer Lab</span></div>'
+            'height="22"><span>Vote Transfer</span></div>'
         )
         return st.radio(
             "Main navigation", pages, key="page", horizontal=True, label_visibility="collapsed"
@@ -301,6 +301,6 @@ def coding_banner(report: dict) -> None:
 def footer() -> None:
     html(
         f'<footer class="footer"><p>{escape(AGGREGATE_NOTE)}</p>'
-        "<p>Vote Transfer Lab · French presidential elections 2002–2022 · "
+        "<p>Vote Transfer · French presidential elections 2002–2022 · "
         "Source: Ministry of the Interior polling-station files, via data.gouv.fr</p></footer>"
     )

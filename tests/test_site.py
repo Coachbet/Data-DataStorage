@@ -4,7 +4,7 @@ import pytest
 from streamlit.testing.v1 import AppTest
 from vote_transfer.application.processing import process_year
 
-PAGES = ["The answer", "Evidence", "Explore the data", "Method & sources"]
+PAGES = ["Home", "Evidence", "Explore the data", "Method & sources"]
 MODELS = [
     "H0a",
     "H0b",
@@ -134,7 +134,7 @@ def test_pickers_keep_their_value_across_pages_and_recover_from_a_missing_area(o
     app = go(offline_app, "Explore the data")
     app.selectbox(key="year").select("2017").run()
     app.selectbox(key="unit").select("ZZ").run()
-    for page in ["The answer", "Evidence", "Explore the data"]:
+    for page in ["Home", "Evidence", "Explore the data"]:
         go(app, page)
     assert app.selectbox(key="unit").value == "ZZ"
     assert app.selectbox(key="year").value == "2017"
@@ -150,7 +150,7 @@ def test_every_chart_on_every_page_has_a_valid_vega_schema(offline_app, monkeypa
         before = len(drawn)
         go(offline_app, page)
         counts[page] = len(drawn) - before
-    assert counts["The answer"] == 1  # one chart carries the answer
+    assert counts["Home"] == 1  # one chart carries the answer
     assert counts["Evidence"] >= 7 and counts["Explore the data"] == 2
     assert counts["Method & sources"] == 0
     for spec, _ in drawn:
@@ -211,7 +211,7 @@ def test_answer_page_states_the_answer_from_the_generated_results(offline_app):
     from vote_transfer.application.presentation import fmt_pp
 
     app = offline_app
-    assert app.radio(key="page").value == "The answer"
+    assert app.radio(key="page").value == "Home"
     numbers = json.loads(
         (APP.parent.parent / "reports/results/numbers.json").read_text(encoding="utf-8")
     )
@@ -276,7 +276,7 @@ def test_pages_explain_missing_evaluation_instead_of_failing(raw_dataset, monkey
     process_year(2022, raw_dataset)
     monkeypatch.setenv("VOTE_TRANSFER_DATA_DIR", str(raw_dataset))
     app = AppTest.from_file(str(APP)).run(timeout=20)
-    for page in ("The answer", "Evidence"):
+    for page in ("Home", "Evidence"):
         go(app, page, timeout=20)
         assert any("vote-transfer evaluate" in item.value for item in app.info)
 

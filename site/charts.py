@@ -10,7 +10,7 @@ import math
 import pandas as pd
 import streamlit as st
 from theme import COLOUR, OUTCOME, OUTCOME_NAMES, vega_config
-from vote_transfer.application.presentation import ROLES, election_columns, fmt_pct, fmt_pp
+from vote_transfer.application.presentation import ROLES, fmt_pct, fmt_pp
 
 SEGMENTS = (*ROLES[:2], "other", *ROLES[2:])
 FILLS = [OUTCOME[s][0] for s in SEGMENTS]
@@ -44,99 +44,64 @@ def nice_max(value: float, step: float = 5) -> float:
     return max(step, math.ceil(value / step) * step)
 
 
-def comparison_dots(comparison: pd.DataFrame, highlight: list[str], note: dict | None) -> None:
-    """Every assumption's score in every election; three named, the rest as context."""
-    years = election_columns(comparison)
-    frame = comparison[years].rename_axis("Model").reset_index()
-    frame = frame.melt("Model", var_name="Election", value_name="score")
-    frame["Score"] = frame.score.map(fmt_pp)
-    frame["named"] = frame.Model.isin(highlight)
-    named = comparison.loc[highlight, years]
-    # Name the points once, in the election where they are furthest apart.
-    gaps = {
-        y: min(abs(a - b) for i, a in enumerate(named[y]) for b in named[y][i + 1 :]) for y in years
-    }
-    frame["label"] = [
-        row.Model if row.named and row.Election == max(gaps, key=gaps.get) else ""
-        for row in frame.itertuples()
+def mean_bars(comparison: pd.DataFrame) -> None:
+    """One bar per assumption: its average error over the elections, value written at the end.
+
+    The lowest bar is in the accent colour, the two baselines in ink, the others in grey.
+    """
+    frame = comparison[["mean"]].rename_axis("Model").reset_index()
+    best = frame.loc[frame["mean"].idxmin(), "Model"]
+    frame["Score"] = frame["mean"].map(fmt_pp)
+    frame["group"] = [
+        "best" if m == best else "baseline" if m in ("H0a", "H0b") else "other" for m in frame.Model
     ]
-    tooltip = [{"field": "Model"}, {"field": "Election"}, {"field": "Score"}]
-    layers = [
-        {
-            "transform": [{"filter": "!datum.named"}],
-            "mark": {
-                "type": "point",
-                "filled": True,
-                "size": 70,
-                "fill": COLOUR["context"],
-                "stroke": COLOUR["context-line"],
-                "strokeWidth": 1,
-            },
-            "encoding": {"tooltip": tooltip},
-        },
-        {
-            "transform": [{"filter": "datum.named"}],
-            "mark": {"type": "point", "size": 150, "strokeWidth": 2, "opacity": 1},
-            "encoding": {
-                "shape": {
-                    "field": "Model",
-                    "scale": {"domain": highlight, "range": ["circle", "circle", "diamond"]},
-                    "legend": None,
-                },
-                "fill": {
-                    "field": "Model",
-                    "scale": {"domain": highlight, "range": [PAPER, INK, COLOUR["accent"]]},
-                    "legend": None,
-                },
-                "stroke": {
-                    "field": "Model",
-                    "scale": {"domain": highlight, "range": [INK, INK, COLOUR["accent-strong"]]},
-                    "legend": None,
-                },
-                "tooltip": tooltip,
-            },
-        },
-        {
-            "transform": [{"filter": "datum.label != ''"}],
-            "mark": {"type": "text", "dy": -16, "fontWeight": 600, "fontSize": 13},
-            "encoding": {"text": {"field": "label"}},
-        },
-    ]
-    if note:
-        layers.append(
-            {
-                "data": {"values": [note]},
-                "mark": {
-                    "type": "text",
-                    "align": "right",
-                    "dy": 19,
-                    "color": MUTED,
-                    "fontSize": 13,
-                },
-                "encoding": {"text": {"field": "text"}},
-            }
-        )
+    groups = ["best", "baseline", "other"]
     spec = {
-        "height": {"step": 60},
+        "height": {"step": 34},
         "encoding": {
             "y": {
-                "field": "Election",
-                "type": "ordinal",
-                "sort": years,
-                "axis": {"title": None, "grid": True, "labelColor": INK, "labelFontWeight": 600},
+                "field": "Model",
+                "type": "nominal",
+                "sort": frame.Model.tolist(),
+                "axis": {"title": None, "labelColor": INK, "labelFontWeight": 600},
             },
             "x": {
-                "field": "score",
+                "field": "mean",
                 "type": "quantitative",
-                "scale": {"domain": [0, nice_max(float(frame.score.max()))]},
-                "axis": {
-                    "title": "Average error per area, in percentage points (lower is closer)",
-                    "grid": False,
-                    "tickCount": 5,
+                "scale": {"domain": [0, nice_max(float(frame["mean"].max()) * 1.15, 2)]},
+                "axis": {"title": "Average error per area (pp), lower is closer", "tickCount": 5},
+            },
+            "tooltip": [{"field": "Model"}, {"field": "Score", "title": "Average error"}],
+        },
+        "layer": [
+            {
+                "mark": {"type": "bar", "height": 20, "cornerRadiusEnd": 3},
+                "encoding": {
+                    "fill": {
+                        "field": "group",
+                        "type": "nominal",
+                        "scale": {
+                            "domain": groups,
+                            "range": [COLOUR["accent"], INK, COLOUR["context"]],
+                        },
+                        "legend": None,
+                    },
+                    "stroke": {
+                        "field": "group",
+                        "type": "nominal",
+                        "scale": {
+                            "domain": groups,
+                            "range": [COLOUR["accent-strong"], INK, COLOUR["context-line"]],
+                        },
+                        "legend": None,
+                    },
                 },
             },
-        },
-        "layer": layers,
+            {
+                "mark": {"type": "text", "align": "left", "dx": 6},
+                "encoding": {"text": {"field": "Score"}},
+            },
+        ],
     }
     show(frame, spec)
 

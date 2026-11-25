@@ -169,3 +169,47 @@
 
 /* Lists written in Markdown keep the reading measure. */
 [data-testid="stMarkdownContainer"] > ol, [data-testid="stMarkdownContainer"] > ul { max-width: var(--measure); }
+
+/* ---- Home: question, assumption tree, test pipeline ------------------------ */
+.question-box { border-left: 4px solid var(--accent); background: var(--wash); padding: var(--s4) var(--s5); margin: var(--s4) 0; }
+.question-label { font-size: var(--t1) !important; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0 0 var(--s1); }
+.question-text { font-family: var(--serif); font-size: var(--t5) !important; line-height: 1.3 !important; color: var(--ink); margin: 0; }
+.answer-head { margin: 0 0 var(--s2) !important; }
+
+/* A top-down tree drawn with borders: each li draws the line to its parent. */
+.tree { overflow-x: auto; margin: var(--s4) 0 var(--s3); padding-bottom: var(--s2); }
+.tree ul { display: flex; justify-content: center; position: relative; margin: 0; padding: 20px 0 0; }
+.tree > ul { padding-top: 0; }
+.tree li { list-style: none; position: relative; text-align: center; padding: 20px 4px 0; margin: 0; flex: 1 1 0; }
+.tree > ul > li { padding-top: 0; }
+.tree li::before, .tree li::after { content: ""; position: absolute; top: 0; right: 50%; width: 50%; height: 20px; border-top: 1px solid var(--context-line); }
+.tree li::after { right: auto; left: 50%; border-left: 1px solid var(--context-line); }
+.tree li:only-child::before, .tree li:only-child::after { display: none; }
+.tree li:only-child { padding-top: 0; }
+.tree li:first-child::before, .tree li:last-child::after { border: 0; }
+.tree li:last-child::before { border-right: 1px solid var(--context-line); }
+.tree ul ul::before { content: ""; position: absolute; top: 0; left: 50%; height: 20px; border-left: 1px solid var(--context-line); }
+.tree li:only-child > ul::before { height: 20px; }
+.node { display: inline-flex; flex-direction: column; gap: 2px; min-width: 96px; max-width: 220px; padding: var(--s2) var(--s3); border: 1px solid var(--rule); background: var(--paper); text-align: center; }
+.node strong { font-size: var(--t2); color: var(--ink); }
+.node span { font-size: var(--t1); line-height: 1.35; color: var(--muted); }
+.node-root { background: var(--accent); border-color: var(--accent); max-width: 360px; }
+.node-root strong { font-size: var(--t3); color: #fff; }
+.node-root span { color: #fff; opacity: .85; }
+.node-branch { background: var(--wash); border-color: var(--accent); border-width: 2px; }
+.node-branch strong { color: var(--accent-strong); }
+
+/* The test pipeline: boxes joined by arrows, wrapping on small screens. */
+.pipeline { display: flex; align-items: stretch; gap: var(--s2); flex-wrap: wrap; margin: var(--s4) 0; }
+.step { flex: 1 1 140px; display: flex; flex-direction: column; gap: var(--s1); padding: var(--s3); border-top: 3px solid var(--accent); background: var(--wash); }
+.step strong { font-size: var(--t2); color: var(--ink); }
+.step span { font-size: var(--t1); line-height: 1.4; color: var(--muted); }
+.arrow { align-self: center; font-size: var(--t4); color: var(--accent); }
+@media (max-width: 760px) {
+  .tree ul { flex-direction: column; align-items: stretch; padding-top: var(--s2); }
+  .tree li { padding: var(--s2) 0 0 var(--s4); text-align: left; }
+  .tree li::before, .tree li::after, .tree ul ul::before { display: none; }
+  .tree ul ul { border-left: 1px solid var(--context-line); margin-left: var(--s2); }
+  .node { max-width: none; width: 100%; text-align: left; }
+  .arrow { transform: rotate(90deg); width: 100%; text-align: center; }
+}

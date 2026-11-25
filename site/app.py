@@ -1,4 +1,4 @@
-"""Vote Transfer Lab: the question, the evidence and the data, offline."""
+"""Vote Transfer: the question, the evidence and the data, offline."""
 
 from types import SimpleNamespace
 
@@ -10,15 +10,13 @@ from vote_transfer.application.datasets import available_datasets, snapshot_drif
 from vote_transfer.config import data_root
 
 VIEWS = {
-    "The answer": answer,
+    "Home": answer,
     "Evidence": evidence,
     "Explore the data": explore,
     "Method & sources": method,
 }
 PAGES = tuple(VIEWS)
-st.set_page_config(
-    page_title="Vote Transfer Lab", page_icon=str(components.LOGO_PATH), layout="wide"
-)
+st.set_page_config(page_title="Vote Transfer", page_icon=str(components.LOGO_PATH), layout="wide")
 components.inject_styles()
 
 root = data_root()
