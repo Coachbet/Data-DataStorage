@@ -302,9 +302,7 @@ def sensitivity(evaluated: dict) -> None:
         )
         st.caption(
             "p is the share of each eliminated group that splits as in H0b instead of "
-            "following the base rule. Each test election is never used to fit its own p. "
-            "H3 is shown pending approval of its fitted parameter: "
-            "`[PENDING: professor approval]`."
+            "following the base rule. Each test election is never used to fit its own p."
         )
 
 

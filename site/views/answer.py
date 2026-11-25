@@ -88,8 +88,7 @@ def render(ctx) -> None:
         "H1, H2 and H3 place candidates with the left-to-right orders published by polling "
         "institutes; the earlier hand-coded 1-7 scale is kept as a comparison "
         f"({report.get('comparison_coding_status', 'draft coding')}). "
-        + "H3 fits one parameter and is shown pending approval: "
-        "`[PENDING: professor approval]`. The 2002 and 2007 files omit some overseas areas "
+        + "H3 fits one parameter. The 2002 and 2007 files omit some overseas areas "
         "and voters abroad, so those years describe covered areas only. "
         + components.AGGREGATE_NOTE
     )

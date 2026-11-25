@@ -222,7 +222,7 @@ def test_answer_page_states_the_answer_from_the_generated_results(offline_app):
         assert fmt_pp(numbers[f"score.{model}.mean"]) in text
     assert not app.metric and not app.selectbox
     status = app.warning[0].value
-    for phrase in ("Poll-based scale", "polling", "[PENDING", "2002 and 2007", "not individual"):
+    for phrase in ("Poll-based scale", "polling", "2002 and 2007", "not individual"):
         assert phrase in status
     app.button(key="finding_1").click().run(timeout=30)
     assert not app.exception
