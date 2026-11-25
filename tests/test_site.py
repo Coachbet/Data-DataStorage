@@ -4,7 +4,7 @@ import pytest
 from streamlit.testing.v1 import AppTest
 from vote_transfer.application.processing import process_year
 
-PAGES = ["The answer", "Evidence", "Explore the data", "Method & sources"]
+PAGES = ["Home", "Explore the data", "Evidence", "Method & sources"]
 MODELS = [
     "H0a",
     "H0b",
@@ -92,6 +92,9 @@ def test_app_rejects_modified_processed_outputs(raw_dataset, monkeypatch):
 def test_shipped_five_year_app_runs_without_raw_data_or_network(offline_app):
     app = go(offline_app, "Explore the data")
     assert set(app.selectbox(key="year").options) == {"2002", "2007", "2012", "2017", "2022"}
+    for year in ("2002", "2007", "2012", "2017", "2022"):  # every source file is linked
+        assert f"Original Ministry dataset, {year}, round 2" in page_text(app)
+    assert "Inscrits" in page_text(app)
     app.radio(key="round").set_value(2).run()
     for year, registered in {
         "2002": "40,463,551",
@@ -116,16 +119,15 @@ def test_shipped_five_year_app_runs_without_raw_data_or_network(offline_app):
         go(app, "Evidence")
         assert app.metric[0].label == "Weighted average area error"
         assert app.metric[1].label == "Gap in combined results"
+        go(app, "Method & sources")
+        assert app.selectbox(key="year").value == year
         candidates = app.dataframe[-1].value
         assert len(candidates) == {"2002": 16, "2007": 12, "2012": 10, "2017": 11, "2022": 12}[year]
-        assert "Score (1–7)" in candidates
+        assert "Poll-based score (0–1)" in candidates
         assert any(
             button.label == "Download all candidate positions (CSV)"
             for button in app.get("download_button")
         )
-        go(app, "Method & sources")
-        assert app.selectbox(key="year").value == year
-        assert f"Original Ministry dataset, {year}" in page_text(app)
         go(app, "Explore the data")
         assert app.radio(key="round").value == 2 or app.radio(key="round").set_value(2).run()
 
@@ -134,7 +136,7 @@ def test_pickers_keep_their_value_across_pages_and_recover_from_a_missing_area(o
     app = go(offline_app, "Explore the data")
     app.selectbox(key="year").select("2017").run()
     app.selectbox(key="unit").select("ZZ").run()
-    for page in ["The answer", "Evidence", "Explore the data"]:
+    for page in ["Home", "Evidence", "Explore the data"]:
         go(app, page)
     assert app.selectbox(key="unit").value == "ZZ"
     assert app.selectbox(key="year").value == "2017"
@@ -150,7 +152,7 @@ def test_every_chart_on_every_page_has_a_valid_vega_schema(offline_app, monkeypa
         before = len(drawn)
         go(offline_app, page)
         counts[page] = len(drawn) - before
-    assert counts["The answer"] == 1  # one chart carries the answer
+    assert counts["Home"] == 1  # one chart carries the answer
     assert counts["Evidence"] >= 7 and counts["Explore the data"] == 2
     assert counts["Method & sources"] == 0
     for spec, _ in drawn:
@@ -211,17 +213,19 @@ def test_answer_page_states_the_answer_from_the_generated_results(offline_app):
     from vote_transfer.application.presentation import fmt_pp
 
     app = offline_app
-    assert app.radio(key="page").value == "The answer"
-    numbers = json.loads((APP.parent.parent / "reports/results/numbers.json").read_text())
+    assert app.radio(key="page").value == "Home"
+    numbers = json.loads(
+        (APP.parent.parent / "reports/results/numbers.json").read_text(encoding="utf-8")
+    )
     text = page_text(app)
     assert "Which assumptions about voter behaviour best explain" in text
     assert "No assumption explains every election best." in text
     for model in ("H1", "H0b", "H0a"):
         assert fmt_pp(numbers[f"score.{model}.mean"]) in text
     assert not app.metric and not app.selectbox
-    status = app.warning[0].value
-    for phrase in ("Poll-based scale", "polling", "[PENDING", "2002 and 2007", "not individual"):
-        assert phrase in status
+    for phrase in ("Poll-based scale", "polling", "2002 and 2007", "not individual"):
+        assert phrase in text
+    assert "Registered voters" in text  # the definitions sit at the bottom of Home
     app.button(key="finding_1").click().run(timeout=30)
     assert not app.exception
     assert app.radio(key="page").value == "Evidence"
@@ -274,7 +278,7 @@ def test_pages_explain_missing_evaluation_instead_of_failing(raw_dataset, monkey
     process_year(2022, raw_dataset)
     monkeypatch.setenv("VOTE_TRANSFER_DATA_DIR", str(raw_dataset))
     app = AppTest.from_file(str(APP)).run(timeout=20)
-    for page in ("The answer", "Evidence"):
+    for page in ("Home", "Evidence"):
         go(app, page, timeout=20)
         assert any("vote-transfer evaluate" in item.value for item in app.info)
 

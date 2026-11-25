@@ -145,7 +145,8 @@ def key_findings(comparison: pd.DataFrame, errors: pd.DataFrame, threshold: pd.D
     largest = max(years, key=lambda y: h0b[y] - h1[y])
     findings.append(
         {
-            "title": f"Ideological proximity explains {largest}, not the other elections."
+            # "fits", not "explains": a lower score shows agreement with the totals, not a cause.
+            "title": f"Ideological proximity fits {largest} best, not the other elections."
             if h1_wins == [largest]
             else "Ideological proximity helps in some elections only.",
             "body": (

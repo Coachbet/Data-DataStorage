@@ -35,7 +35,7 @@ def crosscheck(year: int, root: Path) -> dict:
     record = summary | {"checked_on": date.today().isoformat(), "reference": report["reference"]}
     target = root / "bundled" / CROSSCHECK_RECORD.format(year=year)
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(record, indent=2) + "\n")
+    target.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8", newline="\n")
     return summary | {"mismatches": mismatches}
 
 

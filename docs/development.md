@@ -54,7 +54,7 @@ The project team owns methodological decisions, final interpretation and submiss
 
 ## Frontend
 
-The Streamlit app has four pages: The answer, Evidence, Explore the data, and
+The Streamlit app has four pages: Home, Evidence, Explore the data, and
 Method & sources (the 2027 scenarios page was removed on 20 November 2026). `site/app.py` loads the data and dispatches
 to one module per page in `site/views/`. Election and area pickers appear only on
 the pages they change, and keep their value across pages.

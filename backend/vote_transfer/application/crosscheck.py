@@ -28,7 +28,7 @@ def national_totals(turnout: pd.DataFrame, votes: pd.DataFrame) -> dict[int, dic
 def crosscheck_national(year: int, root: Path) -> dict:
     """Write and return a field-by-field comparison; differences are reported, not fixed."""
     folder = root / "raw" / "reference" / f"national_{year}"
-    manifest = json.loads((folder / "manifest.json").read_text())
+    manifest = json.loads((folder / "manifest.json").read_text(encoding="utf-8"))
     interim = root / "interim" / str(year)
     if not (interim / "turnout.parquet").exists():
         raise ValueError(f"Run `vote-transfer process --year {year}` before the cross-check.")
@@ -63,5 +63,7 @@ def crosscheck_national(year: int, root: Path) -> dict:
     }
     target = root / "processed" / str(year)
     target.mkdir(parents=True, exist_ok=True)
-    (target / "national_crosscheck.json").write_text(json.dumps(report, indent=2) + "\n")
+    (target / "national_crosscheck.json").write_text(
+        json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n"
+    )
     return report

@@ -146,7 +146,7 @@ def test_shipped_predictions_are_reproduced_from_the_shipped_inputs(five_electio
     rebuilt, report = load_predictions(five_elections)
     shipped, shipped_report = load_predictions(BUNDLED.parent)
     pd.testing.assert_frame_equal(rebuilt, pd.read_parquet(BUNDLED / "predictions.parquet"))
-    bundled_report = json.loads((BUNDLED / "evaluation_report.json").read_text())
+    bundled_report = json.loads((BUNDLED / "evaluation_report.json").read_text(encoding="utf-8"))
     # Same folds and parameters; scores may differ in the last digit between operating
     # systems (floating-point summation order), so they are compared with a tolerance.
     assert len(report["h3_folds"]) == len(bundled_report["h3_folds"])

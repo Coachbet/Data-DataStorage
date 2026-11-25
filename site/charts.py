@@ -5,12 +5,14 @@ Titles, subtitles and source lines are HTML around the chart (see
 technology. A builder only draws marks.
 """
 
+import hashlib
+import json
 import math
 
 import pandas as pd
 import streamlit as st
 from theme import COLOUR, OUTCOME, OUTCOME_NAMES, vega_config
-from vote_transfer.application.presentation import ROLES, election_columns, fmt_pct, fmt_pp
+from vote_transfer.application.presentation import ROLES, fmt_pct, fmt_pp
 
 SEGMENTS = (*ROLES[:2], "other", *ROLES[2:])
 FILLS = [OUTCOME[s][0] for s in SEGMENTS]
@@ -19,7 +21,16 @@ INK, MUTED, PAPER = COLOUR["ink"], COLOUR["muted"], COLOUR["paper"]
 
 
 def show(data: pd.DataFrame, spec: dict) -> None:
-    st.vega_lite_chart(data, {**spec, "config": vega_config()}, width="stretch", theme=None)
+    """Draw one chart. The key changes with the data, so a new area or year always redraws it.
+
+    Without it the browser may keep the previous drawing when only the values change
+    (same columns and labels, for example when another area is picked).
+    """
+    full = {**spec, "config": vega_config()}
+    digest = hashlib.sha1(
+        json.dumps(full, sort_keys=True, default=str).encode() + data.to_csv(index=False).encode()
+    ).hexdigest()[:16]
+    st.vega_lite_chart(data, full, width="stretch", theme=None, key=f"chart_{digest}")
 
 
 def role_colour(field: str = "role") -> dict:
@@ -44,99 +55,68 @@ def nice_max(value: float, step: float = 5) -> float:
     return max(step, math.ceil(value / step) * step)
 
 
-def comparison_dots(comparison: pd.DataFrame, highlight: list[str], note: dict | None) -> None:
-    """Every assumption's score in every election; three named, the rest as context."""
-    years = election_columns(comparison)
-    frame = comparison[years].rename_axis("Model").reset_index()
-    frame = frame.melt("Model", var_name="Election", value_name="score")
-    frame["Score"] = frame.score.map(fmt_pp)
-    frame["named"] = frame.Model.isin(highlight)
-    named = comparison.loc[highlight, years]
-    # Name the points once, in the election where they are furthest apart.
-    gaps = {
-        y: min(abs(a - b) for i, a in enumerate(named[y]) for b in named[y][i + 1 :]) for y in years
-    }
-    frame["label"] = [
-        row.Model if row.named and row.Election == max(gaps, key=gaps.get) else ""
-        for row in frame.itertuples()
+def mean_bars(comparison: pd.DataFrame) -> None:
+    """One bar per assumption: its average error over the elections, value written at the end.
+
+    The lowest bar is in the accent colour, the two baselines in ink, the others in grey.
+    """
+    frame = comparison[["mean"]].rename_axis("Model").reset_index()
+    best = frame.loc[frame["mean"].idxmin(), "Model"]
+    frame["Score"] = frame["mean"].map(fmt_pp)
+    frame["group"] = [
+        "best" if m == best else "baseline" if m in ("H0a", "H0b") else "other" for m in frame.Model
     ]
-    tooltip = [{"field": "Model"}, {"field": "Election"}, {"field": "Score"}]
-    layers = [
-        {
-            "transform": [{"filter": "!datum.named"}],
-            "mark": {
-                "type": "point",
-                "filled": True,
-                "size": 70,
-                "fill": COLOUR["context"],
-                "stroke": COLOUR["context-line"],
-                "strokeWidth": 1,
-            },
-            "encoding": {"tooltip": tooltip},
-        },
-        {
-            "transform": [{"filter": "datum.named"}],
-            "mark": {"type": "point", "size": 150, "strokeWidth": 2, "opacity": 1},
-            "encoding": {
-                "shape": {
-                    "field": "Model",
-                    "scale": {"domain": highlight, "range": ["circle", "circle", "diamond"]},
-                    "legend": None,
-                },
-                "fill": {
-                    "field": "Model",
-                    "scale": {"domain": highlight, "range": [PAPER, INK, COLOUR["accent"]]},
-                    "legend": None,
-                },
-                "stroke": {
-                    "field": "Model",
-                    "scale": {"domain": highlight, "range": [INK, INK, COLOUR["accent-strong"]]},
-                    "legend": None,
-                },
-                "tooltip": tooltip,
-            },
-        },
-        {
-            "transform": [{"filter": "datum.label != ''"}],
-            "mark": {"type": "text", "dy": -16, "fontWeight": 600, "fontSize": 13},
-            "encoding": {"text": {"field": "label"}},
-        },
-    ]
-    if note:
-        layers.append(
-            {
-                "data": {"values": [note]},
-                "mark": {
-                    "type": "text",
-                    "align": "right",
-                    "dy": 19,
-                    "color": MUTED,
-                    "fontSize": 13,
-                },
-                "encoding": {"text": {"field": "text"}},
-            }
-        )
+    groups = ["best", "baseline", "other"]
     spec = {
-        "height": {"step": 60},
+        "height": {"step": 34},
         "encoding": {
             "y": {
-                "field": "Election",
-                "type": "ordinal",
-                "sort": years,
-                "axis": {"title": None, "grid": True, "labelColor": INK, "labelFontWeight": 600},
+                "field": "Model",
+                "type": "nominal",
+                "sort": frame.Model.tolist(),
+                "axis": {"title": None, "labelColor": INK, "labelFontWeight": 600},
             },
             "x": {
-                "field": "score",
+                "field": "mean",
                 "type": "quantitative",
-                "scale": {"domain": [0, nice_max(float(frame.score.max()))]},
-                "axis": {
-                    "title": "Average error per area, in percentage points (lower is closer)",
-                    "grid": False,
-                    "tickCount": 5,
+                "scale": {"domain": [0, nice_max(float(frame["mean"].max()) * 1.15, 2)]},
+                "axis": {"title": "Average error per area (pp), lower is closer", "tickCount": 5},
+            },
+            "tooltip": [{"field": "Model"}, {"field": "Score", "title": "Average error"}],
+        },
+        "layer": [
+            {
+                "mark": {"type": "bar", "height": 20, "cornerRadiusEnd": 3},
+                "encoding": {
+                    "fill": {
+                        "field": "group",
+                        "type": "nominal",
+                        "scale": {
+                            "domain": groups,
+                            "range": [COLOUR["accent"], COLOUR["muted"], COLOUR["context"]],
+                        },
+                        "legend": None,
+                    },
+                    "stroke": {
+                        "field": "group",
+                        "type": "nominal",
+                        "scale": {
+                            "domain": groups,
+                            "range": [
+                                COLOUR["accent-strong"],
+                                COLOUR["muted"],
+                                COLOUR["context-line"],
+                            ],
+                        },
+                        "legend": None,
+                    },
                 },
             },
-        },
-        "layer": layers,
+            {
+                "mark": {"type": "text", "align": "left", "dx": 6},
+                "encoding": {"text": {"field": "Score"}},
+            },
+        ],
     }
     show(frame, spec)
 
@@ -152,6 +132,9 @@ def stacked_rows(frame: pd.DataFrame, names: dict[str, str], axis_title: str) ->
     chart["label"] = chart.Share.where(chart.pct >= 6, "")
     spec = {
         "height": {"step": 54},
+        # Room on the right, so the last bar and the "100" tick are never clipped.
+        "padding": {"left": 0, "top": 4, "right": 16, "bottom": 4},
+        "autosize": {"type": "fit-x", "contains": "padding"},
         "encoding": {
             "y": {
                 "field": "row",
@@ -341,7 +324,7 @@ def threshold_bars(threshold: pd.DataFrame) -> None:
     """Share of the electorate that the fixed H2 threshold sends to a non-vote."""
     chart = threshold.copy()
     chart["Election"] = [
-        f"{row.year} · finalists at {row.finalist_a_score} and {row.finalist_b_score}"
+        f"{row.year} · finalists at {row.finalist_a_score:.2f} and {row.finalist_b_score:.2f}"
         for row in chart.itertuples()
     ]
     chart["Share"] = chart.beyond_threshold_pct.map(fmt_pct)

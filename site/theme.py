@@ -28,10 +28,11 @@ COLOUR = {
 }
 # The four second-round outcomes: one colour each, everywhere. Fill, then outline.
 OUTCOME = {
-    "finalist_a": ("#2A78D6", "#1F5FAE"),
-    "finalist_b": ("#EB6834", "#B34A1C"),
-    "blank_invalid": ("#1BAF7A", "#0F7A54"),
-    "abstention": ("#EDA100", "#8F6100"),
+    # Softened hues (validated: lightness band, chroma floor, colour-blind separation).
+    "finalist_a": ("#4F86C6", "#2E63A3"),
+    "finalist_b": ("#D9825B", "#A65530"),
+    "blank_invalid": ("#4BA88A", "#2E7A62"),
+    "abstention": ("#D8AA45", "#8A6A1E"),
     "other": (COLOUR["context"], COLOUR["context-line"]),
 }
 OUTCOME_NAMES = {

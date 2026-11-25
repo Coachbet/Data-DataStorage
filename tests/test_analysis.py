@@ -70,10 +70,10 @@ def test_one_command_writes_every_result_figure_and_document(generated):
         assert (project / "reports/results" / name).stat().st_size > 0
     for figure in ("model_comparison", "signed_error_by_outcome", "predicted_vs_observed_2022"):
         assert (project / f"reports/figures/{figure}.png").read_bytes().startswith(b"\x89PNG")
-        assert "<svg" in (project / f"reports/figures/{figure}.svg").read_text()
+        assert "<svg" in (project / f"reports/figures/{figure}.svg").read_text(encoding="utf-8")
     for name, target in RENDERED.items():
         if (TEMPLATES_DIR / name).is_file():
-            rendered = (project / target).read_text()
+            rendered = (project / target).read_text(encoding="utf-8")
             assert "{{" not in rendered
             assert rendered.startswith("<!-- Generated from")
 
@@ -81,8 +81,8 @@ def test_one_command_writes_every_result_figure_and_document(generated):
 def test_committed_results_and_documents_match_a_fresh_run(generated):
     """No number in the repository may differ from what the code produces today."""
     project, _ = generated
-    committed = json.loads((PROJECT / "reports/results/numbers.json").read_text())
-    fresh = json.loads((project / "reports/results/numbers.json").read_text())
+    committed = json.loads((PROJECT / "reports/results/numbers.json").read_text(encoding="utf-8"))
+    fresh = json.loads((project / "reports/results/numbers.json").read_text(encoding="utf-8"))
     assert committed == fresh
     for name in ("model_comparison.csv", "sensitivity.csv", "blank_only.csv", "h3_folds.csv"):
         pd.testing.assert_frame_equal(
@@ -91,7 +91,9 @@ def test_committed_results_and_documents_match_a_fresh_run(generated):
         )
     for name, target in RENDERED.items():
         if (TEMPLATES_DIR / name).is_file():
-            assert (PROJECT / target).read_text() == (project / target).read_text(), target
+            assert (PROJECT / target).read_text(encoding="utf-8") == (project / target).read_text(
+                encoding="utf-8"
+            ), target
 
 
 def test_comparison_table_means_and_ranks(tables):
