@@ -57,10 +57,10 @@ def problem() -> None:
     )
     components.prose(
         "The vote is secret, so the official results only give totals: we know how many "
-        "people chose each option in each round, but not who moved where between the two "
-        "rounds. That is why we cannot observe the transfers directly. What we can do is "
-        "write down possible behaviours as precise rules, predict the second round with "
-        "each rule, and check which prediction is closest to what really happened."
+        "people chose each option in each round, but not who moved where. So we cannot "
+        "observe the transfers directly. What we can do is write possible behaviours as "
+        "precise rules, predict the second round with each rule, and check which "
+        "prediction is the closest to what really happened."
     )
 
 
@@ -99,11 +99,18 @@ def tree() -> None:
         + "</ul></li></ul></div>"
     )
     components.prose(
-        "The baselines are our reference: they use no political information at all. The "
-        "proximity rules need a left-right position for every candidate, which we take from "
-        "the order in which polling institutes list the candidates (0 is the leftmost, 1 the "
-        "rightmost). H3 is the only rule with a number fitted on the data: we fit p on four "
-        "elections and test it on the fifth."
+        "The baselines are our reference, because they use no political information. The "
+        "proximity rules and the mixture need a left-right position for every candidate: we "
+        "take it from the order in which polling institutes list the candidates, from 0 "
+        "(leftmost) to 1 (rightmost). H3 is the only rule with a number fitted on the data: "
+        "we fit p on four elections and test it on the fifth."
+    )
+    st.button(
+        "See the candidate positions used by H1, H1-soft, H2 and H3 →",
+        key="to_candidates",
+        type="tertiary",
+        on_click=go_to,
+        args=("Method & sources",),
     )
 
 
@@ -129,11 +136,22 @@ def pipeline() -> None:
     components.html(f'<div class="pipeline">{boxes}</div>')
 
 
+SECTIONS = [
+    ("The question", "question"),
+    ("The assumptions", "tree"),
+    ("How we test them", "method"),
+    ("What we found", "answer"),
+    ("Three findings", "findings"),
+    ("Definitions", "definitions"),
+]
+
+
 def render(ctx) -> None:
     components.page_header(
         "Where do the voters of eliminated candidates go?",
         "A data project on the five French presidential elections from 2002 to 2022.",
     )
+    components.contents(SECTIONS)
     problem()
     tree()
     pipeline()
@@ -145,8 +163,13 @@ def render(ctx) -> None:
             "Cross-election results are not available in this data folder. "
             "Run `vote-transfer evaluate --all-models --all-years`."
         )
-        components.glossary()
-        return
+    else:
+        findings(evaluated)
+    components.section(6, "Definitions", "definitions")
+    components.glossary()
+
+
+def findings(evaluated: dict) -> None:
     comparison, report = evaluated["comparison"], evaluated["report"]
     result = answer(comparison)
     components.html(f'<h3 class="answer-head">{components.escape(result["headline"])}</h3>')
@@ -155,22 +178,24 @@ def render(ctx) -> None:
     best = comparison["mean"].idxmin()
     components.figure_head(
         f"Average error over the five elections: {best} is the lowest",
-        "Average gap between predicted and observed second-round shares, per area, in "
-        "percentage points. Lower is closer. The two baselines are in dark grey.",
+        "Average gap between the predicted and the observed second round, per area, in "
+        "percentage points (pp). Lower is closer. The two baselines are in dark grey.",
     )
     charts.mean_bars(comparison)
     components.source(
-        "Source: Ministry of the Interior results by polling station; our calculations. "
-        "Each area counts in proportion to its registered voters. H3 is scored on elections "
-        f"it was not fitted on. {report['coding_status'].capitalize()}."
+        "Source: Ministry of the Interior, results by polling station; our calculations. "
+        "Each area counts in proportion to its registered voters, and H3 is always scored on "
+        "an election it was not fitted on. The 2002 and 2007 files miss some overseas areas "
+        f"and the voters abroad. {report['coding_status'].capitalize()}: the positions come "
+        "from polling institutes. These are patterns in the totals, not individual transfers."
     )
 
     components.section(5, "Three findings", "findings")
-    findings = key_findings(comparison, evaluated["errors"], evaluated["threshold"])
-    findings[2] = threshold_finding(evaluated["threshold"])
+    cards = key_findings(comparison, evaluated["errors"], evaluated["threshold"])
+    cards[2] = threshold_finding(evaluated["threshold"])
     links = ["See where each assumption misses", "See the comparison table", "See the threshold"]
     for number, (column, finding, link) in enumerate(
-        zip(st.columns(len(findings)), findings, links, strict=True), 1
+        zip(st.columns(len(cards)), cards, links, strict=True), 1
     ):
         with column.container(key=f"finding_card_{number}"):
             components.html(
@@ -184,14 +209,3 @@ def render(ctx) -> None:
                 on_click=go_to,
                 args=("Evidence",),
             )
-
-    components.section(None, "Status of these results", "status")
-    st.warning(
-        f"**{report['coding_status'].capitalize()}.** "
-        "H1, H2 and H3 place candidates with the left-to-right orders published by polling "
-        "institutes; the earlier hand-coded 1-7 scale is kept as a comparison "
-        f"({report.get('comparison_coding_status', 'draft coding')}). "
-        "The 2002 and 2007 files omit some overseas areas and voters abroad, so those years "
-        "describe covered areas only. " + components.AGGREGATE_NOTE
-    )
-    components.glossary()

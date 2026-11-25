@@ -66,6 +66,7 @@ def provenance() -> None:
         "vote'. For 2002 to 2012 one file has both rounds, so the two links go to the "
         "same dataset. We keep the original files unchanged and check them with a checksum."
     )
+    components.html('<div id="keep"></div>')
     components.figure_head(
         "What we keep from each file",
         "The original column names are in French. We keep these counts for every polling "
@@ -90,19 +91,25 @@ def provenance() -> None:
 
 def render(ctx) -> None:
     components.page_header(
-        "The official results, election by election",
-        "Before looking at the numbers, here is where they come from and what we keep from "
-        "each file. Then you can explore one election, round by round and area by area.",
+        "The data: official results from 2002 to 2022",
+        "First where the numbers come from and what we keep, then one election in detail.",
+    )
+    components.contents(
+        [
+            ("Where the data comes from", "provenance"),
+            ("What we keep", "keep"),
+            ("Both rounds side by side", "rounds"),
+            ("One round in detail", "round"),
+        ]
     )
     provenance()
     components.section(None, "Explore one election", "explore")
     components.election_picker(ctx)
     if ctx.partial_coverage and ctx.unit == "All units":
         st.warning(
-            f"**Not national totals.** The {ctx.year} source file omits voters abroad and some "
-            "overseas areas. These totals cover only the areas in the file, so turnout and "
-            "candidate figures differ slightly from official national results, for example "
-            "those reported on Wikipedia."
+            f"**Not national totals.** The {ctx.year} file does not include the voters abroad "
+            "and some overseas areas, so these figures are a bit different from the national "
+            "results you can find, for example, on Wikipedia."
         )
     roles = outcome_roles(ctx.results)
     names = finalist_names(ctx.results, roles)
@@ -120,9 +127,8 @@ def render(ctx) -> None:
     components.outcome_key(names)
     charts.stacked_rows(both, names, "Share of registered voters (%)")
     components.source(
-        "Source: Ministry of the Interior. Each round uses its own registration total. "
-        "These are totals at each round; they do not show how individual people moved "
-        "between choices."
+        "Source: Ministry of the Interior. Each round uses its own number of registered "
+        "voters. These are totals, so they do not show how people moved between the rounds."
     )
 
     components.section(2, "One round in detail", "round")
@@ -186,30 +192,29 @@ def render(ctx) -> None:
         charts.round_bars(totals.assign(value=totals.share_pct), "Share of registered voters (%)")
         components.note("How to read this.", summary["reading"])
     components.source(
-        "Source: Ministry of the Interior. Colours: the two finalists, blank or invalid "
-        "ballots and abstention keep their colour on every page; other candidates are grey."
+        "Source: Ministry of the Interior. The finalists, blank or invalid ballots and "
+        "abstention keep the same colour on every page; the other candidates are grey."
     )
-    with st.expander("Exact figures and download"):
-        table = summary["totals"][["outcome", "count", "share_pct", "valid_share_pct"]].copy()
-        table.columns = [
-            "Outcome",
-            "People / ballots",
-            "Registered electorate (%)",
-            "Valid votes (%)",
-        ]
-        st.dataframe(
-            table,
-            hide_index=True,
-            width="stretch",
-            column_config={
-                "Registered electorate (%)": st.column_config.NumberColumn(format="%.1f"),
-                "Valid votes (%)": st.column_config.NumberColumn(format="%.1f"),
-            },
-        )
-        st.download_button(
-            "Download this round (CSV)",
-            ctx.selected[ctx.selected["round"] == round_number].to_csv(index=False),
-            file_name=f"election_{ctx.year}_{ctx.unit.replace(' ', '_')}_round_{round_number}.csv",
-            mime="text/csv",
-        )
-    components.glossary()
+    components.figure_head("Exact figures", f"Round {round_number}, {ctx.year}, {ctx.area}.")
+    table = summary["totals"][["outcome", "count", "share_pct", "valid_share_pct"]].copy()
+    table.columns = [
+        "Outcome",
+        "People / ballots",
+        "Registered electorate (%)",
+        "Valid votes (%)",
+    ]
+    st.dataframe(
+        table,
+        hide_index=True,
+        width="stretch",
+        column_config={
+            "Registered electorate (%)": st.column_config.NumberColumn(format="%.1f"),
+            "Valid votes (%)": st.column_config.NumberColumn(format="%.1f"),
+        },
+    )
+    st.download_button(
+        "Download this round (CSV)",
+        ctx.selected[ctx.selected["round"] == round_number].to_csv(index=False),
+        file_name=f"election_{ctx.year}_{ctx.unit.replace(' ', '_')}_round_{round_number}.csv",
+        mime="text/csv",
+    )

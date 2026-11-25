@@ -119,6 +119,8 @@ def test_shipped_five_year_app_runs_without_raw_data_or_network(offline_app):
         go(app, "Evidence")
         assert app.metric[0].label == "Weighted average area error"
         assert app.metric[1].label == "Gap in combined results"
+        go(app, "Method & sources")
+        assert app.selectbox(key="year").value == year
         candidates = app.dataframe[-1].value
         assert len(candidates) == {"2002": 16, "2007": 12, "2012": 10, "2017": 11, "2022": 12}[year]
         assert "Poll-based score (0–1)" in candidates
@@ -126,9 +128,6 @@ def test_shipped_five_year_app_runs_without_raw_data_or_network(offline_app):
             button.label == "Download all candidate positions (CSV)"
             for button in app.get("download_button")
         )
-        go(app, "Method & sources")
-        assert app.selectbox(key="year").value == year
-        assert "Explore the data page" in page_text(app)
         go(app, "Explore the data")
         assert app.radio(key="round").value == 2 or app.radio(key="round").set_value(2).run()
 
@@ -224,9 +223,9 @@ def test_answer_page_states_the_answer_from_the_generated_results(offline_app):
     for model in ("H1", "H0b", "H0a"):
         assert fmt_pp(numbers[f"score.{model}.mean"]) in text
     assert not app.metric and not app.selectbox
-    status = app.warning[0].value
     for phrase in ("Poll-based scale", "polling", "2002 and 2007", "not individual"):
-        assert phrase in status
+        assert phrase in text
+    assert "Registered voters" in text  # the definitions sit at the bottom of Home
     app.button(key="finding_1").click().run(timeout=30)
     assert not app.exception
     assert app.radio(key="page").value == "Evidence"

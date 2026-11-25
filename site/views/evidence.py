@@ -48,11 +48,18 @@ def ladder(evaluated: dict, status: str) -> None:
     components.section(
         1,
         *SECTIONS[0],
-        lead=f"Six rules give {how_many(len(MODEL_ORDER))} assumptions: two baselines, three "
-        "proximity rules (H2 in two variants) and one mixture with a fitted parameter.",
+        lead="To see what the rules really do, we follow one group of voters, the biggest "
+        "group of eliminated voters in the last election.",
     )
     with st.expander("Recall: what each assumption does"):
         components.assumption_list()
+        st.button(
+            "See the candidate positions used by H1, H1-soft, H2 and H3 →",
+            key="evidence_to_candidates",
+            type="tertiary",
+            on_click=go_to,
+            args=("Method & sources",),
+        )
     example, year = evaluated["ladder"], evaluated["ladder_year"]
     rows = example["rows"]
     rows = rows.loc[[model for model in MODEL_ORDER if model in rows.index]]
@@ -77,11 +84,10 @@ def ladder(evaluated: dict, status: str) -> None:
     charts.stacked_rows(frame, names, "Share of the group (%)")
     a, b = example["finalist_scores"]
     components.source(
-        "One row of each transfer matrix, pooled over areas. On the poll-based scale "
-        f"(0 = left, 1 = right) this candidate scores {example['group_score']:.2f} and the "
-        f"finalists {a:.2f} and {b:.2f}. "
-        f"H3 uses the share p fitted with {year} held out. {status.capitalize()}. "
-        "A rule about a group is an assumption, not an observed transfer."
+        "All areas together. On the poll-based scale (0 = left, 1 = right) this candidate "
+        f"scores {example['group_score']:.2f} and the finalists {a:.2f} and {b:.2f}. H3 uses "
+        f"the share p fitted without {year}. This is what a rule assumes, not an observed "
+        "transfer."
     )
 
 
@@ -90,8 +96,8 @@ def comparison(evaluated: dict) -> None:
     components.section(
         2,
         *SECTIONS[1],
-        lead="The score is the average gap, per area, between an assumption's predicted "
-        "second-round shares and the observed ones, in percentage points (pp). Lower is closer.",
+        lead="The score is the average gap, per area, between the predicted and the observed "
+        "second round, in percentage points (pp). Lower means closer.",
     )
     years = election_columns(table)
     wide = table[[*years, "mean", "mean_without_2002"]].T
@@ -103,9 +109,9 @@ def comparison(evaluated: dict) -> None:
     )
     components.data_table(wide, {m: "{:.1f}" for m in table.index}, best="row")
     components.source(
-        "Weighted average area error in percentage points; lower is closer. "
-        "H3 scores are held-out: the share p is fitted on four elections and tested on "
-        "the fifth. H2 is reported in both variants; neither is selected by fit."
+        "Each area counts in proportion to its registered voters. H3 is always scored on an "
+        "election it was not fitted on. We show both versions of H2 because we did not "
+        "choose one with the results."
     )
     components.note("What this table shows.", result["sentences"][0])
 
@@ -117,8 +123,8 @@ def errors(evaluated: dict) -> str:
     components.section(
         3,
         *SECTIONS[2],
-        lead="The score hides the direction of an error. Here each bar is predicted minus "
-        "observed for one outcome: above zero, the assumption predicts too much of it.",
+        lead="The score does not say if a rule predicts too much or too little. Here each bar "
+        "is predicted minus observed: above zero, the rule predicts too much of that outcome.",
     )
     focus = st.selectbox(
         "Assumption shown beside the two baselines",
@@ -147,9 +153,8 @@ def errors(evaluated: dict) -> str:
         )
         charts.signed_errors(panel, limits)
     components.source(
-        "Predicted minus observed share of registered voters, pooled over covered areas. "
-        "Above zero: the assumption predicts too much of that outcome. Finalist A is the "
-        "first-round leader. These are aggregate patterns, not individual transfers."
+        "Finalist A is the candidate who came first in round 1. These are patterns in the "
+        "totals, not individual transfers."
     )
     return focus
 
@@ -161,8 +166,9 @@ def threshold(evaluated: dict) -> None:
     components.section(
         4,
         *SECTIONS[3],
-        lead="H2 sends every group at least one third of the scale away from both finalists "
-        "to a non-vote. How many voters that is depends on where the finalists sit on the scale.",
+        lead="H2 sends a group to a non-vote when its candidate is at least one third of the "
+        "scale away from both finalists. How many voters this concerns depends on where the "
+        "finalists are.",
     )
     components.figure_head(
         f"In {join_years([str(y) for y in top.year])}, the threshold takes "
@@ -174,8 +180,7 @@ def threshold(evaluated: dict) -> None:
     )
     charts.threshold_bars(table)
     components.source(
-        "Source: first-round results and polling institutes' left-to-right orders; "
-        "our calculations."
+        "Source: first-round results and the polling institutes' left-to-right orders."
     )
     components.note(
         "Why this happens.",
@@ -195,7 +200,7 @@ def areas(evaluated: dict, focus: str) -> None:
     components.section(
         5,
         *SECTIONS[4],
-        lead="The score is an average over areas. This view shows every area behind it.",
+        lead="The score is an average over the areas. Here you can see every area behind it.",
     )
     left, right = st.columns(2)
     year = left.selectbox("Election", years, index=len(years) - 1, key="scatter_year")
@@ -246,9 +251,9 @@ def sensitivity(evaluated: dict) -> None:
     components.section(
         6,
         *SECTIONS[5],
-        lead="H1, H1-soft, H2 and H3 depend on where each candidate is placed. The main "
-        "results use the poll-based scale. As a check, every assumption was rerun with our "
-        "earlier hand-coded seven-family scale, then with its alternative families.",
+        lead="The main results use the scale built from the polls. To check that the answer "
+        "does not depend only on this choice, we ran every rule again with our first "
+        "hand-coded scale (seven political families), and with its alternative families.",
     )
     frame = pd.DataFrame({"Assumption": main.index})
     formats = {}
@@ -267,9 +272,9 @@ def sensitivity(evaluated: dict) -> None:
     components.data_table(frame, formats)
     ties = evaluated["ties"]
     components.source(
-        "The hand-coded columns are comparisons, not the main results. The alternative "
-        "coding moves all listed rows at once, finalists included: it is one alternative "
-        "scenario, not a per-candidate analysis. "
+        "The hand-coded columns are only a check. The alternative version changes all the "
+        "listed candidates at once, so it is one other scenario, not a test of each "
+        "candidate. "
         + (
             "No eliminated candidate is equidistant from both finalists under any coding, "
             "so the tie rule never applies."
@@ -311,8 +316,8 @@ def single_election(ctx) -> None:
     components.section(
         7,
         *SECTIONS[6],
-        lead="The original baseline, applied to one election and one area, with its "
-        "calculation. H0a uses first-round shares only; second-round counts are not inputs.",
+        lead="The first baseline on one election and one area, with its calculation. H0a "
+        "only uses the first round; the second round is never an input.",
     )
     components.election_picker(ctx)
     if ctx.partial_coverage:
@@ -426,20 +431,23 @@ def single_election(ctx) -> None:
             "x denotes first-round shares; q denotes H0a's second-round shares. "
             "The rule has no fitted parameters and does not mobilise first-round abstainers."
         )
-        st.download_button(
-            "Download H0a comparison (CSV)",
-            model["comparison"].to_csv(index=False),
-            file_name=f"h0_{ctx.year}_{ctx.unit.replace(' ', '_')}.csv",
-            mime="text/csv",
-        )
-    components.candidate_reference(ctx.year)
+    st.download_button(
+        "Download H0a comparison (CSV)",
+        model["comparison"].to_csv(index=False),
+        file_name=f"h0_{ctx.year}_{ctx.unit.replace(' ', '_')}.csv",
+        mime="text/csv",
+    )
+
+
+def go_to(page: str) -> None:
+    st.session_state["page"] = page
 
 
 def render(ctx) -> None:
     components.page_header(
-        f"How {how_many(len(MODEL_ORDER))} assumptions compare with five observed second rounds",
-        "Every assumption predicts each area's second round from its first round. This page "
-        "shows the rules, their scores, and where and why they miss.",
+        "Evidence: how the assumptions compare",
+        "Every assumption predicts the second round of each area from its first round. Here "
+        "we show their scores, where they miss and why.",
     )
     evaluated = ctx.evaluated
     if evaluated is None:
@@ -449,12 +457,12 @@ def render(ctx) -> None:
         )
         single_election(ctx)
         return
+    components.contents(SECTIONS)
     components.coding_banner(evaluated["report"])
     st.info(
-        "Coverage note: the 2002 and 2007 files omit some overseas areas and voters "
-        "abroad. Scores describe the covered areas of each election."
+        "The 2002 and 2007 files miss some overseas areas and the voters abroad, so for "
+        "these years the scores only describe the covered areas."
     )
-    components.contents(SECTIONS)
     ladder(evaluated, evaluated["report"]["coding_status"])
     comparison(evaluated)
     focus = errors(evaluated)
@@ -462,4 +470,3 @@ def render(ctx) -> None:
     areas(evaluated, focus)
     sensitivity(evaluated)
     single_election(ctx)
-    components.glossary()

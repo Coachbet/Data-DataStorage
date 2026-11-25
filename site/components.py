@@ -10,8 +10,8 @@ from vote_transfer.application.presentation import fmt_pct, fmt_pp
 
 LOGO_PATH = theme.SITE_DIR / "assets" / "logo.svg"
 AGGREGATE_NOTE = (
-    "Results describe aggregate patterns in area totals, not individual transfers: "
-    "ballots are secret, and different individual behaviours can produce the same totals."
+    "Our results describe patterns in the totals of each area, not individual transfers: "
+    "the vote is secret, and different individual choices can give the same totals."
 )
 
 
@@ -73,8 +73,9 @@ def section(number: int | None, title: str, anchor: str, lead: str | None = None
 
 
 def contents(items: list[tuple[str, str]]) -> None:
-    links = "".join(f'<li><a href="#{escape(a)}">{escape(t)}</a></li>' for t, a in items)
-    html(f'<nav class="contents" aria-label="On this page"><ol>{links}</ol></nav>')
+    """A row of buttons under the page title, each one jumping to a section of the page."""
+    links = "".join(f'<a class="jump" href="#{escape(a)}">{escape(t)}</a>' for t, a in items)
+    html(f'<nav class="jumps" aria-label="On this page">{links}</nav>')
 
 
 def prose(text: str) -> None:
@@ -192,110 +193,104 @@ def election_picker(ctx, area: bool = True) -> None:
         )
 
 
+DEFINITIONS = {
+    "Registered voters": "Everyone on the electoral roll, whether they voted or not. Every share "
+    "on this site is a share of registered voters.",
+    "Abstention": "A registered voter who did not vote.",
+    "Blank or invalid": "A ballot that was cast but counts for no candidate. We put blank and "
+    "invalid ballots together, so the outcome means the same thing in every year.",
+    "Percentage point (pp)": "The difference between two percentages: 30% predicted and 25% "
+    "observed is a gap of 5 pp.",
+    "Area": "A unit of the official files: usually a department, sometimes an overseas "
+    "territory or the voters abroad.",
+    "Finalist": "One of the two candidates of the second round.",
+    "Assumption": "A rule that says where the voters of eliminated candidates go in the "
+    "second round. We also call it a model.",
+}
+
+
 def glossary() -> None:
-    with st.expander("Definitions"):
-        st.markdown(
-            "**Registered voters**: everyone on the electoral roll, whether or not they voted. "
-            "Every share on this site is a share of registered voters unless stated.\n\n"
-            "**Abstention**: a registered voter did not cast a ballot.\n\n"
-            "**Blank or invalid ballot**: a ballot was cast but did not count for a candidate. "
-            "The two are grouped so the outcome has one definition in every year.\n\n"
-            "**Percentage point (pp)**: the difference between two percentages. "
-            "A predicted share of 30% and an observed share of 25% differ by 5 pp.\n\n"
-            "**Reporting area**: an area used in the official files: usually a department, "
-            "sometimes an overseas territory or the electorate abroad.\n\n"
-            "**Finalist A, finalist B**: the two second-round candidates. A is the one with "
-            "more first-round votes.\n\n"
-            "**Assumption (model)**: a rule that says where the supporters of eliminated "
-            "candidates go in the second round. H0a to H3 are the rules compared here."
-        )
+    """The words used on the Home page, explained once, at the bottom of that page."""
+    rows = "".join(
+        f"<dt>{escape(term)}</dt><dd>{escape(text)}</dd>" for term, text in DEFINITIONS.items()
+    )
+    html(f'<dl class="definitions">{rows}</dl>')
 
 
 def candidate_reference(year: str) -> None:
-    with st.expander("Candidate parties and positions"):
-        st.write(
-            "Each candidate is linked to their party at that election (FN up to 2017, RN "
-            "in 2022). The main position is the poll-based score: 0 is the leftmost and 1 "
-            "the rightmost candidate, averaged over the polling institutes' left-to-right "
-            "orders. The hand-coded political family is our earlier draft, kept only as a "
-            "comparison. H0a and H0b use neither."
-        )
-        try:
-            import loaders
+    """The candidates of one election, ordered from left to right, shown in full."""
+    try:
+        import loaders
 
-            positions, sources = loaders.positions()
-        except (OSError, ValueError) as exc:
-            st.error(f"The candidate reference could not be opened: {exc}")
-            return
-        selected = positions[positions.year == int(year)].sort_values(
-            "poll_score", na_position="last"
-        )
-        table = selected[
-            [
-                "candidate_name",
-                "party_abbreviation",
-                "poll_score",
-                "poll_status",
-                "political_family",
-                "alternative_family",
-            ]
-        ].copy()
-        table.columns = [
-            "Candidate",
-            "Party",
-            "Poll-based score (0–1)",
-            "Placed by the polls",
-            "Hand-coded family (comparison)",
-            "Alternative family",
+        positions, sources = loaders.positions()
+    except (OSError, ValueError) as exc:
+        st.error(f"The candidate reference could not be opened: {exc}")
+        return
+    selected = positions[positions.year == int(year)].sort_values("poll_score", na_position="last")
+    table = selected[
+        [
+            "candidate_name",
+            "party_abbreviation",
+            "poll_score",
+            "political_family",
+            "alternative_family",
         ]
-        table["Placed by the polls"] = (
-            table["Placed by the polls"].eq("placed").map({True: "Yes", False: "No"})
+    ].copy()
+    table["poll_score"] = [
+        "not placed" if pd.isna(score) else f"{score:.2f}" for score in table.poll_score
+    ]
+    table.columns = [
+        "Candidate",
+        "Party",
+        "Poll-based score (0–1)",
+        "Hand-coded family (comparison)",
+        "Alternative family",
+    ]
+    st.dataframe(table, hide_index=True, width="stretch", key="candidate_table")
+    unplaced = selected[selected.poll_status != "placed"].candidate_name.tolist()
+    if unplaced:
+        note(
+            "Not placed.",
+            f"{' and '.join(unplaced)} have no position: the institutes disagree too much "
+            "about them, or they put them at the end of the list by default. Their voters "
+            "follow the H0b rule in every model.",
         )
-        st.dataframe(
-            table,
-            hide_index=True,
-            width="stretch",
-            key="candidate_table",
-            column_config={"Poll-based score (0–1)": st.column_config.NumberColumn(format="%.2f")},
-        )
-        unplaced = selected[selected.poll_status != "placed"].candidate_name.tolist()
-        if unplaced:
-            st.info(
-                f"Not placed by the polls: {', '.join(unplaced)}. Institutes disagree too much "
-                "or list the candidate last by default; their voters follow the H0b row. "
-                "Missing does not mean centre or zero."
-            )
-        st.caption(
-            "The poll-based score is an order, not a measured ideological distance. The "
-            "alternative family is the second option tested for the hand-coded comparison "
-            "(for example Far left for Jean-Luc Mélenchon, coded Left by default); it is not "
-            "used by the main results."
-        )
-        st.download_button(
-            "Download all candidate positions (CSV)",
-            positions.to_csv(index=False),
-            file_name="candidate_positions.csv",
-            mime="text/csv",
-            key="candidate_download",
-        )
-        st.markdown("**References for this election**")
-        source_ids = sorted({key for keys in selected.source_ids for key in keys.split(";")})
-        for key in source_ids:
-            reference = sources[key]
-            st.markdown(f"- [{reference['title']}]({reference['url']}), {reference['publisher']}")
-        st.caption(
-            "These references document party affiliations. The poll orders behind the "
-            "score are listed under Method & sources."
-        )
+    st.caption(
+        "The party is the one at that election (FN until 2017, RN in 2022). The score is an "
+        "order, not a real measure of ideological distance. The hand-coded family is our "
+        "first draft and is only used as a comparison (for example, Jean-Luc Mélenchon is "
+        "coded Left and we also tested Far left)."
+    )
+    st.download_button(
+        "Download all candidate positions (CSV)",
+        positions.to_csv(index=False),
+        file_name="candidate_positions.csv",
+        mime="text/csv",
+        key="candidate_download",
+    )
+    source_ids = sorted({key for keys in selected.source_ids for key in keys.split(";")})
+    links = "".join(
+        f'<li><a href="{escape(sources[key]["url"])}" target="_blank" rel="noopener">'
+        f"{escape(sources[key]['title'])}</a>, {escape(sources[key]['publisher'])}</li>"
+        for key in source_ids
+    )
+    html(
+        f'<p class="prose">Party labels for {escape(year)} come from:</p>'
+        f'<ul class="links">{links}</ul>'
+    )
+
+
+def important(title: str, text_html: str) -> None:
+    """A red note for things the reader must not miss. ``text_html`` is trusted markup."""
+    html(f'<aside class="important"><strong>{escape(title)}</strong>{text_html}</aside>')
 
 
 def coding_banner(report: dict) -> None:
     st.warning(
-        f"**{report['coding_status'].capitalize()}.** H1, H2 and H3 place candidates with the "
-        "left-to-right orders published by polling institutes, not with hand-coded "
-        "positions. The earlier hand-coded 1-7 scale is kept only as a comparison "
-        f"({report.get('comparison_coding_status', 'draft coding')}). Scores describe "
-        "aggregate patterns, not individual transfers."
+        f"**{report['coding_status'].capitalize()}.** H1, H1-soft, H2 and H3 place the "
+        "candidates with the left-to-right orders published by polling institutes. Our first "
+        "hand-coded 1-7 scale is only kept as a comparison. These results are patterns in "
+        "the totals, not individual transfers."
     )
 
 

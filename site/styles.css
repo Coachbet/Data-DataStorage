@@ -226,3 +226,24 @@
   .node { max-width: none; width: 100%; text-align: left; }
   .arrow { transform: rotate(90deg); width: 100%; text-align: center; }
 }
+
+/* ---- Jump buttons under each page title ------------------------------------ */
+.jumps { display: flex; flex-wrap: wrap; gap: var(--s2); margin: 0 0 var(--s5); }
+.stApp a.jump { display: inline-block; padding: var(--s1) var(--s3); border: 1px solid var(--accent); border-radius: 999px; font-size: var(--t2); color: var(--accent); text-decoration: none; background: var(--paper); }
+.stApp a.jump:hover { background: var(--accent); color: #fff; }
+
+/* ---- Red note: open work the reader must not miss --------------------------- */
+.important { margin: var(--s3) 0 var(--s4); padding: var(--s3) var(--s4); background: #FCEDEB; border-left: 4px solid #B42318; color: #7A1A12; font-size: var(--t3); line-height: 1.55; }
+.important strong { display: block; color: #B42318; margin-bottom: var(--s1); }
+.important ul { margin: 0; padding-left: var(--s5); }
+.important li { color: #7A1A12; }
+
+/* ---- Definitions (Home) and highlighted candidate section (Method) ---------- */
+.definitions { display: grid; grid-template-columns: max-content 1fr; gap: var(--s2) var(--s4); margin: 0; }
+.definitions dt { font-weight: 600; font-size: var(--t2); }
+.definitions dd { margin: 0; font-size: var(--t2) !important; }
+.st-key-candidates_box { background: var(--wash); border-top: 3px solid var(--accent); padding: var(--s4) var(--s5); }
+@media (max-width: 760px) {
+  .definitions { grid-template-columns: 1fr; gap: 0; }
+  .definitions dd { margin-bottom: var(--s3); }
+}
