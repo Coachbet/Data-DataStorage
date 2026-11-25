@@ -51,7 +51,8 @@ def ladder(evaluated: dict, status: str) -> None:
         lead=f"Six rules give {how_many(len(MODEL_ORDER))} assumptions: two baselines, three "
         "proximity rules (H2 in two variants) and one mixture with a fitted parameter.",
     )
-    components.assumption_list()
+    with st.expander("Recall: what each assumption does"):
+        components.assumption_list()
     example, year = evaluated["ladder"], evaluated["ladder_year"]
     rows = example["rows"]
     rows = rows.loc[[model for model in MODEL_ORDER if model in rows.index]]

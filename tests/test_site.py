@@ -4,7 +4,7 @@ import pytest
 from streamlit.testing.v1 import AppTest
 from vote_transfer.application.processing import process_year
 
-PAGES = ["Home", "Evidence", "Explore the data", "Method & sources"]
+PAGES = ["Home", "Explore the data", "Evidence", "Method & sources"]
 MODELS = [
     "H0a",
     "H0b",
@@ -92,6 +92,9 @@ def test_app_rejects_modified_processed_outputs(raw_dataset, monkeypatch):
 def test_shipped_five_year_app_runs_without_raw_data_or_network(offline_app):
     app = go(offline_app, "Explore the data")
     assert set(app.selectbox(key="year").options) == {"2002", "2007", "2012", "2017", "2022"}
+    for year in ("2002", "2007", "2012", "2017", "2022"):  # every source file is linked
+        assert f"Original Ministry dataset, {year}, round 2" in page_text(app)
+    assert "Inscrits" in page_text(app)
     app.radio(key="round").set_value(2).run()
     for year, registered in {
         "2002": "40,463,551",
@@ -125,7 +128,7 @@ def test_shipped_five_year_app_runs_without_raw_data_or_network(offline_app):
         )
         go(app, "Method & sources")
         assert app.selectbox(key="year").value == year
-        assert f"Original Ministry dataset, {year}" in page_text(app)
+        assert "Explore the data page" in page_text(app)
         go(app, "Explore the data")
         assert app.radio(key="round").value == 2 or app.radio(key="round").set_value(2).run()
 

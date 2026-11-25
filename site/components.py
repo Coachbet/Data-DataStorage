@@ -63,7 +63,8 @@ def page_header(title: str, purpose: str, kicker: str | None = None) -> None:
 
 
 def section(number: int | None, title: str, anchor: str, lead: str | None = None) -> None:
-    label = f'<span class="section-number">{number}</span>' if number else ""
+    """A section title with a rule above it. ``number`` is kept for the callers but not shown."""
+    label = ""
     body = f'<p class="section-lead">{escape(lead)}</p>' if lead else ""
     html(
         f'<div class="section-head" id="{escape(anchor)}"><h2>{label}{escape(title)}</h2>'

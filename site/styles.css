@@ -61,13 +61,14 @@
 .kicker { font-size: var(--t2) !important; color: var(--muted); margin: 0 0 var(--s3); max-width: var(--measure); }
 .purpose { font-size: var(--t4) !important; line-height: 1.45 !important; color: var(--ink); max-width: var(--measure); margin: 0; }
 /* A full-width rule separates every section from the one before it. */
-.section-head { margin: var(--s8) 0 var(--s4); padding-top: var(--s5); border-top: 2px solid var(--ink); }
+.section-head { margin: var(--s8) 0 var(--s4); padding-top: var(--s5); border-top: 1px solid var(--context-line); }
 .section-number { font-family: var(--sans); font-size: var(--t2); font-weight: 600; color: var(--muted); margin-right: var(--s3); vertical-align: .25em; }
 .section-lead { color: var(--muted); max-width: var(--measure); margin: var(--s2) 0 0; }
 .prose { max-width: var(--measure); margin: 0 0 var(--s3); }
 .contents ol { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s5); margin: 0; padding: 0; list-style: none; counter-reset: item; }
 .contents li { counter-increment: item; font-size: var(--t2) !important; margin: 0; }
-.contents li::before { content: counter(item) " "; color: var(--muted); }
+.contents li + li::before { content: "·"; color: var(--muted); margin-right: var(--s5); }
+.contents ol { gap: var(--s1) var(--s3) !important; }
 
 /* ---- Figures ------------------------------------------------------------- */
 .figure-head { margin: var(--s5) 0 var(--s2); max-width: var(--measure); }
@@ -92,7 +93,15 @@
 .reading { max-width: var(--measure); margin: var(--s3) 0 var(--s4); padding-left: var(--s4); border-left: 2px solid var(--rule); font-size: var(--t2); line-height: 1.55; color: var(--ink); }
 .reading strong { font-weight: 600; }
 .finding { display: flex; gap: var(--s4); max-width: var(--measure); margin: var(--s4) 0 0; }
-.finding-number { font-family: var(--serif); font-size: var(--t5); line-height: 1; color: var(--muted); min-width: var(--s5); }
+/* Streamlit internal: each finding is a keyed container drawn as a card. */
+[class*="st-key-finding_card_"] { background: var(--wash); border-top: 3px solid var(--accent); padding: var(--s4); height: 100%; gap: var(--s2); }
+[class*="st-key-finding_card_"] h3 { font-size: var(--t3) !important; margin-bottom: var(--s2) !important; }
+[class*="st-key-finding_card_"] p { font-size: var(--t2) !important; line-height: 1.5 !important; margin: 0; }
+[class*="st-key-finding_card_"] [data-testid="stButton"] button[kind="tertiary"] { margin: 0; }
+/* Streamlit internal: equal-height finding cards, link pinned to the bottom. */
+[data-testid="stColumn"]:has([class*="st-key-finding_card_"]) > [data-testid="stVerticalBlock"],
+[data-testid="stColumn"]:has([class*="st-key-finding_card_"]) [data-testid="stLayoutWrapper"]:has(> [class*="st-key-finding_card_"]) { height: 100%; flex: 1 1 auto; }
+[class*="st-key-finding_card_"] [data-testid="stElementContainer"]:has([data-testid="stButton"]) { margin-top: auto; }
 .finding p { margin: var(--s1) 0 0; }
 .assumptions { display: grid; grid-template-columns: max-content 1fr; gap: var(--s2) var(--s4); max-width: var(--measure); margin: 0; }
 .assumptions dt { font-weight: 600; font-size: var(--t3); }
@@ -170,6 +179,11 @@
 /* Lists written in Markdown keep the reading measure. */
 [data-testid="stMarkdownContainer"] > ol, [data-testid="stMarkdownContainer"] > ul { max-width: var(--measure); }
 
+.plain-table { border-collapse: collapse; width: 100%; margin: var(--s3) 0; font-size: var(--t2); }
+.plain-table th, .plain-table td { text-align: left; padding: var(--s2) var(--s3) var(--s2) 0; border-bottom: 1px solid var(--rule); vertical-align: top; }
+.plain-table thead th { border-bottom: 1px solid var(--context-line); font-weight: 600; }
+.plain-table code { font-size: var(--t1); background: var(--wash); color: var(--ink); padding: 1px 4px; }
+
 /* ---- Home: question, assumption tree, test pipeline ------------------------ */
 .question-box { border-left: 4px solid var(--accent); background: var(--wash); padding: var(--s4) var(--s5); margin: var(--s4) 0; }
 .question-label { font-size: var(--t1) !important; font-weight: 600; letter-spacing: .04em; text-transform: uppercase; color: var(--muted); margin: 0 0 var(--s1); }
@@ -193,10 +207,9 @@
 .node { display: inline-flex; flex-direction: column; gap: 2px; min-width: 96px; max-width: 220px; padding: var(--s2) var(--s3); border: 1px solid var(--rule); background: var(--paper); text-align: center; }
 .node strong { font-size: var(--t2); color: var(--ink); }
 .node span { font-size: var(--t1); line-height: 1.35; color: var(--muted); }
-.node-root { background: var(--accent); border-color: var(--accent); max-width: 360px; }
-.node-root strong { font-size: var(--t3); color: #fff; }
-.node-root span { color: #fff; opacity: .85; }
-.node-branch { background: var(--wash); border-color: var(--accent); border-width: 2px; }
+.node-root { background: var(--wash); border: 1px solid var(--accent); border-top: 3px solid var(--accent); max-width: 360px; }
+.node-root strong { font-size: var(--t3); color: var(--ink); }
+.node-branch { background: var(--paper); border-color: var(--accent); }
 .node-branch strong { color: var(--accent-strong); }
 
 /* The test pipeline: boxes joined by arrows, wrapping on small screens. */

@@ -3,7 +3,7 @@
 import charts
 import components
 import streamlit as st
-from vote_transfer.application.presentation import answer, key_findings
+from vote_transfer.application.presentation import answer, fmt_pct, key_findings
 
 QUESTION = (
     "Which assumptions about voter behaviour best explain second-round results in "
@@ -13,6 +13,22 @@ QUESTION = (
 
 def go_to(page: str) -> None:
     st.session_state["page"] = page
+
+
+def threshold_finding(threshold) -> dict:
+    """The H2 finding on the poll-based scale: one election carries almost all of it."""
+    table = threshold.sort_values("beyond_threshold_pct")
+    peak, rest = table.iloc[-1], table.iloc[:-1]
+    return {
+        "title": "The distance threshold fails in one election.",
+        "body": (
+            f"In {peak.year} both finalists are on the right of the scale, so H2 sends "
+            f"{fmt_pct(peak.beyond_threshold_pct)} of registered voters to a non-vote, while "
+            f"most of them voted. In the other elections it removes "
+            f"{fmt_pct(rest.beyond_threshold_pct.max())} at most, so the threshold is really "
+            "tested only once."
+        ),
+    }
 
 
 def node(name: str, text: str, kind: str = "leaf") -> str:
@@ -140,7 +156,7 @@ def render(ctx) -> None:
     components.figure_head(
         f"Average error over the five elections: {best} is the lowest",
         "Average gap between predicted and observed second-round shares, per area, in "
-        "percentage points. Lower is closer. The two baselines are dark.",
+        "percentage points. Lower is closer. The two baselines are in dark grey.",
     )
     charts.mean_bars(comparison)
     components.source(
@@ -151,19 +167,23 @@ def render(ctx) -> None:
 
     components.section(5, "Three findings", "findings")
     findings = key_findings(comparison, evaluated["errors"], evaluated["threshold"])
-    for number, finding in enumerate(findings, 1):
-        components.html(
-            f'<div class="finding"><span class="finding-number">{number}</span>'
-            f"<div><h3>{components.escape(finding['title'])}</h3>"
-            f"<p>{components.escape(finding['body'])}</p></div></div>"
-        )
-        st.button(
-            f"{finding['evidence']} →",
-            key=f"finding_{number}",
-            type="tertiary",
-            on_click=go_to,
-            args=("Evidence",),
-        )
+    findings[2] = threshold_finding(evaluated["threshold"])
+    links = ["See where each assumption misses", "See the comparison table", "See the threshold"]
+    for number, (column, finding, link) in enumerate(
+        zip(st.columns(len(findings)), findings, links, strict=True), 1
+    ):
+        with column.container(key=f"finding_card_{number}"):
+            components.html(
+                f"<h3>{components.escape(finding['title'])}</h3>"
+                f"<p>{components.escape(finding['body'])}</p>"
+            )
+            st.button(
+                f"{link} →",
+                key=f"finding_{number}",
+                type="tertiary",
+                on_click=go_to,
+                args=("Evidence",),
+            )
 
     components.section(None, "Status of these results", "status")
     st.warning(

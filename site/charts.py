@@ -82,7 +82,7 @@ def mean_bars(comparison: pd.DataFrame) -> None:
                         "type": "nominal",
                         "scale": {
                             "domain": groups,
-                            "range": [COLOUR["accent"], INK, COLOUR["context"]],
+                            "range": [COLOUR["accent"], COLOUR["muted"], COLOUR["context"]],
                         },
                         "legend": None,
                     },
@@ -91,7 +91,11 @@ def mean_bars(comparison: pd.DataFrame) -> None:
                         "type": "nominal",
                         "scale": {
                             "domain": groups,
-                            "range": [COLOUR["accent-strong"], INK, COLOUR["context-line"]],
+                            "range": [
+                                COLOUR["accent-strong"],
+                                COLOUR["muted"],
+                                COLOUR["context-line"],
+                            ],
                         },
                         "legend": None,
                     },

@@ -11,8 +11,8 @@ from vote_transfer.config import data_root
 
 VIEWS = {
     "Home": answer,
-    "Evidence": evidence,
     "Explore the data": explore,
+    "Evidence": evidence,
     "Method & sources": method,
 }
 PAGES = tuple(VIEWS)

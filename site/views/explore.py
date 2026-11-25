@@ -11,6 +11,7 @@ from vote_transfer.application.presentation import (
     outcome_roles,
     rounds_side_by_side,
 )
+from vote_transfer.application.source_catalog import SOURCES
 
 
 def finalist_names(results, roles: dict[str, str]) -> dict[str, str]:
@@ -23,12 +24,78 @@ def finalist_names(results, roles: dict[str, str]) -> dict[str, str]:
     return names
 
 
+FIELDS = [
+    ("Inscrits", "Registered voters", "Everyone on the electoral roll of the polling station"),
+    ("Abstentions", "Abstention", "Registered voters who did not vote"),
+    ("Votants", "Voters", "People who cast a ballot, valid or not"),
+    ("Blancs, Nuls", "Blank or invalid", "Ballots that count for no candidate; we add them up"),
+    ("Exprimés", "Valid votes", "Ballots for a candidate; used only for the usual percentages"),
+    ("Voix", "Votes per candidate", "One count per candidate and polling station"),
+]
+
+
+def provenance() -> None:
+    """Where the election files come from, what they are called and what we keep."""
+    components.section(
+        None,
+        "Where the data comes from",
+        "provenance",
+        lead="All the results come from the French Ministry of the Interior. It publishes "
+        "one file per election on data.gouv.fr, with one line per polling station "
+        "('bureau de vote').",
+    )
+    rows = "".join(
+        f"<tr><td>{year}</td>"
+        + "".join(
+            f'<td><a href="{components.escape(source.landing_url)}" target="_blank" '
+            f'rel="noopener">Original Ministry dataset, {year}, round {source.key[-1]}</a></td>'
+            for source in SOURCES
+            if source.key.startswith(f"official_{year}_")
+        )
+        + "</tr>"
+        for year in sorted(
+            {source.key.split("_")[1] for source in SOURCES if source.key.startswith("official_")}
+        )
+    )
+    components.html(
+        '<table class="plain-table"><thead><tr><th>Election</th><th>Round 1</th>'
+        f"<th>Round 2</th></tr></thead><tbody>{rows}</tbody></table>"
+    )
+    st.caption(
+        "The datasets are called 'Élection présidentielle … résultats par bureaux de "
+        "vote'. For 2002 to 2012 one file has both rounds, so the two links go to the "
+        "same dataset. We keep the original files unchanged and check them with a checksum."
+    )
+    components.figure_head(
+        "What we keep from each file",
+        "The original column names are in French. We keep these counts for every polling "
+        "station, then add them up by area (department, overseas territory or voters abroad).",
+    )
+    table = "".join(
+        f"<tr><td><code>{components.escape(french)}</code></td><td>{components.escape(name)}"
+        f"</td><td>{components.escape(text)}</td></tr>"
+        for french, name, text in FIELDS
+    )
+    components.html(
+        '<table class="plain-table"><thead><tr><th>In the file</th><th>On this site</th>'
+        f"<th>What it counts</th></tr></thead><tbody>{table}</tbody></table>"
+    )
+    components.note(
+        "Why registered voters.",
+        "Most news sites give percentages of valid votes. We use shares of registered voters "
+        "instead, because abstention and blank or invalid ballots are outcomes of the second "
+        "round too, and our assumptions have to predict them.",
+    )
+
+
 def render(ctx) -> None:
     components.page_header(
         "The official results, election by election",
-        "Official counts for one election: how registered voters split between candidates, "
-        "blank or invalid ballots and abstention, in each round and each area.",
+        "Before looking at the numbers, here is where they come from and what we keep from "
+        "each file. Then you can explore one election, round by round and area by area.",
     )
+    provenance()
+    components.section(None, "Explore one election", "explore")
     components.election_picker(ctx)
     if ctx.partial_coverage and ctx.unit == "All units":
         st.warning(

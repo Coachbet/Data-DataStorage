@@ -5,7 +5,26 @@ import pandas as pd
 import streamlit as st
 from vote_transfer.application.positions import REFERENCE_DIR
 from vote_transfer.application.presentation import fmt_int
-from vote_transfer.application.source_catalog import SOURCES
+
+REPO = "https://github.com/Coachbet/Data-DataStorage"
+REPO_FOLDERS = [
+    (
+        "backend/",
+        "The Python code: download and check the Ministry files, clean them, run "
+        "every assumption and compute the errors",
+    ),
+    ("site/", "This website (Streamlit)"),
+    (
+        "data/bundled/",
+        "The cleaned results of the five elections and all the predictions, "
+        "so the site works without downloading anything",
+    ),
+    ("data/reference/", "The polls' left-right orders and the candidate table, with their sources"),
+    ("notebooks/", "The notebook that turns the poll orders into the 0 to 1 score"),
+    ("reports/", "The tables and figures used in the report"),
+    ("docs/", "The report, the methodology and our answers to the peer reviews"),
+    ("tests/", "Automatic tests that check the data, the models and the site"),
+]
 
 PAPER = (
     "Delemazure, T., Dong, C., Peters, D. and Tydrichová, M. (2024). Comparing Ways of "
@@ -62,22 +81,11 @@ def render(ctx) -> None:
     )
 
     components.section(1, "Sources", "sources")
+    components.prose(
+        "The election results come from the Ministry of the Interior; the links to every "
+        "file, and the columns we keep, are on the Explore the data page."
+    )
     components.election_picker(ctx, area=False)
-    components.html(
-        '<ul class="links">'
-        + "".join(
-            f'<li><a href="{components.escape(source.landing_url)}" target="_blank" '
-            f'rel="noopener">Original Ministry dataset, {components.escape(ctx.year)}, '
-            f"round {components.escape(source.key[-1])}</a></li>"
-            for source in SOURCES
-            if source.key.startswith(f"official_{ctx.year}_")
-        )
-        + "</ul>"
-    )
-    st.caption(
-        "The 2002–2012 source files contain both rounds together. Links for those "
-        "rounds lead to the same dataset."
-    )
     if quality.get("geographic_labels") == "codes_only":
         st.info(
             "This year's source does not provide department names. We display its "
@@ -133,7 +141,25 @@ def render(ctx) -> None:
     with st.expander("Quality report of this build"):
         st.json(quality, expanded=False)
 
-    components.section(4, "Reproduce the results", "reproduce")
+    components.section(4, "The code on GitHub", "github")
+    components.html(
+        '<p class="prose">Everything behind this site is in one public repository: '
+        f'<a href="{REPO}" target="_blank" rel="noopener">{REPO.removeprefix("https://")}</a>. '
+        "Anyone can download it and get the same numbers, because the cleaned data for the "
+        "five elections is included and every step is a command.</p>"
+    )
+    components.html(
+        '<table class="plain-table"><thead><tr><th>Folder</th><th>What is inside</th></tr>'
+        "</thead><tbody>"
+        + "".join(
+            f"<tr><td><code>{components.escape(folder)}</code></td>"
+            f"<td>{components.escape(text)}</td></tr>"
+            for folder, text in REPO_FOLDERS
+        )
+        + "</tbody></table>"
+    )
+
+    components.section(5, "Reproduce the results", "reproduce")
     st.code(
         "uv sync --locked --dev\n"
         "make analysis    # every result, figure and table, from the bundled snapshots\n"
@@ -149,7 +175,7 @@ def render(ctx) -> None:
             "learned by political family (H5) and two-dimensional positions."
         )
 
-    components.section(5, "Candidate positions and definitions", "reference")
+    components.section(6, "Candidate positions and definitions", "reference")
     components.candidate_reference(ctx.year)
     components.glossary()
     st.caption(
