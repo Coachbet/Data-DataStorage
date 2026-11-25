@@ -22,9 +22,11 @@ from vote_transfer.application.models import (
     predict,
     primary_score,
     proximity_row,
+    soft_row,
     transfer_matrix,
     transfer_tensor,
 )
+from vote_transfer.application.positions import family_to_unit as u
 from vote_transfer.application.positions import load_candidate_positions
 
 BUNDLED = Path(__file__).resolve().parents[1] / "data" / "bundled"
@@ -100,27 +102,61 @@ def test_election_orders_finalists_by_first_round_support(election):
     ],
 )
 def test_h1_sends_each_group_to_the_nearer_finalist(score, finalists, expected):
-    assert proximity_row(score, *finalists, tie="split", far=None) == pytest.approx(expected)
+    a, b = finalists
+    assert proximity_row(u(score), u(a), u(b), tie="split", far=None) == pytest.approx(expected)
 
 
 def test_h1_tie_variant_sends_equidistant_groups_to_abstention():
-    assert proximity_row(4, 3, 5, tie="abstention", far=None) == pytest.approx(ABST)
+    assert proximity_row(u(4), u(3), u(5), tie="abstention", far=None) == pytest.approx(ABST)
     # The variant changes ties only.
-    assert proximity_row(3, 4, 7, tie="abstention", far=None) == pytest.approx(A)
+    assert proximity_row(u(3), u(4), u(7), tie="abstention", far=None) == pytest.approx(A)
 
 
 @pytest.mark.parametrize("far, non_vote", [("abstention", ABST), ("blank_invalid", BLANK)])
 def test_h2_threshold_applies_at_distance_two_exactly(far, non_vote):
+    # Scores are written on the 1-7 scale and converted with u(): two steps = one third.
     # d = 2 to A and 5 to B: at least two from both, so a non-vote.
-    assert proximity_row(2, 4, 7, tie="split", far=far) == pytest.approx(non_vote)
+    assert proximity_row(u(2), u(4), u(7), tie="split", far=far) == pytest.approx(non_vote)
     # d = 2 to A but 1 to B: not far from both, so the nearer finalist.
-    assert proximity_row(6, 4, 7, tie="split", far=far) == pytest.approx(B)
+    assert proximity_row(u(6), u(4), u(7), tie="split", far=far) == pytest.approx(B)
     # d = 1 to A: nearer finalist.
-    assert proximity_row(3, 4, 7, tie="split", far=far) == pytest.approx(A)
+    assert proximity_row(u(3), u(4), u(7), tie="split", far=far) == pytest.approx(A)
     # d = 2 to both: the threshold takes precedence over the tie rule.
-    assert proximity_row(4, 2, 6, tie="split", far=far) == pytest.approx(non_vote)
+    assert proximity_row(u(4), u(2), u(6), tie="split", far=far) == pytest.approx(non_vote)
     # Tie below the threshold: split as in H1.
-    assert proximity_row(4, 3, 5, tie="split", far=far) == pytest.approx((A + B) / 2)
+    assert proximity_row(u(4), u(3), u(5), tie="split", far=far) == pytest.approx((A + B) / 2)
+
+
+def test_h1_soft_gives_the_nearer_finalist_the_larger_share():
+    # Distances 0.3 and 0.6: shares 0.6 / 0.9 = 2/3 and 0.3 / 0.9 = 1/3, nothing else.
+    assert soft_row(0.25, 0.55, 0.85) == pytest.approx([2 / 3, 1 / 3, 0, 0])
+    # Equidistant: 50/50 by construction, no tie rule needed.
+    assert soft_row(13 / 15, 12 / 15, 14 / 15) == pytest.approx([0.5, 0.5, 0, 0])
+    # Far from both: still split between the finalists, never sent to a non-vote.
+    assert soft_row(0.0, 0.8, 1.0).sum() == pytest.approx(1)
+    assert soft_row(None, 0.2, 0.8) is None  # no score: the caller uses the H0b row
+    with pytest.raises(ValueError):
+        soft_row(0.4, 0.4, 0.4)  # no distance at all: shares are undefined
+
+
+def test_h1_soft_rows_sum_to_one_and_ignore_the_tie_rule():
+    positions = load_candidate_positions()
+    election = build_election(load_dataset(BUNDLED / "2017")[0])
+    scores = election_scores(positions, 2017, "polls")
+    split = transfer_tensor(election, "H1-soft", scores, "split")
+    abstain = transfer_tensor(election, "H1-soft", scores, "abstention")
+    assert np.allclose(split.sum(axis=2), 1)
+    assert np.allclose(split, abstain)
+
+
+def test_exact_fraction_ties_are_ties_and_not_rounding_noise():
+    # 2002 under the polls: Boutin (13/15) sits exactly halfway between Chirac (12/15)
+    # and Le Pen (14/15). Floating-point subtraction must not break that tie.
+    assert proximity_row(13 / 15, 12 / 15, 14 / 15, tie="split", far=None) == pytest.approx(
+        (A + B) / 2
+    )
+    # A distance of exactly one third counts as "far" even after rounding error.
+    assert proximity_row(0.0, 1 / 3, 1.0, tie="split", far="abstention") == pytest.approx(ABST)
 
 
 def test_missing_score_has_no_proximity_row():
@@ -209,12 +245,22 @@ def test_alternative_coding_replaces_only_rows_that_list_an_alternative():
     positions = load_candidate_positions()
     primary = election_scores(positions, 2022, "primary")
     alternative = election_scores(positions, 2022, "alternative")
-    assert primary["candidate:emmanuel-macron"] == 4
-    assert alternative["candidate:emmanuel-macron"] == 5  # Centre-right alternative
-    assert alternative["candidate:marine-le-pen"] == primary["candidate:marine-le-pen"] == 7
+    assert primary["candidate:emmanuel-macron"] == u(4)
+    assert alternative["candidate:emmanuel-macron"] == u(5)  # Centre-right alternative
+    assert alternative["candidate:marine-le-pen"] == primary["candidate:marine-le-pen"] == u(7)
     assert election_scores(positions, 2017, "alternative")["candidate:jacques-cheminade"] is None
     with pytest.raises(ValueError):
         election_scores(positions, 2022, "best-fit")
+
+
+def test_poll_coding_reads_the_poll_based_scale():
+    positions = load_candidate_positions()
+    polls = election_scores(positions, 2017, "polls")
+    assert polls["candidate:emmanuel-macron"] == pytest.approx(0.5)
+    # Unplaced candidates have no score, so their voters follow the H0b row.
+    assert polls["candidate:jacques-cheminade"] is None
+    assert polls["candidate:jean-lassalle"] is None
+    assert all(0 <= v <= 1 for v in polls.values() if v is not None)
 
 
 # --- Scoring and H3 -------------------------------------------------------------------
@@ -289,6 +335,7 @@ def test_predictions_table_has_the_documented_schema(real_evaluation):
         "H0a",
         "H0b",
         "H1",
+        "H1-soft",
         "H2-abst",
         "H2-blank",
         "H3(H1)",
@@ -302,7 +349,8 @@ def test_predictions_table_has_the_documented_schema(real_evaluation):
     assert np.allclose(sums, 1, atol=1e-9)
     main = predictions[predictions.variant.isin(["default", MAIN_VARIANT])]
     assert main.groupby(["model", "year"]).area_code.nunique().min() >= 100
-    assert report["coding_status"] == "draft coding"
+    assert report["coding_status"] == "poll-based scale"
+    assert report["comparison_coding_status"] == "draft coding"
 
 
 def test_leave_one_election_out_never_trains_on_the_test_election(real_evaluation):
@@ -348,6 +396,7 @@ def test_evaluation_report_records_fallbacks_and_finalists(real_evaluation):
     assert sorted((f["year"], f["option"]) for f in report["h0b_fallbacks"]) == [
         (2012, "candidate:jacques-cheminade"),
         (2017, "candidate:jacques-cheminade"),
+        (2017, "candidate:jean-lassalle"),
     ]
     full = [fold for fold in report["h3_folds"] if fold["test_year"] is None]
     assert len(full) == len(BASES) * len(SETTINGS)

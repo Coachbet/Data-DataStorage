@@ -68,7 +68,8 @@ def test_answer_matches_the_generated_numbers(loaded):
     assert f"{numbers['score.H0b.mean']:.1f} pp against {numbers['score.H0a.mean']:.1f} pp" in text
     assert numbers["wins.H0b.vs_H0a"] == 5 and "all five elections" in text
     assert result["headline"] == "No assumption explains every election best."
-    assert result["chart_title"].endswith("H1 leads only in 2002")
+    leads = [y for y in ("2002", "2007", "2012", "2017", "2022") if comparison[y].idxmin() == "H1"]
+    assert "H1 leads only in " + " and ".join(leads) in result["chart_title"]
 
 
 def test_answer_changes_its_wording_when_one_model_is_stable():
@@ -105,12 +106,17 @@ def test_ladder_example_rows_are_shares_of_one_real_group(loaded):
     example = ladder_example(elections[2022], positions, report)
     rows = example["rows"]
     assert example["group"] == "candidate:jean-luc-melenchon"
-    assert list(rows.columns) == list(ROLES) and len(rows) == 8
-    assert rows.sum(axis=1).tolist() == pytest.approx([100] * 8)
+    assert list(rows.columns) == list(ROLES) and len(rows) == 9
+    assert rows.sum(axis=1).tolist() == pytest.approx([100] * 9)
     assert rows.loc["H0b", "abstention"] == pytest.approx(0)
     assert rows.loc["H1"].max() == pytest.approx(100)  # the whole group to one finalist
-    assert rows.loc["H2-abst", "abstention"] == pytest.approx(100)
-    assert rows.loc["H2-blank", "blank_invalid"] == pytest.approx(100)
+    # H1-soft splits the group between the finalists, more to the nearer one.
+    assert 50 < rows.loc["H1-soft", "finalist_a"] < 100
+    assert rows.loc["H1-soft", ["blank_invalid", "abstention"]].sum() == pytest.approx(0)
+    # On the poll-based scale Mélenchon 2022 (0.25) is less than one third from Macron
+    # (0.55), so H2 does not send his voters to a non-vote: H2 rows equal the H1 row.
+    assert rows.loc["H2-abst"].tolist() == pytest.approx(rows.loc["H1"].tolist())
+    assert rows.loc["H2-blank"].tolist() == pytest.approx(rows.loc["H1"].tolist())
     assert set(example["p"]) == {"H3(H1)", "H3(H2-abst)", "H3(H2-blank)"}
 
 

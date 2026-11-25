@@ -83,15 +83,11 @@ def render(ctx) -> None:
         )
 
     components.section(None, "Status of these results", "status")
-    draft = "draft" in report["coding_status"]
     st.warning(
         f"**{report['coding_status'].capitalize()}.** "
-        + (
-            "H1, H2 and H3 use candidate positions that two coders have not yet reviewed "
-            "independently: `[PENDING: coder agreement]`. "
-            if draft
-            else "The candidate positions used by H1, H2 and H3 have been reviewed. "
-        )
+        "H1, H2 and H3 place candidates with the left-to-right orders published by polling "
+        "institutes; the earlier hand-coded 1-7 scale is kept as a comparison "
+        f"({report.get('comparison_coding_status', 'draft coding')}). "
         + "H3 fits one parameter and is shown pending approval: "
         "`[PENDING: professor approval]`. The 2002 and 2007 files omit some overseas areas "
         "and voters abroad, so those years describe covered areas only. "

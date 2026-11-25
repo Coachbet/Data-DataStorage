@@ -68,32 +68,54 @@ Because both depend on `x`, their matrices differ from area to area.
 
 ### H1: nearest finalist
 
-Let `s(c)` be the 1–7 score of candidate `c` and `d(c, F) = |s(c) − s(F)|`.
-An eliminated group goes entirely to the nearer finalist:
+Let `s(c)` be the poll-based score of candidate `c`, between 0 (leftmost) and 1
+(rightmost), and `d(c, F) = |s(c) − s(F)|` (see "Candidate positions" below). An
+eliminated group goes entirely to the nearer finalist:
 
 - `d(c, A) < d(c, B)`: row `(1, 0, 0, 0)`;
 - `d(c, B) < d(c, A)`: row `(0, 1, 0, 0)`;
 - **tie** `d(c, A) = d(c, B)`: row `(½, ½, 0, 0)`.
 
+Scores are fractions, so distances that are equal on paper are compared with a
+tolerance of 10⁻⁹: floating-point rounding never breaks a real tie (Christine
+Boutin in 2002 is exactly halfway between Chirac and Le Pen).
+
 Named sensitivity variant `tie=abstention`: a tied group gets row `(0, 0, 0, 1)`.
+
+### H1-soft: a split that depends on distance
+
+Added on 21 November 2026, after the results of the other models were known; the
+formula has no parameter and was not adjusted afterwards. Instead of sending the
+whole group to the nearer finalist, each finalist gets a share inversely
+proportional to its distance:
+
+`β[g, A] = d(c, B) / (d(c, A) + d(c, B))`, `β[g, B] = d(c, A) / (d(c, A) + d(c, B))`,
+and nothing goes to `blank_invalid` or abstention.
+
+The nearer finalist always gets more than half, and an equidistant group splits
+50/50 by construction, so the tie rule does not apply. Unplaced candidates use the
+H0b row. H1-soft is not an H3 base.
 
 ### H2: nearest finalist with a distance threshold
 
-As H1, **unless** `d(c, A) ≥ 2` **and** `d(c, B) ≥ 2`. A group at least two steps
-from both finalists goes to a non-vote outcome. Two named variants are always
+As H1, **unless** `d(c, A) ≥ 1/3` **and** `d(c, B) ≥ 1/3`. A group at least one
+third of the scale from both finalists goes to a non-vote outcome. The threshold
+is the rule fixed on 15 November 2026 on the 1–7 scale (two steps out of six),
+carried over unchanged when the poll-based scale became the main one. Two named variants are always
 reported together, and neither is selected by fit:
 
 - **H2-abst**: row `(0, 0, 0, 1)`;
 - **H2-blank**: row `(0, 0, 1, 0)`.
 
-The threshold is checked first, so a group exactly two steps from both finalists
+The threshold is checked first, so a group exactly one third from both finalists
 is a non-vote, not a tie. Below the threshold, ties follow the H1 rule. "At least
-two" includes distance two exactly.
+one third" includes one third exactly (with the same tolerance).
 
 ### Missing scores
 
-A candidate with no score (Jacques Cheminade, 2012 and 2017) cannot be placed.
-In H1 and H2 that group uses its **H0b row**. A missing score is never read as
+A candidate with no score cannot be placed: on the poll-based scale, Jacques
+Cheminade (2012, 2017) and Jean Lassalle (2017). In H1 and H2 that group uses its
+**H0b row**. A missing score is never read as
 Centre or zero, and the votes are never dropped. A finalist without a score, or a
 candidate absent from the reference table, stops the evaluation with an error.
 
@@ -112,8 +134,8 @@ If several values tie, the smallest `p` is kept.
 on the other four and the model is scored on the fifth. Areas of one election are
 never split between training and test. Only these held-out scores are reported
 for H3 and only held-out predictions are stored. The fitted `p` of every fold is
-in `evaluation_report.json`. A fit on all five elections is also recorded; it is
-used only by the 2027 scenario page, where no election is being scored.
+in `evaluation_report.json`. A fit on all five elections is also recorded as a
+description; it is never scored.
 
 With five elections there are five folds. Held-out scores describe how the rule
 transfers between these elections; they support no significance statement.
@@ -126,17 +148,18 @@ held-out election's weights and outcomes never enter the fit.
 
 | Variant | Meaning |
 |---|---|
-| `positions=primary;tie=split` | **Main analysis**: `ideology_score`, 50/50 ties |
-| `positions=primary;tie=abstention` | Tie sensitivity |
-| `positions=alternative;tie=split` | Coding sensitivity: every row that lists an `alternative_family` uses it, all at once |
-| `positions=alternative;tie=abstention` | Both changes together; the only setting pair in which the tie rule can matter if the primary coding produces no tie |
+| `positions=polls;tie=split` | **Main analysis**: poll-based scale, 50/50 ties |
+| `positions=polls;tie=abstention` | Tie sensitivity |
+| `positions=primary;tie=split` | Scale sensitivity: the hand-coded 1–7 families, put on 0–1 |
+| `positions=primary;tie=abstention` | Both changes together |
+| `positions=alternative;tie=split` | The 1–7 families with every listed `alternative_family`, all at once |
+| `positions=alternative;tie=abstention` | Both changes together |
 
-The alternative coding is one alternative scenario, not a search over codings.
-H0a and H0b read no scores; their variant is `default`.
-
-Until two coders have reviewed the candidate table, every score is a draft and
-every H1–H3 output is labelled **draft coding** (the label is derived from the
-table's `review_status` column, not typed by hand).
+The 1–7 scale is put on 0–1 with `(score − 1) / 6`, so its results are exactly
+those of the original rules (two steps out of six is one third). The alternative
+coding is one alternative scenario, not a search over codings. H0a and H0b read
+no scores; their variant is `default`. Every output states that the main positions
+are the **poll-based scale** and that the 1–7 comparison is a **draft coding**.
 
 ## Errors and aggregation
 
@@ -192,21 +215,60 @@ Before 2017, only combined blank/invalid counts are available (voters minus vali
 votes). The separate counts remain null in interim tables; the model outcome is
 combined for every year, so its definition stays consistent.
 
-## Manual ideological reference and distance rules
+## Candidate positions
+
+### Main: the poll-based scale (20 November 2026)
+
+Polling institutes list the candidates in a left-to-right order in their
+published reports, and these orders include every candidate, minor ones too.
+Following the advice of Magdaléna Tydrichová, we use them instead of positions we
+coded ourselves.
+
+- **Collection.** `data/reference/polling_axes.csv`: one row per poll, with the
+  institute, fieldwork dates, client, source type, source link and the candidates
+  in left-to-right order. We used the last pre-election poll we could find for
+  each institute. 2002: Ipsos (the only original report we found). 2007: Ipsos,
+  Ifop, CSA (CSA through a press article). 2012: Ifop, Harris Interactive, Ipsos.
+  2017 (7 institutes) and 2022 (8 institutes): the orders compiled by Delemazure,
+  Dong, Peters and Tydrichová (2024), arXiv 2405.04525, Tables 2 and 7.
+- **Score.** `notebooks/candidate_scale.ipynb` (`make scale`) writes
+  `data/reference/candidate_scores.csv`. In a poll of `n` candidates, the
+  candidate in place `i` (from 0) gets `i / (n − 1)`. A candidate's score is the
+  mean of their positions across the institutes of that election. The file keeps
+  every decimal, because rounding would break exact ties.
+- **Unplaced candidates** (rules fixed before any model was run on the scale).
+  A candidate is unplaced if institutes list them last by default (Jacques
+  Cheminade), or if their positions differ by more than 0.4 between institutes.
+  The first pass finds them (Cheminade 2012 and 2017, Lassalle 2017); they are
+  removed from their election's polls and the second pass spreads the others
+  again between 0 and 1. Their score is left empty and their voters follow the
+  H0b row.
+- **Checks.** Every candidate identifier matches the Ministry files; a test
+  recomputes the scale from the polls and fails if `make scale` was not rerun.
+
+The scale is an **order**, not a measured distance: within a poll, neighbours are
+evenly spaced whatever their real ideological gap, and institutes' table
+conventions enter it (in 2007 they list the PS before the Greens, so Dominique
+Voynet sits slightly right of Ségolène Royal). Scores are comparable within an
+election, not across elections.
+
+### Comparison: the hand-coded 1–7 families
 
 The team chose seven families on 31 October 2026: Far left (1), Left (2),
 Centre-left (3), Centre (4), Centre-right (5), Right (6), Far right (7).
-`data/reference/candidate_positions.csv` supplies the manually coded party and
-family for each first-round candidate-election pair. The scale is agreed;
-individual classifications are drafts and Cheminade's two positions are unresolved.
-See the reference README for the codebook, sources and sensitivity alternatives.
+`data/reference/candidate_positions.csv` gives a hand-coded family for each
+candidate-election pair, with sources for the party affiliation and an
+alternative family where one is plausible. It was the main input until
+20 November 2026. No outside source checked it and two coders never reviewed it,
+so it is now only a sensitivity comparison (variants `primary` and `alternative`).
 
-The one-dimensional distance is `abs(score_candidate - score_finalist)`.
-Using differences assumes equally spaced categories. This is a modelling
-convention, not an empirical measurement. Candidate positions do not establish
-their voters' individual preferences. H0a and H0b do not read these scores.
+### Distance
 
-The tie rule, the threshold ("at least two from both finalists"), the treatment
+The one-dimensional distance is `abs(score_candidate - score_finalist)`. This is a
+modelling convention, not an empirical measurement. Candidate positions do not
+establish their voters' individual preferences. H0a and H0b do not read them.
+
+The tie rule, the threshold ("at least one third from both finalists"), the treatment
 of first-round blank/invalid and abstention groups (identity rows) and of missing
 positions (H0b row) are defined above. Before 2017 the evaluated outcome remains
 combined blank/invalid, even where the behavioural reading concerns blank voting;
@@ -234,7 +296,14 @@ same for every model and was confirmed by the team:
 - **H4 (strategic first-round voting) and H5 (transfers learned by family)** were
   dropped on the recommendation of the first peer review: both depend on a single
   2017 preference dataset. They are future work.
-- **Two-dimensional distances** are not computed: no two-dimensional coding of
-  the 61 candidacies exists.
-- **Forecasting.** The 2027 page applies a chosen assumption to the 2022
-  first-round electorate. It is a hypothetical scenario, not a forecast.
+- **Two-dimensional distances** are not computed: no two-dimensional position of
+  all 61 candidacies exists.
+- **The 2027 scenario** (the proposal's "applied version": two hypothetical 2027
+  finalists applied to the 2022 electorate) was dropped on 20 November 2026 to keep
+  the project on its main question. No forecast is made.
+- **Other sources of positions**, considered and rejected: Chapel Hill Expert
+  Survey and ParlGov scores (parties only, most minor candidates missing), the
+  Manifesto Project (legislative manifestos of parties with seats), scoring
+  candidates' programmes ourselves (many 2002–2007 programmes unavailable, and
+  more judgement calls than the family scale), and a two-coder review of the
+  1–7 families (it measures agreement between us, not accuracy).

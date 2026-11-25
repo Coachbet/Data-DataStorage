@@ -1,8 +1,7 @@
 # Presentation outline (2 December, 15 minutes)
 
-Draft for the team to turn into slides. Twelve slides, about 75 seconds each.
-Numbers are filled from `reports/results/numbers.json`. Status: **{{coding_status}}**.
-`[PENDING: coder agreement]` on slides 5, 8 and 10.
+Draft for the team to turn into slides. Eleven slides, about 80 seconds each.
+Numbers are filled from `reports/results/numbers.json`. Candidate positions: **{{coding_status}}**.
 
 ## Slides
 
@@ -30,11 +29,12 @@ Numbers are filled from `reports/results/numbers.json`. Status: **{{coding_statu
 - Blank and invalid combined for comparability; kept separately for 2017 and 2022.
 - Figure: table of checks from the quality document.
 
-**5. The weakest input is ours: the candidate table**
-- {{n.candidacies}} candidacies coded by hand on a 1–7 left–right scale.
-- Consistency check flags {{quality.inconsistent_parties}}; {{quality.without_score}} rows have no score.
-- Two coders, blind sheets, weighted kappa: `[PENDING: coder agreement]`.
-- Figure: the 1–7 scale with a few placed candidates.
+**5. Placing {{n.candidacies}} candidacies without placing them ourselves**
+- Polling institutes list candidates left to right in their reports: we collected {{scale.polls}} orders from {{scale.institutes}} institutes, 2002–2022, each with its source link.
+- Score from 0 (left) to 1 (right): evenly spaced within a poll, averaged across institutes.
+- {{scale.unplaced}} candidacies we cannot place ({{scale.unplaced_list}}): removed, their voters follow H0b.
+- Replaced our first hand-coded 1–7 scale, which no outside source checked; it stays as a comparison.
+- Figure: the 2017 scale, with the seven institutes' orders behind it.
 
 **6. Storage: normalised Parquet, compared with a database**
 - `areas`, `outcomes`, `options`, one long `predictions` table; shares computed, not stored.
@@ -44,7 +44,7 @@ Numbers are filled from `reports/results/numbers.json`. Status: **{{coding_statu
 
 **7. Five assumptions, each one sentence**
 - H0a: like everyone else, abstainers included. H0b: like everyone who voted.
-- H1: nearest finalist. H2: nearest, unless two steps from both (then abstain, or vote blank).
+- H1: nearest finalist. H1-soft: both finalists, the nearer one gets more. H2: nearest, unless at least one third of the scale from both (then abstain, or vote blank).
 - H3: a fitted share `p` ignores proximity. Rules fixed before any result.
 - Figure: one transfer matrix, with identity rows highlighted.
 
@@ -55,28 +55,23 @@ Numbers are filled from `reports/results/numbers.json`. Status: **{{coding_statu
 - Figure: `reports/figures/signed_error_by_outcome.png`.
 
 **9. Result 2: no stable winner**
-- Lowest five-election mean: {{best.model}} ({{best.mean}} pp), but it beats H0b in only {{wins.H1.vs_H0b}} election.
+- Lowest five-election mean: {{best.model}} ({{best.mean}} pp), but it beats H0b in only {{wins.H1.vs_H0b}} of {{n.elections}} elections, mostly thanks to 2002.
 - Without 2002, {{best.model}} ranks {{best.rank_without_2002}} of {{n.models}}; H0b is at {{score.H0b.mean_without_2002}} pp.
-- H2 has the highest errors: with finalists at {{h2.2022.finalist_a_score}} and {{h2.2022.finalist_b_score}}, every group coded {{h2.2022.on_threshold_scores}} is exactly {{h2.threshold}} steps away and is sent to a non-vote ({{h2.2022.on_threshold_pct}}% of registered voters in 2022). A finding about thresholds on a coarse scale.
+- H2 fails in 2002: both finalists on the right, so the whole left is "too far" and sent to a non-vote ({{h2.2002.beyond_pct|.0f}}% of registered voters), while it voted Chirac. Elsewhere H2 is close to H1.
 - The fitted H3 throws the H2 rule away (`p` from {{p.H2-blank.min|.2f}} to {{p.H2-abst.max|.2f}}).
 - Figure: `reports/figures/model_comparison.png`.
 
 **10. How fragile is it?**
-- Alternative coding: the order of models {{sens.alternative.split.text.same_ranking}}; lowest mean becomes {{sens.alternative.split.best.model}}.
-- Tie rule: irrelevant, {{ties.primary.count}} ties occur.
+- On our old hand-coded 1–7 scale: lowest mean still {{sens.primary.split.best.model}}, H0b still {{sens.primary.split.rank.H0b}}; H2 much worse ({{sens.primary.split.change.H2-abst.mean|+.1f}} pp).
+- Main conclusion holds on both scales; H2 depends on where candidates are placed.
+- Tie rule: {{ties.polls.count}} exact ties, at most {{sens.polls.abstention.max_abs_change|.2f}} pp of change.
 - Overseas areas in 2022: {{best.model}} {{territory.overseas.H1.2022}} pp, H0b {{territory.overseas.H0b.2022}} pp.
 - Figure: `reports/figures/predicted_vs_observed_2022.png`.
 
-**11. A 2027 scenario, not a forecast**
-- The 2022 first-round electorate, two stand-in finalists, one assumption. Default H0b; one option shows all models side by side.
-- No 2027 data, no polls.
-- The spread between assumptions is the message.
-- Figure: live demo or screenshot of the "2027 scenarios" page.
-
-**12. Answer, limits, and what we changed**
+**11. Answer, limits, and what we changed**
 - Answer: inconclusive. Proximity explains 2002; elsewhere a proportional split among voters does as well.
-- Limits: aggregate inference, draft coding, one dimension, five elections.
-- Changed after feedback: second baseline, coder review, normalised storage, cross-election charts.
+- Limits: aggregate inference, an order not a distance, one institute for 2002, one dimension, five elections.
+- Changed after feedback: second baseline, candidate positions from polling institutes, normalised storage, cross-election charts.
 - Figure: the three-line summary; repository link and `make analysis`.
 
 ## Likely questions, short answers
@@ -94,13 +89,20 @@ good or better. We do not claim a best model.
 It is the baseline we committed to at the start. Showing both makes visible that
 one modelling choice, not the data, caused most of its error.
 
-**Why a threshold of two for H2? Did you try others?**
-It was fixed before looking at results. Trying thresholds until one fits would be
+**Why a threshold of one third for H2? Did you try others?**
+It is our original rule (two steps out of six on the 1–7 scale), fixed before looking at results. Trying thresholds until one fits would be
 tuning on the evaluation elections, and five elections cannot validate it.
 
-**How do you know the candidate coding is right?**
-We do not, which is why two people code it independently and we report agreement
-and rerun everything on the alternative coding. `[PENDING: coder agreement]`
+**How do you know the candidate positions are right?**
+They are not ours: they are the orders published by {{scale.institutes}} polling institutes,
+each linked to its source. Where institutes disagree too much we do not place the
+candidate. We also rerun everything on our old hand-coded scale: the main conclusion
+does not change.
+
+**Why not score candidates from their programmes, or use the Manifesto Project?**
+Many 2002–2007 minor candidates have no programme online, and the Manifesto Project
+codes legislative manifestos of parties with seats, so most minor presidential
+candidates are missing.
 
 **Why is 2002 so different?**
 Abstention fell between rounds and nearly all voters outside the far right ended
@@ -111,14 +113,10 @@ on one side. H0a predicts {{predicted.H0a.2002.abstention}}% abstention against
 Written once, read by column, small, and it must rebuild byte for byte for a
 reader with no setup. We lose declarative constraints and enforce them in code.
 
-**Could the 2027 page predict the election?**
-No. It applies an assumption to the 2022 electorate. Different candidates, a
-different electorate and a different campaign are all outside it.
-
 **What about voters abroad and overseas areas?**
 Kept and flagged. Missing from the 2002 and 2007 files, so those years describe
 covered areas only. They fit worse under H1 in 2022.
 
 **How was AI used?**
-For code, tests and drafting. Decisions, the coding of candidates and the
+For code, tests and drafting. Decisions, the collection of the poll orders and the
 interpretation are the team's.

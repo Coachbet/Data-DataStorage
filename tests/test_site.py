@@ -3,10 +3,19 @@ from pathlib import Path
 import pytest
 from streamlit.testing.v1 import AppTest
 from vote_transfer.application.processing import process_year
-from vote_transfer.application.scenario import SCENARIO_MODELS
 
-PAGES = ["The answer", "Evidence", "Explore the data", "2027 scenarios", "Method & sources"]
-MODELS = ["H0a", "H0b", "H1", "H2-abst", "H2-blank", "H3(H1)", "H3(H2-abst)", "H3(H2-blank)"]
+PAGES = ["The answer", "Evidence", "Explore the data", "Method & sources"]
+MODELS = [
+    "H0a",
+    "H0b",
+    "H1",
+    "H1-soft",
+    "H2-abst",
+    "H2-blank",
+    "H3(H1)",
+    "H3(H2-abst)",
+    "H3(H2-blank)",
+]
 APP = Path(__file__).resolve().parents[1] / "site" / "app.py"
 
 
@@ -125,7 +134,7 @@ def test_pickers_keep_their_value_across_pages_and_recover_from_a_missing_area(o
     app = go(offline_app, "Explore the data")
     app.selectbox(key="year").select("2017").run()
     app.selectbox(key="unit").select("ZZ").run()
-    for page in ["The answer", "2027 scenarios", "Evidence", "Explore the data"]:
+    for page in ["The answer", "Evidence", "Explore the data"]:
         go(app, page)
     assert app.selectbox(key="unit").value == "ZZ"
     assert app.selectbox(key="year").value == "2017"
@@ -143,7 +152,7 @@ def test_every_chart_on_every_page_has_a_valid_vega_schema(offline_app, monkeypa
         counts[page] = len(drawn) - before
     assert counts["The answer"] == 1  # one chart carries the answer
     assert counts["Evidence"] >= 7 and counts["Explore the data"] == 2
-    assert counts["2027 scenarios"] == 1 and counts["Method & sources"] == 0
+    assert counts["Method & sources"] == 0
     for spec, _ in drawn:
         assert "layer" in spec and "facet" not in spec
 
@@ -211,7 +220,7 @@ def test_answer_page_states_the_answer_from_the_generated_results(offline_app):
         assert fmt_pp(numbers[f"score.{model}.mean"]) in text
     assert not app.metric and not app.selectbox
     status = app.warning[0].value
-    for phrase in ("Draft coding", "[PENDING", "2002 and 2007", "not individual transfers"):
+    for phrase in ("Poll-based scale", "polling", "[PENDING", "2002 and 2007", "not individual"):
         assert phrase in status
     app.button(key="finding_1").click().run(timeout=30)
     assert not app.exception
@@ -232,7 +241,7 @@ def test_evidence_page_shows_every_model_with_honesty_notes(offline_app):
         "Mean without 2002",
     ]
     assert round(table.loc["2022", "H0a"], 2) == 6.12
-    assert any("Draft coding" in item.value for item in app.warning)
+    assert any("Poll-based scale" in item.value for item in app.warning)
     assert any("not individual transfers" in item.value for item in app.warning)
     assert any("2002 and 2007" in item.value for item in app.info)
     assert app.selectbox(key="compare_model").value == table.loc["Mean"].idxmin()
@@ -244,53 +253,11 @@ def test_evidence_page_shows_every_model_with_honesty_notes(offline_app):
     assert len(folds) == 15 and set(folds["Tested on"]) == {"2002", "2007", "2012", "2017", "2022"}
 
 
-def test_scenario_page_works_offline_with_permanent_banner(offline_app):
-    app = go(offline_app, "2027 scenarios")
-
-    def banner():
-        return [item.value for item in app.warning if "not a forecast" in item.value]
-
-    assert banner() and "2022 electorate" in banner()[0] and "Draft coding" in banner()[0]
-    assert "Hypothetical · 2022 electorate · not a forecast" in page_text(app)
-    assert app.selectbox(key="scenario_a").value == "candidate:emmanuel-macron"
-    assert app.selectbox(key="scenario_b").value == "candidate:marine-le-pen"
-    # Team decision: H0b is the default, with the reason stated on the page.
-    assert app.selectbox(key="scenario_model").value == "H0b"
-    assert any("H0b is the default" in c.value and "2002" in c.value for c in app.caption)
-    assert any("candidates only" in c.value and "no map" in c.value for c in app.caption)
-    national = app.table[0].value
-    assert list(national.columns) == ["Outcome", "H0b (%)"]
-    assert national["H0b (%)"].sum() == pytest.approx(100)
-    app.checkbox(key="scenario_all").check().run(timeout=30)
-    assert not app.exception and banner()
-    national = app.table[0].value
-    assert list(national.columns) == ["Outcome", *(f"{m} (%)" for m in SCENARIO_MODELS)]
-    assert national.drop(columns="Outcome").sum().tolist() == pytest.approx([100] * 8)
-    app.checkbox(key="scenario_all").uncheck().run(timeout=30)
-    assert national.Outcome.tolist()[:2] == ["Emmanuel Macron", "Marine Le Pen"]
-    assert len(app.dataframe[0].value) == 107  # area-level table
-    assert any(b.label == "Download this scenario (CSV)" for b in app.get("download_button"))
-
-    app.selectbox(key="scenario_b").select("candidate:jean-luc-melenchon").run(timeout=30)
-    app.selectbox(key="scenario_model").select("H3(H1)").run(timeout=30)
-    assert not app.exception and banner()
-    national = app.table[0].value
-    assert national.Outcome.tolist()[:2] == ["Emmanuel Macron", "Jean-Luc Mélenchon"]
-    assert list(national.columns) == ["Outcome", "H3(H1) (%)", "H0b (%)"]
-    assert any("fitted on the five historical elections" in c.value for c in app.caption)
-
-    app.selectbox(key="scenario_model").select("H0b").run(timeout=30)
-    assert list(app.table[0].value.columns) == ["Outcome", "H0b (%)"]
-    app.selectbox(key="scenario_b").select("candidate:emmanuel-macron").run(timeout=30)
-    assert not app.exception and banner()
-    assert any("two different candidates" in item.value for item in app.error)
-
-
 def test_method_page_keeps_the_limits_and_the_disclosure_sentence(offline_app):
     app = go(offline_app, "Method & sources")
     text = page_text(app)
     assert "Totals are not personal voting histories" in text
-    assert "it does not forecast an election" in text
+    assert "an order, not a measured ideological distance" in text
     assert any(
         c.value == "AI assisted with development, documentation and tests. The project team is "
         "responsible for source verification, methodological decisions and interpretation."
@@ -307,10 +274,9 @@ def test_pages_explain_missing_evaluation_instead_of_failing(raw_dataset, monkey
     process_year(2022, raw_dataset)
     monkeypatch.setenv("VOTE_TRANSFER_DATA_DIR", str(raw_dataset))
     app = AppTest.from_file(str(APP)).run(timeout=20)
-    for page in ("The answer", "Evidence", "2027 scenarios"):
+    for page in ("The answer", "Evidence"):
         go(app, page, timeout=20)
         assert any("vote-transfer evaluate" in item.value for item in app.info)
-    assert any("not a forecast" in item.value for item in app.warning)
 
 
 def test_text_colours_meet_wcag_aa_on_the_page_background():

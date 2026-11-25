@@ -52,13 +52,14 @@ must use `vote-transfer acquire` to get the correct files and manifest contract.
 Earlier exploratory downloads (a partial 2017 collection from the consolidated API)
 were never part of the repository and are not consumed by the pipeline.
 
-## Upcoming sources
+## Reference sources
 
-- CHES: no longer the primary candidate-position source (see `project_scope.md`,
-  "Change from the acquisition note"); possible later sensitivity reference only.
-- Polling-company axes / Wikipedia 2027 tables: dated snapshots and a fixed scraping protocol.
-- Political Compass 2022 / CEVIPOF: documented manual extraction for robustness checks.
-- Voter Autrement 2017: verify the precise Zenodo record before acquisition.
+- Polling-company left-to-right orders: 22 polls (2002 to 2022), recorded by hand
+  with their links in `data/reference/polling_axes.csv`; they give the main
+  candidate scale (see `data/reference/README.md`).
+- No further source is planned. CHES, Political Compass, CEVIPOF and Voter
+  Autrement were considered and not used; no 2027 poll is collected because the
+  2027 scenario was dropped on 20 November 2026.
 
 Socioeconomic datasets and media mention counts are no longer active sources.
 

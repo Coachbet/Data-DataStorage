@@ -2,7 +2,11 @@ from pathlib import Path
 
 import pandas as pd
 import pytest
-from vote_transfer.application.positions import REFERENCE_DIR, load_candidate_positions
+from vote_transfer.application.positions import (
+    REFERENCE_DIR,
+    load_candidate_positions,
+    load_poll_scores,
+)
 
 
 def test_reference_exactly_covers_the_five_official_candidate_rosters():
@@ -54,3 +58,29 @@ def test_reference_rejects_ambiguous_keys_and_misleading_codes(tmp_path, corrupt
     (tmp_path / "sources.json").write_bytes((REFERENCE_DIR / "sources.json").read_bytes())
     with pytest.raises(ValueError):
         load_candidate_positions(tmp_path)
+
+
+def test_poll_based_scale_is_up_to_date_with_the_collected_polls():
+    """Recompute the notebook's two passes; fails if polls change without `make scale`."""
+    polls = pd.read_csv(REFERENCE_DIR / "polling_axes.csv")
+
+    def scores(removed):
+        positions = {}
+        for poll in polls.itertuples():
+            kept = [c for c in poll.order_left_to_right.split(";") if (poll.year, c) not in removed]
+            for i, candidate in enumerate(kept):
+                positions.setdefault((poll.year, candidate), []).append(i / (len(kept) - 1))
+        return positions
+
+    first = scores(set())
+    unplaced = {
+        key
+        for key, values in first.items()
+        if key[1] == "jacques-cheminade" or max(values) - min(values) > 0.4
+    }
+    second = scores(unplaced)
+    shipped = load_poll_scores().set_index(["year", "candidate_id"])
+    assert set(shipped.index) == set(first)
+    assert set(shipped.index[shipped.status == "unplaced"]) == unplaced
+    for key, values in second.items():
+        assert shipped.loc[key, "score"] == pytest.approx(sum(values) / len(values), abs=1e-12)

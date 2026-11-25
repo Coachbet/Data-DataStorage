@@ -8,10 +8,13 @@ files for **2002, 2007, 2012, 2017 and 2022**, validates and aggregates them by
 reporting area, evaluates five families of assumptions (H0a, H0b, H1, H2, H3)
 against the observed second rounds, and presents the results in a report and a
 Streamlit app. Results describe **aggregate patterns, never individual
-transfers**. The 2027 page is a **hypothetical scenario, not a forecast**.
+transfers**.
 
-> Candidate positions used by H1–H3 are **draft codes** until two team members
-> have coded them independently. Every output states the coding status.
+> H1–H3 place candidates on a **poll-based scale**: the left-to-right orders that
+> polling institutes publish in their reports (22 polls, 2002–2022, collected by us
+> in `data/reference/polling_axes.csv`), turned into a 0–1 score by
+> `notebooks/candidate_scale.ipynb`. The earlier hand-coded 1–7 scale is kept only
+> as a comparison.
 
 ## Quick start
 
@@ -30,8 +33,8 @@ else runs offline.
 ## Rebuild everything
 
 ```bash
-make data        # acquire -> process -> evaluate -> bundle, all five elections
-make analysis    # every model result, figure, table, and the rendered report
+make data        # acquire -> process -> scale -> evaluate -> bundle, all five elections
+make analysis    # the candidate scale, every model result, figure, table and document
 make check       # tests, lint, format, processed-versus-bundled comparison
 ```
 
@@ -40,6 +43,7 @@ The same steps as explicit commands:
 ```bash
 uv run vote-transfer acquire --all-years                 # about 293 MB, verified against pinned hashes
 uv run vote-transfer process --all-years                 # raw -> interim -> processed tables
+make scale                                               # polling_axes.csv -> candidate_scores.csv
 uv run vote-transfer evaluate --all-models --all-years   # one long predictions table
 uv run vote-transfer bundle --all-years                  # refresh the versioned snapshots
 uv run vote-transfer analyse                             # reports/ and rendered documents
@@ -55,25 +59,27 @@ No credentials are required and `.env` files are not loaded.
 
 ```text
 site/app.py                 Streamlit app entry: navigation, data loading, page dispatch
-site/views/                 The five pages: answer, evidence, explore, scenarios, method
+site/views/                 The four pages: answer, evidence, explore, method
 site/theme.py, styles.css   Design tokens (one source for CSS and charts) and the stylesheet
 site/charts.py              Every chart, on one shared Vega-Lite theme
-docs/design/                Design audit, brief, verification and before/after screenshots
+docs/design/                Design audit, brief and verification notes (screenshots: capture.py)
 backend/vote_transfer/
   infrastructure/           Download with pinned hashes; parsers for the three file layouts
   application/processing.py Validation and the normalised areas/outcomes/options tables
   application/models.py     Every assumption as a transfer matrix; H3 leave-one-election-out
   application/evaluation.py The single scoring rule
-  application/review.py     Blind coding sheet, coder agreement, candidate-table quality
+  application/positions.py  Loads and checks the poll-based scale and the 1–7 comparison
+  application/review.py     Quality checks on the hand-coded 1–7 comparison table
   application/analysis.py   Generated tables, numbers and documents
   application/figures.py    Report figures (PNG and SVG)
-  application/scenario.py   Hypothetical runoffs on the 2022 electorate
   cli.py                    The vote-transfer command
 data/
   raw/official/<year>/      Original files (ignored) and their manifests (versioned)
   interim/, processed/      Generated tables (ignored)
   bundled/                  Small verified snapshots and predictions (versioned)
-  reference/                Hand-coded candidate table, sources, review kit
+  reference/                Collected poll orders, the poll-based scale, the 1–7 comparison table
+notebooks/
+  candidate_scale.ipynb     Builds the poll-based scale (run with `make scale`)
 reports/
   results/                  Generated CSV/JSON, numbers.json, findings.md
   figures/                  Generated figures
@@ -84,7 +90,6 @@ docs/
   data_dictionary.md        Table contracts
   storage_comparison.md     Parquet compared with SQLite/PostgreSQL and DuckDB
   response_to_reviews.md    Every review comment and what we did
-  handoff.md                What is done, what humans must still do
 tests/                      Offline tests on synthetic fixtures and the bundled snapshots
 ```
 
@@ -96,13 +101,15 @@ Markdown templates in `docs/templates/` from it. **Edit the templates, not the
 rendered files.** A test fails if a committed result or document differs from a
 fresh run.
 
-## Candidate coding review
+## Candidate positions
 
-`data/reference/review/` contains a blind coding sheet and instructions for two
-independent coders. `vote-transfer review-agreement --coder-a A.csv --coder-b B.csv`
-reports percentage agreement, quadratic-weighted kappa, the confusion matrix and
-the disagreements. After the review, `make evaluate bundle analysis` updates
-every result.
+`data/reference/polling_axes.csv` has one row per poll: institute, fieldwork
+dates, client, source link and the candidates in left-to-right order. The
+notebook gives each candidate an evenly spaced position from 0 to 1 in each poll,
+averages it across institutes, and sets aside candidates it cannot place
+(Cheminade, and anyone whose positions differ by more than 0.4 between
+institutes). After editing the polls, run `make analysis`: a test fails if the
+scale is not rebuilt.
 
 ## Limits to keep in mind
 
@@ -112,14 +119,15 @@ every result.
   areas; their totals describe covered areas only.
 - **Blank and invalid ballots** are one combined outcome in every election; the
   separate counts exist for 2017 and 2022 only.
-- **Scope.** H4, H5 and two-dimensional positions were dropped; see
-  `docs/methodology.md`.
+- **The scale is an order.** Within a poll, candidates are evenly spaced whatever
+  their real ideological gap; 2002 rests on one institute.
+- **Scope.** H4, H5, two-dimensional positions and the 2027 scenario were dropped;
+  see `docs/methodology.md`.
 
 Further reading: [methodology](docs/methodology.md), [data contracts](docs/data_dictionary.md),
 [acquisition](docs/data_acquisition.md), [quality and cleaning](docs/data_quality_and_cleaning.md), [candidate table quality](docs/candidate_table_quality.md),
 [validation record](docs/validation.md), [development notes](docs/development.md),
-[scope](docs/project_scope.md). The [2 October acquisition note](docs/references/data-acquisition-note.pdf)
-revises the [original proposal](docs/references/project-proposal.pdf).
+[scope](docs/project_scope.md).
 
 AI assisted with code, tests and drafting. The project team owns the
-methodological decisions, the candidate coding and the interpretation.
+methodological decisions, the collection of the poll orders and the interpretation.
