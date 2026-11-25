@@ -1,9 +1,46 @@
 """Method & sources: where the numbers come from, how they were checked, what they cannot say."""
 
 import components
+import pandas as pd
 import streamlit as st
+from vote_transfer.application.positions import REFERENCE_DIR
 from vote_transfer.application.presentation import fmt_int
 from vote_transfer.application.source_catalog import SOURCES
+
+PAPER = (
+    "Delemazure, T., Dong, C., Peters, D. and Tydrichová, M. (2024). Comparing Ways of "
+    "Obtaining Candidate Orderings from Approval Ballots. arXiv:2405.04525",
+    "https://arxiv.org/abs/2405.04525",
+)
+
+
+def poll_sources() -> None:
+    """The polls behind the candidate scale, one line per election, each with its link."""
+    try:
+        polls = pd.read_csv(REFERENCE_DIR / "polling_axes.csv", keep_default_na=False)
+    except OSError as exc:
+        st.error(f"The list of polls could not be opened: {exc}")
+        return
+    items = []
+    for year, group in polls.groupby("year"):
+        reports = group[group.source_url != PAPER[1]]
+        links = ", ".join(
+            f'<a href="{components.escape(row.source_url)}" target="_blank" rel="noopener">'
+            f"{components.escape(row.institute)}</a>"
+            for row in reports.itertuples()
+        )
+        compiled = group[group.source_url == PAPER[1]].institute.tolist()
+        parts = [links] if links else []
+        if compiled:
+            parts.append(
+                f"{components.escape(', '.join(compiled))}, as compiled in the paper below"
+            )
+        items.append(f"<li><strong>{year}</strong>: {'; '.join(parts)}</li>")
+    components.html(f'<ul class="links">{"".join(items)}</ul>')
+    components.html(
+        f'<p class="prose">{components.escape(PAPER[0])}. '
+        f'<a href="{PAPER[1]}" target="_blank" rel="noopener">arxiv.org/abs/2405.04525</a></p>'
+    )
 
 
 def render(ctx) -> None:
@@ -47,10 +84,16 @@ def render(ctx) -> None:
             "original reporting-area codes rather than attach unverified modern names."
         )
     components.prose(
-        "A second input is made by the team: a table that places each first-round candidate "
-        "on a seven-point left–right scale. H1, H2 and H3 read it; H0a and H0b do not. "
-        "It is the weakest input and is still a draft."
+        "The second input places each first-round candidate on a left–right scale from 0 "
+        "(leftmost) to 1 (rightmost). It is built from the left-to-right orders that polling "
+        "institutes publish in their pre-election polls: within each poll the candidates are "
+        "evenly spaced, then each candidate's positions are averaged across institutes. "
+        "For 2002 to 2012 the orders come from the institutes' own reports; for 2017 and "
+        "2022 from the compilation by Delemazure, Dong, Peters and Tydrichová (2024). "
+        "H1, H1-soft, H2 and H3 read this scale; H0a and H0b do not. Our earlier hand-coded "
+        "seven-family scale is kept only as a comparison."
     )
+    poll_sources()
 
     components.section(2, "Limits", "limits", lead="Four things to keep in mind.")
     st.markdown(
@@ -100,8 +143,7 @@ def render(ctx) -> None:
     )
     with st.expander("What comes next in the research?"):
         st.markdown(
-            "- Two team members code the candidate positions independently; agreement "
-            "is reported and every model is rerun.\n"
+            "- Check every poll order against its source (in progress).\n"
             "- Compare historical results against the consolidated reference dataset.\n"
             "- Out of scope, as future work: strategic first-round voting (H4), transfers "
             "learned by political family (H5) and two-dimensional positions."

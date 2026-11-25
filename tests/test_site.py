@@ -118,7 +118,7 @@ def test_shipped_five_year_app_runs_without_raw_data_or_network(offline_app):
         assert app.metric[1].label == "Gap in combined results"
         candidates = app.dataframe[-1].value
         assert len(candidates) == {"2002": 16, "2007": 12, "2012": 10, "2017": 11, "2022": 12}[year]
-        assert "Score (1–7)" in candidates
+        assert "Poll-based score (0–1)" in candidates
         assert any(
             button.label == "Download all candidate positions (CSV)"
             for button in app.get("download_button")

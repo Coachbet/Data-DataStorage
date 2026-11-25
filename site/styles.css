@@ -11,7 +11,7 @@
   padding: calc(var(--nav-height) + var(--s7)) var(--s5) var(--s7);
 }
 [data-testid="stMain"] { scroll-padding-top: calc(var(--nav-height) + var(--s4)); }
-:root { --nav-height: 52px; --measure: 42.5rem; }
+:root { --nav-height: 52px; --measure: 100%; }  /* text runs as wide as the charts */
 
 /* ---- Type ---------------------------------------------------------------- */
 .stApp p, .stApp li, .stApp label, .stApp input, .stApp button, .stApp dd, .stApp dt {
@@ -60,7 +60,8 @@
 .page-head { margin: 0 0 var(--s6); }
 .kicker { font-size: var(--t2) !important; color: var(--muted); margin: 0 0 var(--s3); max-width: var(--measure); }
 .purpose { font-size: var(--t4) !important; line-height: 1.45 !important; color: var(--ink); max-width: var(--measure); margin: 0; }
-.section-head { margin: var(--s7) 0 var(--s4); padding-top: var(--s4); border-top: 1px solid var(--ink); }
+/* A full-width rule separates every section from the one before it. */
+.section-head { margin: var(--s8) 0 var(--s4); padding-top: var(--s5); border-top: 2px solid var(--ink); }
 .section-number { font-family: var(--sans); font-size: var(--t2); font-weight: 600; color: var(--muted); margin-right: var(--s3); vertical-align: .25em; }
 .section-lead { color: var(--muted); max-width: var(--measure); margin: var(--s2) 0 0; }
 .prose { max-width: var(--measure); margin: 0 0 var(--s3); }
@@ -69,9 +70,9 @@
 .contents li::before { content: counter(item) " "; color: var(--muted); }
 
 /* ---- Figures ------------------------------------------------------------- */
-.figure-head { margin: var(--s5) 0 var(--s2); max-width: 46rem; }
+.figure-head { margin: var(--s5) 0 var(--s2); max-width: var(--measure); }
 .figure-sub { color: var(--muted); font-size: var(--t2) !important; line-height: 1.45 !important; margin: var(--s1) 0 0; }
-.source { color: var(--muted); font-size: var(--t1) !important; line-height: 1.5 !important; max-width: 46rem; margin: 0 0 var(--s4); }
+.source { color: var(--muted); font-size: var(--t1) !important; line-height: 1.5 !important; max-width: var(--measure); margin: 0 0 var(--s4); }
 .panel-label { font-size: var(--t2) !important; color: var(--muted); margin: var(--s3) 0 0; }
 .panel-label strong { color: var(--ink); margin-right: var(--s2); }
 .key { display: flex; flex-wrap: wrap; gap: var(--s1) var(--s4); list-style: none; margin: 0 0 var(--s1); padding: 0; }
@@ -93,7 +94,7 @@
 .finding { display: flex; gap: var(--s4); max-width: var(--measure); margin: var(--s4) 0 0; }
 .finding-number { font-family: var(--serif); font-size: var(--t5); line-height: 1; color: var(--muted); min-width: var(--s5); }
 .finding p { margin: var(--s1) 0 0; }
-.assumptions { display: grid; grid-template-columns: max-content 1fr; gap: var(--s2) var(--s4); max-width: 46rem; margin: 0; }
+.assumptions { display: grid; grid-template-columns: max-content 1fr; gap: var(--s2) var(--s4); max-width: var(--measure); margin: 0; }
 .assumptions dt { font-weight: 600; font-size: var(--t3); }
 .assumptions dd { margin: 0; }
 .links { margin: 0 0 var(--s2); padding-left: var(--s5); }
@@ -130,7 +131,7 @@
 [data-testid="stTable"] th:first-child, [data-testid="stTable"] td:first-child { text-align: left; padding-left: 0; }
 /* Streamlit internal: alerts become hairline notes; wording and role are unchanged. */
 [data-testid="stAlert"] > div, [data-testid="stAlertContainer"] { border-radius: 3px; border: 0; }
-[data-testid="stAlert"] { max-width: 46rem; }
+[data-testid="stAlert"] { max-width: var(--measure); }
 [data-testid="stAlert"] p { font-size: var(--t2); line-height: 1.5; }
 [data-testid="stAlertContentWarning"], [data-testid="stAlertContentWarning"] p { color: var(--note-ink); }
 [data-testid="stAlertContainer"]:has([data-testid="stAlertContentWarning"]) { background: var(--note-bg); border-left: 3px solid var(--note-ink); }
@@ -143,7 +144,7 @@
 [data-testid="stExpander"] summary p { font-size: var(--t3); font-weight: 600; }
 [data-testid="stExpander"] summary:hover p { color: var(--accent); }
 /* Streamlit fades captions to 60% opacity, which falls below AA on the paper colour. */
-[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p { color: var(--muted); opacity: 1; font-size: var(--t1); line-height: 1.5; max-width: 46rem; }
+[data-testid="stCaptionContainer"], [data-testid="stCaptionContainer"] p { color: var(--muted); opacity: 1; font-size: var(--t1); line-height: 1.5; max-width: var(--measure); }
 
 /* ---- Footer -------------------------------------------------------------- */
 .footer { border-top: 1px solid var(--ink); margin-top: var(--s8); padding-top: var(--s3); max-width: 100%; }
@@ -167,4 +168,4 @@
 }
 
 /* Lists written in Markdown keep the reading measure. */
-[data-testid="stMarkdownContainer"] > ol, [data-testid="stMarkdownContainer"] > ul { max-width: 46rem; }
+[data-testid="stMarkdownContainer"] > ol, [data-testid="stMarkdownContainer"] > ul { max-width: var(--measure); }

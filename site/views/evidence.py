@@ -7,6 +7,7 @@ import streamlit as st
 from theme import OUTCOME_NAMES
 from vote_transfer.application.analysis import MODEL_ORDER
 from vote_transfer.application.exploration import model_summary
+from vote_transfer.application.models import THRESHOLD
 from vote_transfer.application.presentation import (
     answer,
     count_of,
@@ -28,6 +29,11 @@ SECTIONS = [
     ("One election in detail: H0a", "h0a"),
 ]
 BASELINES = ("H0a", "H0b")
+NUMBER_WORDS = {8: "eight", 9: "nine", 10: "ten"}
+
+
+def how_many(count: int) -> str:
+    return NUMBER_WORDS.get(count, str(count))
 
 
 def role_names(evaluated: dict, year: int) -> dict[str, str]:
@@ -40,11 +46,15 @@ def role_names(evaluated: dict, year: int) -> dict[str, str]:
 
 def ladder(evaluated: dict, status: str) -> None:
     components.section(
-        1, *SECTIONS[0], lead="Five rules, from the simplest to the one fitted parameter."
+        1,
+        *SECTIONS[0],
+        lead=f"Six rules give {how_many(len(MODEL_ORDER))} assumptions: two baselines, three "
+        "proximity rules (H2 in two variants) and one mixture with a fitted parameter.",
     )
     components.assumption_list()
     example, year = evaluated["ladder"], evaluated["ladder_year"]
     rows = example["rows"]
+    rows = rows.loc[[model for model in MODEL_ORDER if model in rows.index]]
     one_piece = rows.loc["H1"].max() > 99.9 and rows.loc["H2-abst", "abstention"] > 99.9
     components.figure_head(
         "H1 sends this whole group to one finalist; H2 sends all of it to a non-vote"
@@ -66,8 +76,9 @@ def ladder(evaluated: dict, status: str) -> None:
     charts.stacked_rows(frame, names, "Share of the group (%)")
     a, b = example["finalist_scores"]
     components.source(
-        "One row of each transfer matrix, pooled over areas. On the 1–7 scale this "
-        f"candidate is coded {example['group_score']} and the finalists {a} and {b}. "
+        "One row of each transfer matrix, pooled over areas. On the poll-based scale "
+        f"(0 = left, 1 = right) this candidate scores {example['group_score']:.2f} and the "
+        f"finalists {a:.2f} and {b:.2f}. "
         f"H3 uses the share p fitted with {year} held out. {status.capitalize()}. "
         "A rule about a group is an assumption, not an observed transfer."
     )
@@ -171,9 +182,9 @@ def threshold(evaluated: dict) -> None:
         f"{peak.finalist_b_score:.2f}. A group exactly one third of the scale from the nearer "
         "finalist falls under the rule all at once: "
         f"{fmt_pct(peak.exactly_on_threshold_pct)} of registered voters. A rule with a "
-        "threshold decides between all and none. The threshold (one third, the original "
-        "two steps out of six) was fixed before any result was computed and was not tuned "
-        "afterwards.",
+        f"threshold decides between all and none. The threshold ({THRESHOLD:.2f} of the scale, "
+        "the same share as our original rule of two steps out of six) was fixed before any "
+        "result was computed and was not tuned afterwards.",
     )
 
 
@@ -222,42 +233,48 @@ def areas(evaluated: dict, focus: str) -> None:
 def sensitivity(evaluated: dict) -> None:
     report, table = evaluated["report"], evaluated["sensitivity"]
     table = table[table.tie == "split"].set_index(["positions", "model"])
-    primary, alternative = table.loc["primary"], table.loc["alternative"]
-    best, other = primary["mean"].idxmin(), alternative["mean"].idxmin()
+    codings = {
+        "polls": "Poll-based scale, main",
+        "primary": "Hand-coded families",
+        "alternative": "Hand-coded, alternative families",
+    }
+    means = {coding: table.loc[coding] for coding in codings}
+    main = means["polls"]
+    best = main["mean"].idxmin()
+    hand_best = means["primary"]["mean"].idxmin()
     components.section(
         6,
         *SECTIONS[5],
-        lead="H1, H2 and H3 depend on where each candidate is placed on the left–right "
-        "scale. The candidate table lists a plausible alternative for some rows; every "
-        "assumption was rerun with all of them.",
+        lead="H1, H1-soft, H2 and H3 depend on where each candidate is placed. The main "
+        "results use the poll-based scale. As a check, every assumption was rerun with our "
+        "earlier hand-coded seven-family scale, then with its alternative families.",
     )
-    frame = pd.DataFrame(
-        {
-            "Assumption": primary.index,
-            "Primary coding (pp)": primary["mean"].to_numpy(),
-            "Rank": primary["rank"].to_numpy(),
-            "Alternative coding (pp)": alternative["mean"].to_numpy(),
-            "Rank (alternative)": alternative["rank"].to_numpy(),
-        }
-    )
+    frame = pd.DataFrame({"Assumption": main.index})
+    formats = {}
+    for coding, label in codings.items():
+        frame[f"{label} (pp)"] = means[coding]["mean"].reindex(main.index).to_numpy()
+        frame[f"Rank, {label.lower()}"] = means[coding]["rank"].reindex(main.index).to_numpy()
+        formats[f"{label} (pp)"] = "{:.1f}"
     components.figure_head(
-        f"With the alternative coding the lowest average moves from {best} to {other}"
-        if best != other
-        else f"{best} keeps the lowest average under the alternative coding",
-        "Average error over the five elections in pp, and rank among the eight assumptions.",
+        f"{best} has the lowest average on the poll-based and on the hand-coded scale"
+        if best == hand_best
+        else f"The lowest average is {best} on the poll-based scale and {hand_best} on the "
+        "hand-coded one",
+        "Average error over the five elections in pp, and rank among the "
+        f"{how_many(len(main))} assumptions, under each way of placing the candidates.",
     )
-    components.data_table(
-        frame, {"Primary coding (pp)": "{:.1f}", "Alternative coding (pp)": "{:.1f}"}
-    )
+    components.data_table(frame, formats)
     ties = evaluated["ties"]
     components.source(
-        "The alternative coding moves all listed rows at once, finalists included: it is one "
-        "alternative scenario, not a per-candidate analysis. "
+        "The hand-coded columns are comparisons, not the main results. The alternative "
+        "coding moves all listed rows at once, finalists included: it is one alternative "
+        "scenario, not a per-candidate analysis. "
         + (
-            "No eliminated candidate is equidistant from both finalists under either coding, "
+            "No eliminated candidate is equidistant from both finalists under any coding, "
             "so the tie rule never applies."
             if ties.empty
-            else f"{len(ties)} eliminated candidacies are equidistant from both finalists."
+            else f"{len(ties)} eliminated candidacies are equidistant from both finalists "
+            "under at least one coding; they split evenly."
         )
         + f" {report['coding_status'].capitalize()}."
     )
@@ -421,7 +438,7 @@ def single_election(ctx) -> None:
 
 def render(ctx) -> None:
     components.page_header(
-        "How eight assumptions compare with five observed second rounds",
+        f"How {how_many(len(MODEL_ORDER))} assumptions compare with five observed second rounds",
         "Every assumption predicts each area's second round from its first round. This page "
         "shows the rules, their scores, and where and why they miss.",
     )

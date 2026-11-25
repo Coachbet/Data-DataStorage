@@ -149,10 +149,14 @@ ASSUMPTIONS = {
     "the electorate, abstainers included.",
     "H0b": "Second baseline. They split between the two finalists and a blank or invalid "
     "ballot, in proportion to first-round shares. None abstain.",
-    "H1": "Proximity. Each group goes to the finalist nearest to its candidate on a "
-    "seven-point left–right scale.",
-    "H2": "Proximity with a threshold. As H1, unless the candidate is at least two steps "
-    "from both finalists: then the group abstains (H2-abst) or votes blank (H2-blank).",
+    "H1": "Proximity. Each group goes to the finalist nearest to its candidate on the "
+    "poll-based left–right scale (0 = leftmost candidate, 1 = rightmost).",
+    "H1-soft": "Soft proximity. Each group splits between the two finalists, each getting "
+    "a share inversely proportional to its distance, so the nearer one gets more. A fixed "
+    "formula with no fitted number, added after the other results were known.",
+    "H2": "Proximity with a threshold. As H1, unless the candidate is at least one third "
+    "of the scale away from both finalists: then the group abstains (H2-abst) or votes "
+    "blank (H2-blank).",
     "H3": "Mixture. A share p of each group behaves as in H0b and the rest follows H1 or H2. "
     "p is the only fitted number; it is fitted on four elections and tested on the fifth.",
 }
@@ -207,12 +211,13 @@ def glossary() -> None:
 
 
 def candidate_reference(year: str) -> None:
-    with st.expander("Candidate parties and political families"):
+    with st.expander("Candidate parties and positions"):
         st.write(
-            "Our manual reference links each candidate to their party at that election. "
-            "The scale runs from 1 (Far left) to 7 (Far right), with Centre at 4. "
-            "The team has agreed on this scale; the individual classifications are drafts "
-            "for review. H0 does not use these scores."
+            "Each candidate is linked to their party at that election (FN up to 2017, RN "
+            "in 2022). The main position is the poll-based score: 0 is the leftmost and 1 "
+            "the rightmost candidate, averaged over the polling institutes' left-to-right "
+            "orders. The hand-coded political family is our earlier draft, kept only as a "
+            "comparison. H0a and H0b use neither."
         )
         try:
             import loaders
@@ -221,37 +226,49 @@ def candidate_reference(year: str) -> None:
         except (OSError, ValueError) as exc:
             st.error(f"The candidate reference could not be opened: {exc}")
             return
-        selected = positions[positions.year == int(year)]
+        selected = positions[positions.year == int(year)].sort_values(
+            "poll_score", na_position="last"
+        )
         table = selected[
             [
                 "candidate_name",
                 "party_abbreviation",
+                "poll_score",
+                "poll_status",
                 "political_family",
-                "ideology_score",
                 "alternative_family",
-                "review_status",
-                "classification_note",
             ]
         ].copy()
         table.columns = [
             "Candidate",
             "Party",
-            "Proposed family",
-            "Score (1–7)",
+            "Poll-based score (0–1)",
+            "Placed by the polls",
+            "Hand-coded family (comparison)",
             "Alternative family",
-            "Review status",
-            "Coding note",
         ]
-        st.dataframe(table, hide_index=True, width="stretch", key="candidate_table")
-        if selected.ideology_score.isna().any():
+        table["Placed by the polls"] = (
+            table["Placed by the polls"].eq("placed").map({True: "Yes", False: "No"})
+        )
+        st.dataframe(
+            table,
+            hide_index=True,
+            width="stretch",
+            key="candidate_table",
+            column_config={"Poll-based score (0–1)": st.column_config.NumberColumn(format="%.2f")},
+        )
+        unplaced = selected[selected.poll_status != "placed"].candidate_name.tolist()
+        if unplaced:
             st.info(
-                "Jacques Cheminade has no score yet: a single left–right classification "
-                "is unresolved. Missing does not mean Centre or zero."
+                f"Not placed by the polls: {', '.join(unplaced)}. Institutes disagree too much "
+                "or list the candidate last by default; their voters follow the H0b row. "
+                "Missing does not mean centre or zero."
             )
         st.caption(
-            "Political families simplify different dimensions of politics. Equal numerical "
-            "steps are a modelling assumption, not measured ideological distances. "
-            "Alternative families identify sensitivity checks; they are not additional scores."
+            "The poll-based score is an order, not a measured ideological distance. The "
+            "alternative family is the second option tested for the hand-coded comparison "
+            "(for example Far left for Jean-Luc Mélenchon, coded Left by default); it is not "
+            "used by the main results."
         )
         st.download_button(
             "Download all candidate positions (CSV)",
@@ -266,8 +283,8 @@ def candidate_reference(year: str) -> None:
             reference = sources[key]
             st.markdown(f"- [{reference['title']}]({reference['url']}), {reference['publisher']}")
         st.caption(
-            "Sources document affiliations and background. The seven-category coding is "
-            "our research choice, not an official classification."
+            "These references document party affiliations. The poll orders behind the "
+            "score are listed under Method & sources."
         )
 
 

@@ -152,6 +152,9 @@ def stacked_rows(frame: pd.DataFrame, names: dict[str, str], axis_title: str) ->
     chart["label"] = chart.Share.where(chart.pct >= 6, "")
     spec = {
         "height": {"step": 54},
+        # Room on the right, so the last bar and the "100" tick are never clipped.
+        "padding": {"left": 0, "top": 4, "right": 16, "bottom": 4},
+        "autosize": {"type": "fit-x", "contains": "padding"},
         "encoding": {
             "y": {
                 "field": "row",
@@ -341,7 +344,7 @@ def threshold_bars(threshold: pd.DataFrame) -> None:
     """Share of the electorate that the fixed H2 threshold sends to a non-vote."""
     chart = threshold.copy()
     chart["Election"] = [
-        f"{row.year} · finalists at {row.finalist_a_score} and {row.finalist_b_score}"
+        f"{row.year} · finalists at {row.finalist_a_score:.2f} and {row.finalist_b_score:.2f}"
         for row in chart.itertuples()
     ]
     chart["Share"] = chart.beyond_threshold_pct.map(fmt_pct)
