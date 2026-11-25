@@ -66,7 +66,7 @@ def test_verified_resume_preserves_original_provenance(raw_dataset, tmp_path, mo
     session.calls.clear()
     assert acquire_official(2022, target) == first
     assert not session.calls
-    manifest = json.loads((target / "raw/official/2022/manifest.json").read_text())
+    manifest = json.loads((target / "raw/official/2022/manifest.json").read_text(encoding="utf-8"))
     assert all(item["bytes"] and item["retrieved_at_utc"] for item in manifest["files"])
 
 
@@ -132,7 +132,7 @@ def test_fresh_download_must_match_pinned_manifest(raw_dataset, tmp_path, monkey
     with pytest.raises(ValueError, match="pinned checksum"):
         acquire_official(2022, target)
     assert not (folder / "round_1.txt").exists()
-    assert json.loads((folder / "manifest.json").read_text()) == pinned
+    assert json.loads((folder / "manifest.json").read_text(encoding="utf-8")) == pinned
 
 
 def test_replacement_resource_is_not_substituted(raw_dataset, tmp_path, monkeypatch):

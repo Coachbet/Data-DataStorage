@@ -32,7 +32,7 @@ def available_datasets(root: Path) -> dict[str, Path]:
 
 def load_tables(folder: Path) -> tuple[pd.DataFrame, pd.DataFrame, pd.DataFrame, dict]:
     """Check published hashes and table constraints before exposing any observation."""
-    quality = json.loads((folder / "quality_report.json").read_text())
+    quality = json.loads((folder / "quality_report.json").read_text(encoding="utf-8"))
     for name in DATA_FILES:
         if quality.get("outputs", {}).get(name) != sha256(folder / name):
             raise ValueError(
@@ -81,9 +81,9 @@ def prediction_inputs(root: Path, reference: Path = REFERENCE_DIR) -> dict:
         raise ValueError(f"Cross-election evaluation needs every election; missing: {missing}.")
     return {
         "elections": {
-            str(year): json.loads((folders[str(year)] / "quality_report.json").read_text())[
-                "outputs"
-            ]
+            str(year): json.loads(
+                (folders[str(year)] / "quality_report.json").read_text(encoding="utf-8")
+            )["outputs"]
             for year in SUPPORTED_YEARS
         },
         "candidate_positions_sha256": sha256(reference / "candidate_positions.csv"),
@@ -103,7 +103,9 @@ def build_predictions(root: Path, reference: Path = REFERENCE_DIR) -> dict:
         staging = Path(temporary)
         predictions.to_parquet(staging / "predictions.parquet", index=False)
         report["outputs"] = {"predictions.parquet": sha256(staging / "predictions.parquet")}
-        (staging / "evaluation_report.json").write_text(json.dumps(report, indent=2) + "\n")
+        (staging / "evaluation_report.json").write_text(
+            json.dumps(report, indent=2) + "\n", encoding="utf-8", newline="\n"
+        )
         for name in PREDICTION_FILES:
             (staging / name).replace(parent / name)
     return {k: report[k] for k in ("coding_status", "rows", "outputs")}
@@ -114,7 +116,7 @@ def load_predictions(root: Path) -> tuple[pd.DataFrame, dict] | None:
     for layer in ("processed", "bundled"):
         folder = root / layer
         if all((folder / name).is_file() for name in PREDICTION_FILES):
-            report = json.loads((folder / "evaluation_report.json").read_text())
+            report = json.loads((folder / "evaluation_report.json").read_text(encoding="utf-8"))
             if report["outputs"]["predictions.parquet"] != sha256(folder / "predictions.parquet"):
                 raise ValueError("Predictions do not match their evaluation report. Re-evaluate.")
             return pd.read_parquet(folder / "predictions.parquet"), report
@@ -132,7 +134,7 @@ def bundle_predictions(root: Path) -> dict:
     source = root / "processed"
     if not all((source / name).is_file() for name in PREDICTION_FILES):
         raise ValueError("No local evaluation to bundle. Run `vote-transfer evaluate` first.")
-    report = json.loads((source / "evaluation_report.json").read_text())
+    report = json.loads((source / "evaluation_report.json").read_text(encoding="utf-8"))
     if report["outputs"]["predictions.parquet"] != sha256(source / "predictions.parquet"):
         raise ValueError("Predictions do not match their evaluation report. Re-evaluate.")
     size = sum((source / name).stat().st_size for name in PREDICTION_FILES)
@@ -171,4 +173,4 @@ def snapshot_drift(root: Path) -> list[str]:
 def load_crosscheck(root: Path, year: int) -> dict | None:
     """The last recorded comparison with published national totals, if one was made."""
     record = root / "bundled" / CROSSCHECK_RECORD.format(year=year)
-    return json.loads(record.read_text()) if record.is_file() else None
+    return json.loads(record.read_text(encoding="utf-8")) if record.is_file() else None

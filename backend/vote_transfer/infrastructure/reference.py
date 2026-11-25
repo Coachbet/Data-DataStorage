@@ -38,7 +38,7 @@ def acquire_national_summary(year: int, root: Path) -> dict:
     folder.mkdir(parents=True, exist_ok=True)
     manifest_path = folder / "manifest.json"
     manifest = (
-        json.loads(manifest_path.read_text())
+        json.loads(manifest_path.read_text(encoding="utf-8"))
         if manifest_path.exists()
         else {
             "source": "Ministry published national summaries; independent aggregation check",
@@ -75,7 +75,7 @@ def acquire_national_summary(year: int, root: Path) -> dict:
                     "bytes": target.stat().st_size,
                 }
     manifest["files"] = [records[n] for n in sorted(records)]
-    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n")
+    manifest_path.write_text(json.dumps(manifest, indent=2) + "\n", encoding="utf-8", newline="\n")
     return manifest
 
 

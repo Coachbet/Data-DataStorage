@@ -58,7 +58,7 @@ def test_numbers_have_one_format():
 
 def test_answer_matches_the_generated_numbers(loaded):
     comparison = comparison_table(loaded[0])
-    numbers = json.loads((PROJECT / "reports/results/numbers.json").read_text())
+    numbers = json.loads((PROJECT / "reports/results/numbers.json").read_text(encoding="utf-8"))
     result = answer(comparison)
     assert result["best"] == numbers["best.model"]
     assert result["best_without_outlier"] == numbers["best_without_2002.model"]
@@ -94,7 +94,7 @@ def test_findings_quote_the_tables(loaded):
     errors = national_errors(setting_predictions(predictions))
     findings = key_findings(comparison, errors, threshold_table(elections, positions))
     assert len(findings) == 3 and all(f["evidence"].startswith("Evidence") for f in findings)
-    numbers = json.loads((PROJECT / "reports/results/numbers.json").read_text())
+    numbers = json.loads((PROJECT / "reports/results/numbers.json").read_text(encoding="utf-8"))
     assert f"{numbers['signed_max.H0a.abstention']:.1f} pp" in findings[0]["body"]
     assert f"{numbers['score.H1.2002']:.1f} pp" in findings[1]["body"]
     assert f"{numbers['h2.2022.on_threshold_pct']:.1f}%" in findings[2]["body"]

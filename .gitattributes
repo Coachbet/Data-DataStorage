@@ -1,0 +1,16 @@
+# Hashes of versioned files are part of the reproducibility contract (manifests,
+# check-snapshots, the candidate table). Check text out with LF on every platform,
+# whatever core.autocrlf says, so a Windows clone hashes the same bytes as a Linux one.
+* text=auto eol=lf
+
+*.csv text eol=lf
+*.json text eol=lf
+*.md text eol=lf
+*.py text eol=lf
+
+*.parquet binary
+*.png binary
+*.pdf binary
+*.zip binary
+*.woff binary
+*.woff2 binary

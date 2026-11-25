@@ -1,4 +1,4 @@
-"""Legacy consolidated-data collector for independent validation only.
+"""Consolidated-data collector, used for independent validation only.
 
 This does not acquire the original Ministry files required by the current scope.
 
@@ -310,7 +310,7 @@ def acquire_year(
 
     manifest = {"year": year, "election_ids": ids, "files": files}
     (folder / "manifest.json").write_text(
-        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8"
+        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
     )
     return manifest
 

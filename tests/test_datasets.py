@@ -136,8 +136,16 @@ def test_shipped_predictions_are_reproduced_from_the_shipped_inputs(five_electio
     rebuilt, report = load_predictions(five_elections)
     shipped, shipped_report = load_predictions(BUNDLED.parent)
     pd.testing.assert_frame_equal(rebuilt, pd.read_parquet(BUNDLED / "predictions.parquet"))
-    bundled_report = json.loads((BUNDLED / "evaluation_report.json").read_text())
-    assert report["h3_folds"] == bundled_report["h3_folds"]
+    bundled_report = json.loads((BUNDLED / "evaluation_report.json").read_text(encoding="utf-8"))
+    # Compare fitted values with a tolerance: the last digits depend on the platform's BLAS.
+    assert len(report["h3_folds"]) == len(bundled_report["h3_folds"])
+    for fold, expected in zip(report["h3_folds"], bundled_report["h3_folds"], strict=True):
+        assert fold.keys() == expected.keys()
+        for key, value in fold.items():
+            if isinstance(value, float):
+                assert value == pytest.approx(expected[key], rel=1e-9)
+            else:
+                assert value == expected[key], key
     assert shipped_report["coding_status"] == "draft coding" and len(shipped)
 
 

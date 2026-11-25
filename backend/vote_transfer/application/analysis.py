@@ -43,6 +43,9 @@ from vote_transfer.config import PROJECT_ROOT
 
 MODEL_ORDER = ("H0a", "H0b", *BASES, *(h3_name(base) for base in BASES))
 ROLES = ("finalist_a", "finalist_b", "blank_invalid", "abstention")
+# 2002 is set aside in a sensitivity column. It was identified *after* seeing that H1 beats
+# H0b only there, so "without 2002" is a post-hoc robustness check, not a pre-planned test.
+# Any text that uses it must say so.
 OUTLIER_YEAR = 2002
 CROSSCHECK_YEAR = 2022
 REPORTS_DIR = PROJECT_ROOT / "reports"
@@ -133,8 +136,9 @@ def tied_groups(positions: pd.DataFrame, report: dict) -> pd.DataFrame:
         for year, election in report["elections"].items():
             scores = election_scores(positions, int(year), coding)
             a, b = scores[election["finalist_a"]], scores[election["finalist_b"]]
+            finalists = (election["finalist_a"], election["finalist_b"])
             for option, score in scores.items():
-                if option in election.values() or score is None:
+                if option in finalists or score is None:
                     continue
                 if abs(score - a) == abs(score - b):
                     rows.append(
@@ -280,8 +284,11 @@ def territory_scores(predictions: pd.DataFrame) -> pd.DataFrame:
 
 
 def surname(full_name: str) -> str:
-    """Drop the first given-name token: 'Jean-Marie Le Pen' -> 'Le Pen'."""
-    return full_name.split(" ", 1)[1]
+    """Drop the first given-name token: 'Jean-Marie Le Pen' -> 'Le Pen'.
+
+    A single-token name is returned unchanged instead of raising.
+    """
+    return full_name.split(" ", 1)[-1]
 
 
 def ranking(series: pd.Series) -> str:
@@ -461,7 +468,7 @@ def storage_numbers(
     raw_bytes, parquet_bytes, csv_bytes, rows = 0, 0, 0, {"areas": 0, "outcomes": 0, "options": 0}
     stations = candidates = 0
     for year, folder in folders.items():
-        manifest = json.loads((manifests / year / "manifest.json").read_text())
+        manifest = json.loads((manifests / year / "manifest.json").read_text(encoding="utf-8"))
         raw_bytes += sum({item["file"]: item["bytes"] for item in manifest["files"]}.values())
         *tables, quality = load_tables(folder)
         stations += quality["polling_station_round_rows"]
@@ -542,7 +549,11 @@ def render_documents(numbers: dict, templates: Path, project: Path) -> list[str]
         )
         path = project / target
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(note + render_template(source.read_text(encoding="utf-8"), numbers))
+        path.write_text(
+            note + render_template(source.read_text(encoding="utf-8"), numbers),
+            encoding="utf-8",
+            newline="\n",
+        )
         written.append(target)
     return written
 
@@ -592,7 +603,9 @@ def run_analysis(
     results = project / "reports" / "results"
     results.mkdir(parents=True, exist_ok=True)
     agreement_file = results / "coding_agreement.json"
-    agreement = json.loads(agreement_file.read_text()) if agreement_file.is_file() else None
+    agreement = (
+        json.loads(agreement_file.read_text(encoding="utf-8")) if agreement_file.is_file() else None
+    )
     quality = reference_quality(positions, agreement)
     numbers = build_numbers(predictions, report, positions, tables, quality)
     numbers |= storage_numbers(root)
@@ -608,13 +621,16 @@ def run_analysis(
         "h3_folds.csv": tables["h3_folds"],
     }
     for name, table in files.items():
-        table.round(6).to_csv(results / name, index=False)
+        # UTF-8 and LF on every platform, so a rerun on Windows writes the committed bytes.
+        table.round(6).to_csv(results / name, index=False, encoding="utf-8", lineterminator="\n")
     (results / "candidate_table_quality.json").write_text(
-        json.dumps(quality, indent=2, ensure_ascii=False) + "\n"
+        json.dumps(quality, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
     )
     rounded = {k: round(v, 6) if isinstance(v, float) else v for k, v in numbers.items()}
     (results / "numbers.json").write_text(
-        json.dumps(rounded, indent=2, ensure_ascii=False, default=float) + "\n"
+        json.dumps(rounded, indent=2, ensure_ascii=False, default=float) + "\n",
+        encoding="utf-8",
+        newline="\n",
     )
     written = [f"reports/results/{name}" for name in [*files, "candidate_table_quality.json"]]
     written.append("reports/results/numbers.json")

@@ -45,7 +45,7 @@ Numbers are filled from `reports/results/numbers.json`. Status: **{{coding_statu
 **7. Five assumptions, each one sentence**
 - H0a: like everyone else, abstainers included. H0b: like everyone who voted.
 - H1: nearest finalist. H2: nearest, unless two steps from both (then abstain, or vote blank).
-- H3: a fitted share `p` ignores proximity. Rules fixed before any result.
+- H3: a fitted share `p` ignores proximity. H0a, H1 and H2 were fixed before any result; H0b was added afterwards, in response to H0a's abstention error.
 - Figure: one transfer matrix, with identity rows highlighted.
 
 **8. Result 1: the first baseline was weak for one reason**

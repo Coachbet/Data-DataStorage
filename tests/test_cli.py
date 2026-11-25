@@ -1,6 +1,7 @@
 import subprocess
 import sys
 
+import pandas as pd
 from vote_transfer.application.datasets import bundle_year
 from vote_transfer.application.processing import process_year
 
@@ -40,7 +41,12 @@ def test_evaluate_and_bundle_work_on_a_clone_without_raw_data(tmp_path):
     result = run_cli("bundle", "--all-years", "--data-root", str(tmp_path))
     assert result.returncode == 0, result.stderr
     assert "no local processed build" in result.stdout
-    assert (tmp_path / "bundled" / "predictions.parquet").read_bytes() == (
-        bundled / "predictions.parquet"
-    ).read_bytes()
+    # Same content, not same bytes: the last floating-point digit of a prediction can differ
+    # between platforms (BLAS, CPU), so the file hash is only comparable on one machine.
+    pd.testing.assert_frame_equal(
+        pd.read_parquet(tmp_path / "bundled" / "predictions.parquet"),
+        pd.read_parquet(bundled / "predictions.parquet"),
+        rtol=1e-9,
+        atol=1e-12,
+    )
     assert snapshot_drift(tmp_path) == []

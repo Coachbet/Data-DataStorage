@@ -1,32 +1,24 @@
-# Handoff: analysis branch (`final/analysis`), 15 November 2026
+# Handoff: what is done and what people must still do
 
-Final report and code are due **27 November**; the presentation is on **2 December**.
-Everything below is on the branch `final/analysis` (pull request #3). Nothing was
-pushed to `master`.
+Final report and code are due **27 November 2026**; the presentation is on
+**2 December 2026**.
 
-The branch history was rewritten once on 15 November to clean the commit
-messages, so every hash below differs from the ones in earlier versions of this
-file. File contents, authors and dates did not change. Anyone who fetched the
-branch before must reset to `origin/final/analysis`. Commit messages and the pull
-request carry no tool attribution; the authors are the team members only.
+This file lists the state of the work and the open human tasks. It deliberately
+holds no commit hashes, branch names or test counts: those go stale. Use `git log`
+for history and run `make check` for the current verification result.
 
-## What was done
+## What exists
 
-| Step | Result | Commits |
-|---|---|---|
-| Plan | `docs/plan_final.md` | `5f4cecb` |
-| 1 Reproducibility | `make acquire/process/bundle` cover all years; `make data`, `make analysis`, `make archive`; `vote-transfer check-snapshots` in `make check` and a warning at app start-up | `862d209`, `4765d26` |
-| 2 Storage | `areas`, `outcomes`, `options` per election; blank and invalid kept for 2017 and 2022; wide table derived on load; one long `predictions.parquet` | `5fcc422`, `44312b4` |
-| 3 Review kit | Blind coding sheet, coder instructions, `review-kit` and `review-agreement` commands. **No coding was done or simulated.** | `d89b927` |
-| 4 Models | H0a (unchanged), H0b, H1, H2-abst, H2-blank, H3 on each base with leave-one-election-out | `44312b4`, `d89b927` |
-| 5 Analysis | `vote-transfer analyse`: tables, figures, `findings.md`, `numbers.json`, templated documents | `60294b8` |
-| 6–7 App | "Compare models" and "2027 scenarios" pages | `18ddb37` |
-| 8 Documents | Report draft, storage comparison, response to reviews, presentation outline, professor email | `5b94211` |
-| 9 Handoff | First version of this file | `34b50c0` |
-| Decisions | Scenario default H0b and all-models view | `6b7cc61` |
-| Decisions | No processing timestamp; byte-identical rebuild | `5aa54bb` |
-| Decisions | 3 November quality document restored; addendum moved to `docs/candidate_table_quality.md` | `2d29692` |
-| Decisions | H2 threshold table, dated cross-check, methodology and prose | `1fa5854` |
+| Area | Result |
+|---|---|
+| Reproducibility | `make acquire/process/bundle` cover all years; `make data`, `make analysis`, `make archive`; `vote-transfer check-snapshots` runs in `make check` and as a warning at app start-up |
+| Storage | `areas`, `outcomes`, `options` per election; blank and invalid kept for 2017 and 2022; the wide table is derived on load; one long `predictions.parquet` |
+| Review kit | Blind coding sheet, coder instructions, `review-kit` and `review-agreement` commands. **No coding was done or simulated.** |
+| Models | H0a, H0b, H1, H2-abst, H2-blank, and H3 on each base with leave-one-election-out |
+| Analysis | `vote-transfer analyse`: tables, figures, `findings.md`, `numbers.json`, templated documents |
+| App | Five pages: answer, evidence, explore, scenarios, method |
+| Documents | Report draft, storage comparison, response to reviews, presentation outline, professor email |
+| Plan | The completed implementation plan is kept in [`archive/plan_final.md`](archive/plan_final.md) |
 
 Headline findings are in `reports/results/findings.md`. In one sentence: the
 second baseline (H0b) matters more than any other change, H1 has the lowest mean
@@ -46,15 +38,15 @@ make archive      # zip of tracked files for submission
 uv run vote-transfer crosscheck --year 2022   # optional, needs network; refreshes the dated record
 ```
 
-Verified on 15 November 2026:
+Where `make` is not installed (default on Windows), run the `uv run ...` commands
+listed in the README instead.
 
-- Two full rebuilds from the local raw files give byte-identical processed and
-  bundled files, quality reports included.
-- A fresh clone of the branch passes `make check`, and `make analysis` there
-  leaves `git status` clean.
-- `vote-transfer crosscheck --year 2022` compared 26 fields with the Ministry's
-  published national summaries: all match. The record is
-  `data/bundled/crosscheck_2022.json`.
+Reproducibility holds in two senses. **Content**: any platform reproduces the same
+tables, scores and documents. **Bytes**: a rebuild gives byte-identical files only on
+the same platform, because the last floating-point digit of a prediction can differ
+between machines. Tests therefore compare predictions and fitted parameters with a
+tolerance, and versioned text files are stored with LF line endings (`.gitattributes`)
+so that their hashes do not depend on a clone's `core.autocrlf`.
 
 ## Human tasks remaining
 
@@ -81,45 +73,30 @@ Verified on 15 November 2026:
       `analysis.py` and `SCENARIO_MODELS` in `scenario.py`, rerun `make analysis`,
       and cut the H3 paragraphs.
 - [ ] Cut the report to five pages **in the final format**. The Markdown draft is
-      now about 2,450 words: the decided additions (H2 mechanism, scenario default,
-      limitations) made it longer. Edit `docs/templates/report.md`, never
+      well over that length. Edit `docs/templates/report.md`, never
       `docs/report/report.md`.
 - [ ] Build the slides from `docs/presentation_outline.md`.
 - [ ] Check the repository link printed in the report PDF.
-- [ ] Merge pull request #3.
 
-## The thirteen open problems: decided
+## Decisions taken
 
-| # | Problem | Decision | Status |
-|---|---|---|---|
-| 1 | Peer-review PDFs not in the repository | They stay out of the public repository; cited by title | Nothing to change |
-| 2 | Weights in the H3 fit | D5 confirmed | `docs/methodology.md` reworded: training-election weights may enter the fit; the evaluated election's never do. Temporary note removed |
-| 3 | H3 before approval | Stays, pending approval | Marked `[PENDING: professor approval]` in the report where H3 is presented |
-| 4 | Tie rule never applies | Kept | The report says so in one sentence (section 6, sensitivity) |
-| 5 | Scenario default | H0b | Default changed, reason shown on the page, "Show all models side by side" added, tests updated |
-| 6 | H2 fits badly | Kept as specified, no new variant | Mechanism generated in `reports/results/h2_threshold.csv` and explained in the findings and the report as a finding about thresholds on a coarse scale |
-| 7 | Alternative coding | Kept as one scenario | One sentence added to the limitations |
-| 8 | Blank-only convention | Confirmed | Described in `docs/methodology.md` |
-| 9 | Candidates only, no map | Kept | Stated on the scenario page and in the report |
-| 10 | Timestamp in quality reports | Removed | `processed_at_utc` dropped (schema version 4); bundles regenerated; a test compares two runs byte for byte |
-| 11 | Cross-check | Rerun | Passed on 15 November 2026 (26 fields); the report cites the dated record |
-| 12 | Working-method tools missing | Nothing to do | — |
-| 13 | 3 November quality document | Restored | Identical to `master`; the addendum is [`candidate_table_quality.md`](candidate_table_quality.md) |
+| # | Topic | Decision |
+|---|---|---|
+| 1 | Peer-review PDFs | Stay out of the public repository; cited by title |
+| 2 | Weights in the H3 fit | Training-election weights may enter the fit; the evaluated election's never do (`docs/methodology.md`) |
+| 3 | H3 before approval | Stays, marked `[PENDING: professor approval]` |
+| 4 | Tie rule never applies | Kept; the report says so in one sentence |
+| 5 | Scenario default | H0b, with all models available side by side |
+| 6 | H2 fits badly | Kept as specified, no new variant; explained as a finding about thresholds on a coarse scale |
+| 7 | Alternative coding | Kept as one scenario, stated in the limitations |
+| 8 | Blank-only convention | Described in `docs/methodology.md` |
+| 9 | Candidates only, no map | Kept; stated on the scenario page and in the report |
+| 10 | Timestamp in quality reports | Removed so a rebuild from the same raw bytes is identical on one platform |
+| 11 | Cross-check | 2022 sums match the Ministry's national summaries; the dated record is `data/bundled/crosscheck_2022.json` |
+| 12 | 3 November quality document | Kept as delivered; the addendum is `candidate_table_quality.md` |
+| 13 | H0b status | Added after the second peer review, in response to H0a's abstention error. Documents say it is not a pre-specified model |
+| 14 | "Without 2002" column | A post-hoc robustness check, labelled as such |
 
-Two points for the team to know, neither blocking:
-
-- The cross-check date in the report comes from `data/bundled/crosscheck_2022.json`.
-  It changes only when someone reruns the command with network access.
-- `README.md`, the report and the app each keep one sentence saying that AI
-  assisted the work, as `master` already did in `docs/development.md` and the app.
-  They are disclosures of how the project was made, not authorship; the team
-  decides whether the course requires them.
-
-## Final `make check` summary
-
-```text
-208 passed
-ruff check: All checks passed!
-ruff format --check: 51 files already formatted
-vote-transfer check-snapshots: Processed and bundled snapshots are consistent.
-```
+`README.md`, the report and the app each keep one sentence saying that AI assisted
+the work. They are disclosures of how the project was made, not authorship; the
+team decides whether the course requires them.

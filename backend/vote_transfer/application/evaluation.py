@@ -70,12 +70,13 @@ def score_predictions(predictions: pd.DataFrame) -> pd.DataFrame:
 
     Every model goes through ``weighted_area_error``: one scoring rule for all.
     """
-    legacy = predictions.rename(
+    # ``weighted_area_error`` expects the column names of the wide results table.
+    renamed = predictions.rename(
         columns={"area_code": "department_code", "outcome": "option", "registered_r2": "registered"}
     )
     scores = [
         weighted_area_error(frame).assign(model=model, variant=variant)
-        for (model, variant), frame in legacy.groupby(["model", "variant"], sort=True)
+        for (model, variant), frame in renamed.groupby(["model", "variant"], sort=True)
     ]
     table = pd.concat(scores, ignore_index=True).rename(columns={"weighted_mae_pp": "score_pp"})
     return table[["model", "variant", "year", "score_pp", "registered", "territorial_units"]]

@@ -25,7 +25,7 @@ STYLES = theme.SITE_DIR / "styles.css"
 @st.cache_resource(show_spinner=False)
 def stylesheet(version: int) -> str:
     """Tokens, embedded fonts and rules as one string; rebuilt when the stylesheet changes."""
-    return theme.css_variables() + STYLES.read_text()
+    return theme.css_variables() + STYLES.read_text(encoding="utf-8")
 
 
 def inject_styles() -> None:

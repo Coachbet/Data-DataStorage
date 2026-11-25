@@ -178,5 +178,7 @@ def download_source(source: DataSource, data_root: Path) -> list[dict[str, objec
         "resources": records,
     }
     manifest_path = destination / "manifest.json"
-    manifest_path.write_text(json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8")
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2), encoding="utf-8", newline="\n"
+    )
     return records

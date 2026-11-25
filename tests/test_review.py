@@ -148,7 +148,7 @@ def test_cli_writes_the_agreement_report_end_to_end(tmp_path):
         text=True,
     )
     assert result.returncode == 0, result.stderr
-    report = json.loads(output.read_text())
+    report = json.loads(output.read_text(encoding="utf-8"))
     assert report["rows"] == 61
     assert report["coder_a_file"] == "a.csv" and report["coder_b_file"] == "b.csv"
     assert len(report["disagreements"]) == 16

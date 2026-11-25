@@ -37,7 +37,7 @@ def crosscheck(year: int, root: Path) -> dict:
     record = summary | {"checked_on": date.today().isoformat(), "reference": report["reference"]}
     target = root / "bundled" / CROSSCHECK_RECORD.format(year=year)
     target.parent.mkdir(parents=True, exist_ok=True)
-    target.write_text(json.dumps(record, indent=2) + "\n")
+    target.write_text(json.dumps(record, indent=2) + "\n", encoding="utf-8", newline="\n")
     return summary | {"mismatches": mismatches}
 
 
@@ -109,7 +109,9 @@ def review_agreement(args: argparse.Namespace) -> None:
         **coding_agreement(*sheets),
     }
     args.output.parent.mkdir(parents=True, exist_ok=True)
-    args.output.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n")
+    args.output.write_text(
+        json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8", newline="\n"
+    )
     kappa = report["quadratic_weighted_kappa"]
     print(
         f"{report['rows']} rows; agreement {report['agreement_pct']:.1f}%; "
