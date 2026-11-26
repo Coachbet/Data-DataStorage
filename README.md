@@ -62,7 +62,6 @@ site/app.py                 Streamlit app entry: page setup, navigation, sidebar
 site/nav.py                 Table of contents: every page, section number and anchor
 site/ui.py, site/data.py    Shared layout and stylesheet; data access through the backend
 site/views/                 One module per page (introduction, data, hypotheses, results, ...)
-docs/design/                Design audit, brief and verification notes (screenshots: capture.py)
 backend/vote_transfer/
   infrastructure/           Download with pinned hashes; parsers for the three file layouts
   application/processing.py Validation and the normalised areas/outcomes/options tables
