@@ -73,14 +73,13 @@ Status on 20 November 2026 (decisions recorded in `docs/methodology.md`):
 | H0b | Eliminated support splits between the finalists and blank/invalid only | Implemented; added after the second peer review |
 | H1 | Nearest finalist on the poll-based scale; ties split 50/50 | Implemented |
 | H2 | As H1, with a non-vote when at least one third of the scale from both finalists (abstention or blank variants) | Implemented; one-dimensional only |
-| H3 | A calibrated share does not follow the closest-candidate rule | Implemented with leave-one-election-out; professor's approval pending |
+| H3 | A calibrated share does not follow the closest-candidate rule | Implemented with leave-one-election-out |
 | H4 | Strategic first-round voting masks broader preferences | **Dropped** (first peer review); future work |
 | H5 | Transfers learned by political family | **Dropped** (first peer review); future work |
 
 ## Remaining milestones
 
-Checking the 22 poll orders against their sources, the professor's answer on H3,
-the decision record, the final report and the slides. Cross-source comparison with
+Checking the 22 poll orders against their sources, the decision record, the final report and the slides. Cross-source comparison with
 the consolidated results for 2002–2017 remains optional further validation.
 
 2002 and 2007 have partial national coverage. Every historical summary must say

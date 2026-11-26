@@ -291,7 +291,7 @@ def render() -> None:
             "variable two members could have coded differently, candidate position, is computed from published polls.\n"
             "- **More data is not better.** Six planned sources dropped.\n"
             "- **No sophisticated analysis before understanding the data.** Eight of nine rules have no parameter; the "
-            "ninth has one, submitted to the professor for approval."
+            "ninth has one, validated on elections it was not fitted on."
         )
     ui.box(
         "result",

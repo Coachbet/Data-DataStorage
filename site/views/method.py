@@ -106,7 +106,7 @@ def render() -> None:
     ui.box(
         "limit",
         "<p>Five folds describe how a rule transfers between elections. They support no "
-        "significance test. H3 is submitted to the professor for approval.</p>",
+        "significance test.</p>",
     )
 
     ui.section(PAGE, "s7-4")
