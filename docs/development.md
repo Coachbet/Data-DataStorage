@@ -66,9 +66,3 @@ replaced the earlier four-page site.
 
 UI tests (`tests/test_site.py`) run every page on the bundled snapshots with HTTP
 blocked and check that each one renders without an error.
-
-The design audit, brief and verification record in `docs/design/` describe the
-earlier four-page site; the before/after screenshots were removed from the
-repository on 20 November 2026. To recapture screenshots with the app running on port 8501:
-`uv run --with playwright python docs/design/capture.py docs/design/after`
-(Playwright is not a project dependency; the script uses the installed Chrome).

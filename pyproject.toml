@@ -5,7 +5,9 @@ description = "Reproducible analysis of second-round vote transfers in French pr
 readme = "README.md"
 requires-python = ">=3.12,<3.13"
 dependencies = [
+    "altair>=6.0,<7",
     "matplotlib>=3.10,<4",
+    "numpy>=2.2,<3",
     "pandas>=2.3.0,<3",
     "pyarrow>=21.0.0,<22",
     "requests>=2.32.0,<3",

@@ -1,4 +1,4 @@
-# Colours and radii mirror site/theme.py; fonts are embedded by the app itself.
+# Widget colours match the accent of site/ui.py; fonts are embedded by the app itself.
 [theme]
 base = "light"
 primaryColor = "#0B5F66"
