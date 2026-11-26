@@ -93,7 +93,7 @@ and 1, and their voters follow the H0b row. After that, the largest disagreement
 a placed candidate is {{scale.max_range_placed|.2f}}. Both rules were fixed before
 any model was run on the scale. Accuracy: {{scale.from_reports}} orders come from
 the institutes' reports and {{scale.from_paper}} from the published compilation;
-each is checked against its source. `[PENDING: poll orders checked against sources]`
+each is checked against its source.
 
 ## 4. Storage
 

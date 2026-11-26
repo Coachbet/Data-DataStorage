@@ -95,7 +95,7 @@ and 1, and their voters follow the H0b row. After that, the largest disagreement
 a placed candidate is 0.36. Both rules were fixed before
 any model was run on the scale. Accuracy: 7 orders come from
 the institutes' reports and 15 from the published compilation;
-each is checked against its source. `[PENDING: poll orders checked against sources]`
+each is checked against its source.
 
 ## 4. Storage
 

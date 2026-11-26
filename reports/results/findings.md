@@ -159,7 +159,7 @@ inflow counted as blank):
   3 in 2007, 3 in 2012, 7 in
   2017, 8 in 2022); 7 taken from the institutes'
   reports and 15 from the compilation by Delemazure, Dong, Peters
-  and Tydrichová (2024). `[PENDING: poll orders checked against sources]`
+  and Tydrichová (2024).
 - 3 candidacies unplaced (Cheminade 2012, Cheminade 2017, Lassalle 2017; H0b row used).
   Largest disagreement between institutes for a placed candidate:
   0.36 (unplaced above 0.4).

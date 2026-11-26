@@ -157,7 +157,7 @@ inflow counted as blank):
   {{scale.polls.2007}} in 2007, {{scale.polls.2012}} in 2012, {{scale.polls.2017}} in
   2017, {{scale.polls.2022}} in 2022); {{scale.from_reports}} taken from the institutes'
   reports and {{scale.from_paper}} from the compilation by Delemazure, Dong, Peters
-  and Tydrichová (2024). `[PENDING: poll orders checked against sources]`
+  and Tydrichová (2024).
 - {{scale.unplaced}} candidacies unplaced ({{scale.unplaced_list}}; H0b row used).
   Largest disagreement between institutes for a placed candidate:
   {{scale.max_range_placed|.2f}} (unplaced above 0.4).
