@@ -144,7 +144,7 @@ after the first results, in response to a later review.
 | H1 | go to the finalist nearest on the poll-based scale (a tie splits 50/50) | no |
 | H1-soft | split between the two finalists, each getting a share inversely proportional to its distance (added after the other results were known) | no |
 | H2-abst, H2-blank | as H1, unless at least one third of the scale from both finalists: then abstention, or a blank ballot | no |
-| H3 `[PENDING: professor approval]` | a share `p` splits as in H0b, the rest follows H1 or H2 | `p` |
+| H3 | a share `p` splits as in H0b, the rest follows H1 or H2 | `p` |
 
 Unplaced candidates use the H0b row. The H2 threshold of one third is the rule
 written before any result, two steps out of six on the 1–7 scale, carried over
@@ -163,8 +163,7 @@ diagnostic.
 0.01) on four elections and scored on the fifth, for each election in turn. Areas
 of one election are never split between training and test. Only held-out scores
 are reported. With five elections this describes how a rule transfers; it
-supports no significance claim. H3 is included pending approval of its fitted
-parameter. `[PENDING: professor approval]`
+supports no significance claim.
 
 ## 6. Results
 
@@ -208,7 +207,7 @@ observed result. H3 is held-out.*
    {{h2.2012.beyond_pct}}% in 2012, {{h2.2017.beyond_pct}}% in 2017 and
    {{h2.2022.beyond_pct}}% in 2022), and H2 scores close to H1. So in practice the
    threshold is tested in one election only, and we do not claim that it helps.
-6. **H3 adds little** `[PENDING: professor approval]`**.** On the H2 bases the fitted `p` is between
+6. **H3 adds little.** On the H2 bases the fitted `p` is between
    {{p.H2-blank.min|.2f}} and {{p.H2-abst.max|.2f}}: the fit almost discards the H2
    rule. On H1, `p` is between {{p.H1.min|.2f}} and {{p.H1.2017|.2f}} in four folds and
    {{p.H1.2002|.2f}} when 2002 is held out. Held-out H3(H1) is worse than H1 over five

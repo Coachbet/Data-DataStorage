@@ -60,4 +60,4 @@ These documents are kept outside the repository.
 | P2 | Narrow the project to one coherent investigation. | One question; every model is a transfer matrix scored by one rule. | `docs/methodology.md` |
 | P3 | Make the operationalisation precise: two members should compute a variable the same way. | Shares, outcomes, the score and every model rule are defined as formulas. The one variable two members could have coded differently, the candidate position, is now computed from published poll orders by a notebook. | `docs/methodology.md`, `notebooks/candidate_scale.ipynb` |
 | P4 | More data is not a better project. | See 1.5. | — |
-| P5 | Do not promise sophisticated analysis before understanding the data. | Four of the five model families have no fitted parameter. The only fitted model has one parameter, validated on held-out elections, and is submitted to the professor for approval first. | `docs/email_professor_H3.md` |
+| P5 | Do not promise sophisticated analysis before understanding the data. | Four of the five model families have no fitted parameter. The only fitted model has one parameter, validated on held-out elections. | `docs/methodology.md` |

@@ -270,5 +270,3 @@ on the poll-based scale, not a statement about how individuals voted.
   {{scale.from_paper}} of {{scale.polls}} orders come from a published compilation.
 - The comparison 1–7 scale is an unreviewed draft; its alternative coding moves all
   {{quality.with_alternative}} listed rows at once.
-- H3 is reported pending approval of its fitted parameter.
-  `[PENDING: professor approval]`
