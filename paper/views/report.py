@@ -14,10 +14,11 @@ IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
 
 def render() -> None:
     ui.header(
-        "Section 7 · Report",
+        "Section 8 · Report",
         "The full report",
         "The written report that goes with this site: question, data, method, results, limits.",
     )
+    ui.section("report", "s8-1")
     if PDF.exists():
         st.download_button(
             "Download the report (PDF)", PDF.read_bytes(), "report.pdf", "application/pdf"

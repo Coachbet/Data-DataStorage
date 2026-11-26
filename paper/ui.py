@@ -57,63 +57,114 @@ def _font_faces() -> str:
 
 CSS = """
 .stApp { background: %(paper)s; color: %(ink)s; }
-[data-testid="stMainBlockContainer"] { max-width: 860px; padding-top: 4.2rem; padding-bottom: 5rem; }
+[data-testid="stMainBlockContainer"] { max-width: 880px; padding-top: 2.6rem; padding-bottom: 4rem; }
 .stApp, .stApp p, .stApp li, .stApp td, .stApp th, .stApp label { font-family: %(sans)s; }
-.stApp p, .stApp li { font-size: 1.06rem; line-height: 1.62; }
-.stApp h1, .stApp h2, .stApp h3 { font-family: %(serif)s; color: %(ink)s; letter-spacing: -0.01em; }
-.stApp h1 { font-size: 2.45rem; line-height: 1.12; font-weight: 600; }
-.stApp h2 { font-size: 1.6rem; font-weight: 600; margin-top: 2.6rem; padding-bottom: .35rem;
-            border-bottom: 1px solid %(rule)s; }
-.stApp h3 { font-size: 1.2rem; font-weight: 600; margin-top: 1.4rem; }
+.stApp p, .stApp li { font-size: 1.04rem; line-height: 1.62; }
+.stApp li { margin-bottom: .15rem; }
+.stApp h1, .stApp h2, .stApp h3, .stApp h4 { font-family: %(serif)s; color: %(ink)s; letter-spacing: -0.01em; }
+.stApp h1 { font-size: 2.35rem; line-height: 1.14; font-weight: 600; }
+.stApp h2 { font-size: 1.55rem; font-weight: 600; margin-top: 2.8rem; padding-bottom: .35rem;
+            border-bottom: 1px solid %(rule)s; scroll-margin-top: 1rem; }
+.stApp h3 { font-size: 1.18rem; font-weight: 600; margin-top: 1.3rem; }
+.stApp h2 .num { color: %(accent)s; margin-right: .45rem; font-variant-numeric: tabular-nums; }
 [data-testid="stHeaderActionElements"] { display: none; }
 .stApp a { color: %(accent)s; }
+[data-testid="stHeader"] { background: transparent; }
 
-/* Motion: every block rises in gently when a page opens. */
+/* Sidebar: a table of contents. */
+[data-testid="stSidebar"] { background: #F4F2EC; border-right: 1px solid %(rule)s; }
+[data-testid="stSidebar"] [data-testid="stSidebarContent"] { padding-top: .4rem; }
+[data-testid="stSidebarNav"] { display: none; }
+.toc-head { font-family: %(serif)s; font-size: 1.08rem; font-weight: 600; line-height: 1.3; color: %(ink)s; margin: 0 0 .2rem; }
+.toc-sub { color: %(muted)s; font-size: .8rem; line-height: 1.4; margin: 0 0 .8rem; }
+[data-testid="stSidebar"] [data-testid="stPageLink"] a { padding: .28rem .5rem; border-radius: 4px; }
+[data-testid="stSidebar"] [data-testid="stPageLink"] a p { font-size: .95rem; font-weight: 500; }
+[data-testid="stSidebar"] [data-testid="stPageLink"] a[aria-current="page"],
+[data-testid="stSidebar"] [data-testid="stPageLink-NavLink"][aria-current="page"] { background: #E3EEEE; }
+.toc-sections { margin: -.1rem 0 .45rem 1.35rem; padding-left: .7rem; border-left: 2px solid %(accent)s; }
+.toc-sections a { display: block; text-decoration: none !important; color: %(ink)s !important;
+                  font-size: .87rem; line-height: 1.35; padding: .2rem .3rem; border-radius: 3px; }
+.toc-sections a:hover { background: #E8E5DC; }
+.toc-sections a .n { color: %(accent)s; font-variant-numeric: tabular-nums; margin-right: .35rem; font-weight: 600; }
+
+/* Motion: blocks rise in gently when a page opens. */
 @keyframes rise { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: none; } }
 [data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"] > div {
   animation: rise .55s cubic-bezier(.2,.7,.2,1) both; }
-[data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"] > div:nth-child(n+3) { animation-delay: .06s; }
-[data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"] > div:nth-child(n+5) { animation-delay: .12s; }
-[data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"] > div:nth-child(n+7) { animation-delay: .18s; }
+[data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"] > div:nth-child(n+3) { animation-delay: .05s; }
+[data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"] > div:nth-child(n+5) { animation-delay: .1s; }
+[data-testid="stMainBlockContainer"] [data-testid="stVerticalBlock"] > div:nth-child(n+7) { animation-delay: .15s; }
 @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+
+/* Expanders: quiet cards. */
+[data-testid="stExpander"] details { border: 1px solid %(rule)s; border-radius: 4px; background: #fff; }
+[data-testid="stExpander"] summary p { font-weight: 600; font-size: 1rem; }
+[data-testid="stExpander"] summary:hover p { color: %(accent)s; }
 
 .kicker { font-family: %(sans)s; text-transform: uppercase; letter-spacing: .12em; font-size: .78rem;
           color: %(accent)s; font-weight: 700; margin: 0 0 .5rem; }
-.byline { color: %(muted)s; font-size: .98rem; margin-top: -.3rem; }
+.byline { color: %(muted)s; font-size: 1rem; margin-top: -.3rem; }
 .abstract { background: %(wash)s; border-left: 3px solid %(accent)s; padding: 1.1rem 1.35rem;
             margin: 1.4rem 0 1.6rem; }
-.abstract p { margin: .3rem 0; font-size: 1.02rem; }
+.abstract p { margin: .3rem 0; font-size: 1.01rem; }
 .abstract b.label { font-variant: small-caps; letter-spacing: .06em; color: %(accent)s; }
-.question { font-family: %(serif)s; font-size: 1.45rem; line-height: 1.35; padding: 1rem 0 1rem 1.3rem;
+.question { font-family: %(serif)s; font-size: 1.4rem; line-height: 1.35; padding: .9rem 0 .9rem 1.3rem;
             border-left: 3px solid %(ink)s; margin: 1.2rem 0; }
 .caption { color: %(muted)s; font-size: .9rem; line-height: 1.5; margin: -.2rem 0 1.4rem; }
 .caption b { color: %(ink)s; }
-.callout { border: 1px solid %(rule)s; background: #fff; padding: .9rem 1.1rem; margin: 1rem 0;
-           border-radius: 3px; }
-.callout p { margin: .2rem 0; }
-.callout.warn { border-color: #E6CF95; background: #FCF5E1; }
+
+/* Coloured boxes, one meaning each. */
+.box { border-left: 4px solid; border-radius: 0 4px 4px 0; padding: .75rem 1.05rem .7rem; margin: 1rem 0 1.1rem; }
+.box .lbl { font-size: .72rem; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; margin-bottom: .25rem; }
+.box p, .box li { margin: .15rem 0; font-size: 1rem; }
+.box ul { margin: .2rem 0 .1rem 1.1rem; padding: 0; }
+.box.definition { background: #EDF3FA; border-color: #3F7CC0; } .box.definition .lbl { color: #2E63A3; }
+.box.decision { background: #EAF5F1; border-color: #2E8B6E; } .box.decision .lbl { color: #22735A; }
+.box.limit { background: #FCF4E2; border-color: #D4A23C; } .box.limit .lbl { color: #8A6A1E; }
+.box.result { background: #F1EDF8; border-color: #7E5DB0; } .box.result .lbl { color: #5E4390; }
+.box.note { background: #fff; border-color: %(rule)s; } .box.note .lbl { color: %(muted)s; }
+
 .finding { display: grid; grid-template-columns: 2.2rem 1fr; gap: .2rem .7rem; margin: 1.1rem 0; }
 .finding .n { font-family: %(serif)s; font-size: 1.6rem; color: %(accent)s; line-height: 1; }
-.finding h4 { font-family: %(serif)s; font-size: 1.12rem; margin: 0 0 .2rem; }
+.finding h4 { font-family: %(serif)s; font-size: 1.1rem; margin: 0 0 .2rem; }
 .finding p { margin: 0; }
 .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: .8rem; margin: 1rem 0 1.4rem; }
-.stat { border-top: 2px solid %(ink)s; padding-top: .45rem; }
+.stat { border-top: 3px solid %(accent)s; padding-top: .45rem; }
 .stat .v { font-family: %(serif)s; font-size: 1.45rem; white-space: nowrap; line-height: 1.1; }
-.stat .l { color: %(muted)s; font-size: .86rem; line-height: 1.35; }
-.formula { font-family: %(serif)s; font-size: 1.08rem; text-align: center; margin: .6rem 0 1rem; }
-.tag { display: inline-block; font-size: .78rem; font-weight: 600; padding: .05rem .45rem;
-       border-radius: 2px; background: %(wash)s; color: %(muted)s; margin-right: .3rem; }
-.hyp { border: 1px solid %(rule)s; background: #fff; padding: 1rem 1.15rem .8rem; margin: .6rem 0 1rem; border-radius: 3px; }
-.hyp h4 { font-family: %(serif)s; margin: 0 0 .3rem; font-size: 1.15rem; }
-.hyp .rule { font-family: %(serif)s; font-style: italic; color: %(ink)s; }
-.toc a { text-decoration: none; }
-.footer { margin-top: 3.5rem; padding-top: 1rem; border-top: 1px solid %(rule)s; color: %(muted)s; font-size: .86rem; }
-table.paper { border-collapse: collapse; width: 100%%; font-size: .93rem; margin: .4rem 0 .6rem; }
-table.paper th { text-align: right; font-weight: 600; border-bottom: 1.5px solid %(ink)s; padding: .35rem .5rem; }
+.stat .l { color: %(muted)s; font-size: .85rem; line-height: 1.35; }
+.tag { display: inline-block; font-size: .74rem; font-weight: 700; padding: .05rem .45rem; letter-spacing: .03em;
+       border-radius: 10px; margin-right: .3rem; vertical-align: middle; }
+.tag.baseline { background: #E7E8EA; color: #4A4F57; } .tag.proximity { background: #DDEDEE; color: %(accent)s; }
+.tag.mixture { background: #ECE5F6; color: #5E4390; } .tag.fixed { background: #EAF5F1; color: #22735A; }
+.tag.added { background: #FCF4E2; color: #8A6A1E; }
+.hyp { border: 1px solid %(rule)s; background: #fff; padding: .95rem 1.15rem .75rem; margin: .6rem 0 .8rem; border-radius: 4px; }
+.hyp h4 { font-family: %(serif)s; margin: 0 0 .3rem; font-size: 1.12rem; }
+.hyp .rule { font-family: %(serif)s; font-style: italic; color: %(ink)s; margin: .2rem 0; }
+.pipeline { display: flex; gap: .6rem; margin: 1rem 0 1.4rem; }
+.pipeline > div { flex: 1; min-width: 0; border-top: 3px solid %(accent)s; padding: .5rem .35rem 0; }
+.pipeline .t { font-family: %(serif)s; font-weight: 600; font-size: 1.02rem; }
+.pipeline .d { color: %(muted)s; font-size: .84rem; line-height: 1.4; margin-top: .25rem; }
+.timeline { position: relative; margin: 1rem 0 1.5rem; padding-left: 1.6rem; border-left: 2px solid %(rule)s; }
+.timeline .ev { position: relative; margin: 0 0 1.05rem; }
+.timeline .ev::before { content: ""; position: absolute; left: -2.08rem; top: .3rem; width: .85rem; height: .85rem;
+                        border-radius: 50%%; background: %(paper)s; border: 3px solid %(accent)s; }
+.timeline .date { font-size: .78rem; font-weight: 700; color: %(accent)s; letter-spacing: .06em; text-transform: uppercase; }
+.timeline .what { font-family: %(serif)s; font-weight: 600; font-size: 1.04rem; margin: .05rem 0 .15rem; }
+.timeline p { margin: 0; font-size: .97rem; color: %(ink)s; }
+.pager { display: flex; justify-content: space-between; gap: 1rem; margin-top: 3rem; }
+.pager a { flex: 1; border: 1px solid %(rule)s; border-radius: 4px; padding: .7rem .9rem; text-decoration: none !important; background: #fff; }
+.pager a:hover { border-color: %(accent)s; }
+.pager .k { display: block; font-size: .75rem; color: %(muted)s; letter-spacing: .08em; text-transform: uppercase; }
+.pager .t { font-family: %(serif)s; color: %(ink)s; font-size: 1.05rem; font-weight: 600; }
+.pager .right { text-align: right; }
+.footer { margin-top: 2rem; padding-top: 1rem; border-top: 1px solid %(rule)s; color: %(muted)s; font-size: .85rem; }
+table.paper { border-collapse: collapse; width: 100%%; font-size: .93rem; margin: .4rem 0 .6rem; background: #fff; }
+table.paper th { text-align: right; font-weight: 600; border-bottom: 1.5px solid %(ink)s; padding: .4rem .55rem; background: %(wash)s; }
 table.paper th:first-child, table.paper td:first-child { text-align: left; }
-table.paper td { text-align: right; padding: .3rem .5rem; border-bottom: 1px solid %(rule)s; font-variant-numeric: tabular-nums; }
+table.paper td { text-align: right; padding: .35rem .55rem; border-bottom: 1px solid %(rule)s; font-variant-numeric: tabular-nums; vertical-align: top; }
+table.paper.text td, table.paper.text th { text-align: left; }
 table.paper tr.sep td { border-top: 1.5px solid %(ink)s; }
-table.paper td.best { font-weight: 700; }
+table.paper td.best { font-weight: 700; background: #EAF5F1; }
 table.paper td.tie { font-weight: 700; color: %(muted)s; }
 .pending { background: #FCF5E1; border: 1px solid #E6CF95; padding: 0 .3rem; border-radius: 2px; font-size: .85em; }
 """
@@ -165,6 +216,49 @@ def _altair_theme() -> dict:
     }
 
 
+# ---- Navigation ---------------------------------------------------------------------
+
+
+def sidebar(pages: dict, current: str) -> None:
+    """Table of contents: every page, and the numbered sections of the open one."""
+    import nav
+
+    with st.sidebar:
+        html(
+            '<p class="toc-head">Where do the voters of eliminated candidates go?</p>'
+            '<p class="toc-sub">Vote transfers in French presidential elections, 2002–2022</p>'
+        )
+        for p in nav.PAGES:
+            st.page_link(pages[p.key], label=f"{p.number}. {p.title}", icon=p.icon)
+            if p.key == current:
+                links = "".join(
+                    f'<a href="#{a}" target="_self"><span class="n">{p.number}.{i}</span>{escape(t)}</a>'
+                    for i, (a, t) in enumerate(p.sections, 1)
+                )
+                html(f'<div class="toc-sections">{links}</div>')
+        html(
+            f'<p class="toc-sub" style="margin-top:1.2rem">{" · ".join(data.TEAM)}<br>'
+            f'<a href="{data.REPOSITORY}">Code and data on GitHub</a></p>'
+        )
+
+
+def pager(pages: dict, current: str) -> None:
+    """Previous and next page, at the bottom of every page."""
+    import nav
+
+    keys = [p.key for p in nav.PAGES]
+    i = keys.index(current)
+    cols = st.columns(2)
+    if i > 0:
+        prev = nav.PAGES[i - 1]
+        with cols[0]:
+            st.page_link(pages[prev.key], label=f"← {prev.number}. {prev.title}")
+    if i < len(keys) - 1:
+        nxt = nav.PAGES[i + 1]
+        with cols[1]:
+            st.page_link(pages[nxt.key], label=f"{nxt.number}. {nxt.title} →")
+
+
 # ---- Text helpers -------------------------------------------------------------------
 
 
@@ -179,12 +273,34 @@ def header(kicker: str, title: str, lead: str | None = None) -> None:
         html(f'<p class="byline">{lead}</p>')
 
 
+def section(page: str, anchor: str) -> None:
+    """A numbered section heading with the anchor the sidebar links to."""
+    import nav
+
+    number, _, title = nav.section_title(page, anchor).partition(" ")
+    st.header(f":primary[{number}]&nbsp; {title}", anchor=anchor)
+
+
+def box(kind: str, body: str, label: str | None = None) -> None:
+    """A coloured box. kind: definition, decision, limit, result or note."""
+    names = {
+        "definition": "Definition",
+        "decision": "Our decision",
+        "limit": "Limitation",
+        "result": "Key result",
+        "note": "Note",
+    }
+    html(
+        f'<div class="box {kind}"><div class="lbl">{escape(label or names[kind])}</div>{body}</div>'
+    )
+
+
 def caption(label: str, text: str) -> None:
     html(f'<p class="caption"><b>{escape(label)}.</b> {text}</p>')
 
 
 def callout(text: str, warn: bool = False) -> None:
-    html(f'<div class="callout{" warn" if warn else ""}"><p>{text}</p></div>')
+    box("limit" if warn else "note", f"<p>{text}</p>")
 
 
 def finding(number: int, title: str, text: str) -> None:
@@ -200,6 +316,16 @@ def stats(items: list[tuple[str, str]]) -> None:
         for v, label in items
     )
     html(f'<div class="stat-row">{cells}</div>')
+
+
+def text_table(frame: pd.DataFrame) -> None:
+    """A table of words (left-aligned, wrapping), for decisions and comparisons."""
+    head = "".join(f"<th>{escape(str(c))}</th>" for c in frame.columns)
+    body = "".join(
+        "<tr>" + "".join(f"<td>{v}</td>" for v in row) + "</tr>"
+        for row in frame.itertuples(index=False)
+    )
+    html(f'<table class="paper text"><thead><tr>{head}</tr></thead><tbody>{body}</tbody></table>')
 
 
 def footer() -> None:

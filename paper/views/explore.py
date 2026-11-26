@@ -11,7 +11,7 @@ import ui
 
 def render() -> None:
     ui.header(
-        "Section 5 · Explore",
+        "Section 5 · Explore the data",
         "Play with the numbers",
         "Pick an election and an area. Everything below is computed live from the cleaned tables.",
     )
@@ -71,7 +71,7 @@ def render() -> None:
         ]
     )
 
-    st.markdown("## Round 1, candidate by candidate")
+    ui.section("explore", "s5-1")
     role = {
         e.finalists[0]: "Finalist A",
         e.finalists[1]: "Finalist B",
@@ -126,12 +126,12 @@ def render() -> None:
     )
     st.altair_chart((bars + txt).properties(height=26 * len(r1)), width="stretch")
     ui.caption(
-        "Figure 10",
+        "Figure 5.1",
         f"{labels[area]}, {year}. Source: Ministry of the Interior. "
         "Switch to <i>valid votes</i> to see the percentages usually reported in the news.",
     )
 
-    st.markdown("## Both rounds side by side")
+    ui.section("explore", "s5-2")
     order = [e.finalists[0], e.finalists[1], "blank_invalid", "abstention"]
 
     def grp(o):  # noqa: E306
@@ -182,12 +182,12 @@ def render() -> None:
     )
     st.altair_chart(stack, width="stretch")
     ui.caption(
-        "Figure 11",
+        "Figure 5.2",
         "The grey block of round 1 is what every assumption has to redistribute. "
         "Each round has its own number of registered voters. Totals only: they do not show who moved where.",
     )
 
-    st.markdown("## Predicted against observed, area by area")
+    ui.section("explore", "s5-3")
     model = st.segmented_control("Assumption", data.MODELS, default="H0b", key="ex_model") or "H0b"
     pred = data.prediction(year, model)
     rows = []
@@ -240,7 +240,7 @@ def render() -> None:
     )
     sc = data.score(year, pred)
     ui.caption(
-        "Figure 12",
+        "Figure 5.3",
         f"{model}, {year}: one point per area and outcome; on the dashed line the "
         f"prediction equals the observation. Weighted average error: <b>{sc:.1f} pp</b>."
         + (
@@ -266,10 +266,11 @@ def render() -> None:
             f"errors_{model}_{year}.csv",
             "text/csv",
         )
-    ui.callout(
+    ui.box(
+        "definition",
         "<b>How the score is computed.</b> For each area: the absolute gap between predicted and "
         "observed share, for each of the four outcomes, averaged (no weighting between "
         "outcomes). Then the average over areas, each weighted by its round-2 registered voters. "
         "Gaps are taken <i>before</i> averaging, so an overestimate in one area cannot cancel an "
-        "underestimate in another."
+        "underestimate in another.",
     )

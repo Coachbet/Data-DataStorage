@@ -1,135 +1,82 @@
-"""Introduction: the problem, why it is hard, what we did and the answer in one screen."""
+"""1. Introduction: the problem, why it is hard, our approach and the answer."""
 
+import altair as alt
+import pandas as pd
 import streamlit as st
 
 import data
 import ui
 
+PAGE = "intro"
+
 
 def render() -> None:
     c = data.comparison()
-    best_all = c["mean"].idxmin()
-    best_wo = c["mean_without_2002"].idxmin()
     h1_wins = int(sum(c.loc["H1", str(y)] < c.loc["H0b", str(y)] for y in data.YEARS))
-
-    ui.header(
-        "Data, Data Storage, Data Collection · group project",
-        "Where do the voters of eliminated candidates go?",
-        " · ".join(data.TEAM),
-    )
-    ui.html(
-        '<div class="abstract">'
-        '<p><b class="label">Abstract.</b> In a French presidential election, voters whose '
-        "candidate is eliminated in the first round must choose again in the second: one of "
-        "the two finalists, a blank or invalid ballot, or staying at home. The vote is secret, "
-        "so these moves are never observed. We write nine simple assumptions about them as "
-        "precise rules, predict the second round of every area from its first round, and "
-        "compare each prediction with the official result, for the five elections from 2002 "
-        "to 2022 (522 area-elections, 673,228 polling-station records). "
-        f"<b>No single assumption wins.</b> Sending each group to the ideologically nearest "
-        f"finalist (H1) has the lowest five-election error ({c.loc['H1', 'mean']:.1f} pp), but "
-        f"almost all of its lead comes from 2002; it beats the simple proportional baseline "
-        f"H0b in only {h1_wins} of 5 elections. Without 2002, H0b is best "
-        f"({c.loc['H0b', 'mean_without_2002']:.1f} pp). The most robust lesson is about "
-        f"abstention: the original baseline was wrong mainly because it let eliminated voters "
-        "abstain like everyone else.</p></div>"
-    )
-
     shares = [
         float(data.pooled_first(y)[list(data.election(y).eliminated)].sum() * 100)
         for y in data.YEARS
     ]
     lo, hi = min(shares), max(shares)
-    st.markdown("## 1. The problem")
+
+    ui.header(
+        "Research project · Data, Data Storage, Data Collection",
+        "Where do the voters of eliminated candidates go?",
+        "Testing nine assumptions about second-round vote transfers in French presidential "
+        "elections, 2002–2022<br>" + " · ".join(data.TEAM),
+    )
+    ui.html(
+        '<div class="abstract">'
+        '<p><b class="label">Abstract.</b> In a French presidential election, voters whose '
+        "candidate is eliminated in the first round must choose again: one of the two "
+        "finalists, a blank or invalid ballot, or staying at home. The vote is secret, so these "
+        "moves are never observed. We write nine simple assumptions about them as precise "
+        "rules, predict the second round of every area from its first round, and compare each "
+        "prediction with the official result, for the five elections from 2002 to 2022 "
+        "(522 area-elections built from 673,228 polling-station records). "
+        "<b>No single assumption wins.</b> Sending each group to the ideologically nearest "
+        f"finalist (H1) has the lowest five-election error ({c.loc['H1', 'mean']:.1f} "
+        "percentage points), but almost all of its lead comes from 2002; it beats a simple "
+        f"proportional baseline (H0b) in only {h1_wins} of 5 elections. Without 2002, H0b is "
+        f"best ({c.loc['H0b', 'mean_without_2002']:.1f} pp). The clearest lesson is about "
+        "abstention: our original baseline was wrong mainly because it let eliminated voters "
+        "abstain like everyone else.</p></div>"
+    )
+    ui.stats(
+        [
+            ("5", "presidential elections, 2002–2022"),
+            ("522", "area-elections (départements, overseas, abroad)"),
+            ("9", "assumptions tested, 1 fitted parameter"),
+            ("22", "polls collected by hand for candidate positions"),
+        ]
+    )
+
+    ui.section(PAGE, "s1-1")
     st.markdown(
         "Only two candidates reach the second round. Everyone who voted for one of the "
-        f"others ({lo:.0f} to {hi:.0f}% of registered voters, depending on the year) has to "
-        "decide again. "
-        "Commentators talk about *reports de voix* (vote transfers) every election night, "
-        "but nobody can see them: ballots are secret and the official results only give "
-        "totals per area."
+        f"others — **{lo:.0f} to {hi:.0f}% of registered voters**, depending on the year — has "
+        "to decide again. On election night, commentators talk about *reports de voix* (vote "
+        "transfers): how many of the left's voters will go to the centre, how many will stay "
+        "home. Nobody can actually see these moves."
     )
     ui.html(
         '<div class="question">Which assumptions about voter behaviour best explain '
         "second-round results in French presidential elections (2002–2022)?</div>"
     )
-
-    st.markdown("### Why it is hard: many stories give the same totals")
     st.markdown(
-        "Here is a toy area with 100 registered voters. Both stories below produce **exactly "
-        "the same** official result, yet they describe opposite behaviours. This is the "
-        "*ecological inference* problem, and it is why we test assumptions against totals "
-        "instead of claiming to measure individual transfers."
+        "We do not try to *measure* transfers. We ask a more modest question that the data can "
+        "answer: **which simple story about transfers reproduces the official results best?**"
     )
-    _toy_example()
 
-    st.markdown("## 2. What we did")
+    ui.section(PAGE, "s1-2")
     st.markdown(
-        "We turned the question into a reproducible data workflow, from the Ministry's raw "
-        "files to the figures on this site. Each step is documented on the *Data* and "
-        "*Method & limits* pages."
+        "Official results only give **totals per area**. Many different individual behaviours "
+        "lead to the same totals. Here is a toy area with 100 registered voters:"
     )
-    _pipeline()
-    st.markdown(
-        "The core idea fits in one sentence: **an assumption is a rule that says where each "
-        "first-round group goes in the second round.** Apply the rule to the first round of "
-        "an area, get a predicted second round, measure how far it is from the real one. "
-        "The rule with the smallest error explains the results best."
-    )
-    ui.html(
-        '<p class="formula">first round of an area &nbsp;→&nbsp; <i>rule</i> &nbsp;→&nbsp; '
-        "predicted second round &nbsp;⟷&nbsp; observed second round &nbsp;=&nbsp; "
-        "<b>error in percentage points</b></p>"
-    )
-
-    st.markdown("## 3. The answer in one figure")
-    st.markdown(
-        "Average error of each assumption over the five elections (green) and without 2002 "
-        "(orange). Lower is better. Sorted by the five-election mean: H1 is first, but it barely "
-        "changes without 2002, while H0b and the H2 mixtures fall to about 3 pp."
-    )
-    st.altair_chart(_slope(c), width="stretch")
-    ui.caption(
-        "Figure 1",
-        "Weighted mean over areas of the absolute gap between predicted and observed "
-        "shares of registered voters (four outcomes), in percentage points. H3 is always "
-        "scored on an election it was not fitted on. Excluding 2002 is a check we decided "
-        "after seeing the results, so read it as a diagnostic, not a pre-registered test.",
-    )
-    ui.stats(
-        [
-            (f"{c.loc[best_all, 'mean']:.1f} pp", f"lowest five-election error: <b>{best_all}</b>"),
-            (
-                f"{c.loc[best_wo, 'mean_without_2002']:.1f} pp",
-                f"lowest without 2002: <b>{best_wo}</b>",
-            ),
-            (f"{h1_wins} / 5", "elections where H1 beats the H0b baseline"),
-            (
-                f"{c.loc['H0a', 'mean'] - c.loc['H0b', 'mean']:.1f} pp",
-                "error removed by not sending eliminated voters to abstention",
-            ),
-        ]
-    )
-
-    st.markdown("## 4. How to read this site")
-    ui.html(
-        '<div class="toc">'
-        "<p><b>Data</b>: where the numbers come from, how we cleaned and stored them.</p>"
-        "<p><b>Hypotheses</b>: each assumption explained with an animated flow, plus a "
-        "playground to build your own rule.</p>"
-        "<p><b>Results</b>: which assumption is closest, where each one misses, and how "
-        "robust the answer is.</p>"
-        "<p><b>Explore</b>: the raw election results, area by area.</p>"
-        "<p><b>Method & limits</b>: exact definitions, limits and how to reproduce every number.</p>"
-        "<p><b>Report</b>: the full written report.</p></div>"
-    )
-
-
-def _toy_example() -> None:
     left, right = st.columns(2)
     rows = (
         "<tr><td>Round 1</td><td>A 40 · B 30 · C 20 · abstain 10</td></tr>"
-        "<tr><td>Round 2 (official)</td><td>A 50 · B 40 · abstain 10</td></tr>"
+        "<tr><td>Round 2</td><td>A 50 · B 40 · abstain 10</td></tr>"
     )
     with left:
         ui.html(
@@ -143,45 +90,97 @@ def _toy_example() -> None:
             "<p>All 20 C voters go to B, while 10 of B's voters switch to A.</p>"
             f'<table class="paper">{rows}</table></div>'
         )
-    ui.caption(
-        "Box 1",
-        "Same totals, different behaviour. Official results cannot tell the two stories "
-        "apart, so every result on this site describes patterns in totals, not what any "
-        "person did.",
+    ui.box(
+        "definition",
+        "<p><b>Ecological inference</b>: inferring individual behaviour from group totals. Both "
+        "stories above give exactly the same official result, so no method can tell them apart "
+        "from totals alone. Every result on this site is therefore a statement about "
+        "<b>patterns in totals</b>, never about what any person did.</p>",
     )
+    with st.expander("Why not use surveys instead?"):
+        st.markdown(
+            "- Post-election surveys ask people how they voted in both rounds, but they are "
+            "small, self-reported and not available in the same form for all five elections.\n"
+            "- Our first plan used one preference survey (*Voter Autrement*, 2017) for two extra "
+            "hypotheses (H4, H5). The first peer review pointed out that one 2017 volunteer "
+            "survey cannot describe five elections, so we dropped it.\n"
+            "- Official results are a **census** of registered voters: no sampling error, the "
+            "same source every year, and fully reproducible."
+        )
 
-
-def _pipeline() -> None:
+    ui.section(PAGE, "s1-3")
+    st.markdown("Our approach rests on three ideas:")
+    st.markdown(
+        "1. **Turn each assumption into a rule.** A rule says, for every first-round group, "
+        "which share goes to each second-round option. It can be written as a table.\n"
+        "2. **Predict, then compare.** Apply the rule to the first round of each area, get a "
+        "predicted second round, and measure the gap with the real one.\n"
+        "3. **Keep rules simple and fixed in advance.** Eight of nine rules have no parameter "
+        "at all; the ninth has one, always tested on an election it was not fitted on."
+    )
+    st.latex(
+        r"\underbrace{x_{a}}_{\text{round 1 of area }a}\;\xrightarrow{\;\beta\text{ (the rule)}\;}"
+        r"\;\underbrace{\hat s_{a}}_{\text{predicted round 2}}\;\longleftrightarrow\;"
+        r"\underbrace{s_{a}}_{\text{observed round 2}}"
+    )
     steps = [
-        (
-            "Collect",
-            "Ministry polling-station files 2002–2022, pinned by hash; 22 polling-institute left-right orders collected by hand",
-        ),
-        (
-            "Clean",
-            "Zero-tolerance checks: a failed check stops the build. Nothing removed, imputed or corrected",
-        ),
-        ("Store", "Normalised Parquet tables; compared with SQLite/PostgreSQL and DuckDB"),
-        (
-            "Analyse",
-            "9 assumptions as transfer matrices; one error score; H3 validated leave-one-election-out",
-        ),
-        ("Communicate", "This site, the report and the slides read the same generated numbers"),
+        ("Collect", "Ministry files 2002–2022, pinned by hash; 22 poll orders collected by hand"),
+        ("Clean", "Zero-tolerance checks; nothing removed, imputed or corrected"),
+        ("Store", "Normalised Parquet tables, compared with SQLite and DuckDB"),
+        ("Analyse", "9 rules as transfer tables, one error score, held-out validation"),
+        ("Communicate", "This site, the report and the slides read the same numbers"),
     ]
-    cells = "".join(
-        f'<div style="flex:1;min-width:0;border-top:3px solid {ui.ACCENT};padding:.5rem .4rem 0">'
-        f'<div style="font-family:{ui.SERIF};font-weight:600;font-size:1.05rem">{i}. {t}</div>'
-        f'<div style="color:{ui.MUTED};font-size:.86rem;line-height:1.4;margin-top:.25rem">{d}</div></div>'
-        for i, (t, d) in enumerate(steps, 1)
+    ui.html(
+        '<div class="pipeline">'
+        + "".join(
+            f'<div><div class="t">{i}. {t}</div><div class="d">{d}</div></div>'
+            for i, (t, d) in enumerate(steps, 1)
+        )
+        + "</div>"
     )
-    ui.html(f'<div style="display:flex;gap:.7rem;margin:1rem 0 1.4rem">{cells}</div>')
+
+    ui.section(PAGE, "s1-4")
+    st.markdown(
+        "Average error of each assumption over all five elections (green) and without 2002 "
+        "(orange). Lower is better. H1 is first overall, but it barely changes without 2002, "
+        "while H0b and the H2 mixtures fall to about 3 pp."
+    )
+    st.altair_chart(_dumbbell(c), width="stretch")
+    ui.caption(
+        "Figure 1.1",
+        "Weighted mean over areas of the absolute gap between predicted and observed shares of "
+        "registered voters (four outcomes), in percentage points. H3 is always scored on an "
+        "election it was not fitted on. Excluding 2002 is a check we chose after seeing the "
+        "results: read it as a diagnostic, not a pre-registered test.",
+    )
+    ui.box(
+        "result",
+        "<ul>"
+        f"<li>Lowest five-election error: <b>H1, {c.loc['H1', 'mean']:.1f} pp</b>, but only "
+        f"{h1_wins} wins out of 5 against H0b.</li>"
+        f"<li>Lowest without 2002: <b>H0b, {c.loc['H0b', 'mean_without_2002']:.1f} pp</b>.</li>"
+        "<li>Not sending eliminated voters to abstention removes "
+        f"<b>{c.loc['H0a', 'mean'] - c.loc['H0b', 'mean']:.1f} pp</b> of error on average.</li>"
+        "</ul>",
+    )
+
+    ui.section(PAGE, "s1-5")
+    st.markdown("What this project adds, beyond the numbers:")
+    st.markdown(
+        "- **A fair comparison.** Every assumption is a transfer table scored by the same rule "
+        "on the same 522 area-elections.\n"
+        "- **Two baselines, not one.** Peer review showed that our first baseline was "
+        "unusually weak; we kept it and added a stronger one, so later rules cannot win cheaply.\n"
+        "- **Candidate positions from outside the team.** Instead of our own coding, we built "
+        "a left–right score from 22 published polls.\n"
+        "- **No tuning on the test data.** Rules and thresholds were fixed before results; the "
+        "only fitted parameter is validated leave-one-election-out.\n"
+        "- **Full reproducibility.** From raw files pinned by hash to every figure on this "
+        "site, one command rebuilds everything."
+    )
 
 
-def _slope(c):
-    """Dumbbell: each assumption's mean error with and without 2002."""
-    import altair as alt
-    import pandas as pd
-
+def _dumbbell(c: pd.DataFrame) -> alt.Chart:
     order = list(c.sort_values("mean").index)
     frame = pd.DataFrame(
         [

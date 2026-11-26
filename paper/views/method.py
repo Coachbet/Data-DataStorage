@@ -1,114 +1,121 @@
-"""Method & limits: exact definitions, what we cannot claim, how to reproduce."""
+"""7. Method & limits: notation, the score, H3 validation, limits and reproduction."""
 
 import streamlit as st
 
 import data
 import ui
 
+PAGE = "method"
+
+LIMITS = [
+    (
+        "Totals are not individual transfers",
+        "Different individual choices give the same area totals (Introduction, 1.2). A rule that fits is not an observed transfer.",
+    ),
+    (
+        "The unit is the area, not the polling station",
+        "Aggregating ~70,000 stations into ~100 areas hides variation inside areas and widens the range of behaviours compatible with the totals.",
+    ),
+    (
+        "2002 rests on one poll",
+        "The 2002 positions come from a single institute, and 2002 is the election that decides the five-election ranking.",
+    ),
+    (
+        "The scale is an order, not a distance",
+        "Within a poll neighbours are evenly spaced whatever their real gap; institutes' table conventions enter the scale (in 2007 Voynet sits slightly right of Royal). One dimension ignores Europe, sovereignty or ecology.",
+    ),
+    (
+        "Retained groups never move",
+        "Real movements of finalists' voters or first-round abstainers are an error floor shared by every rule, which compresses the differences between rules.",
+    ),
+    (
+        "Coverage changes",
+        "2002 and 2007 miss voters abroad and some overseas areas; the years are not identical geographic samples.",
+    ),
+    (
+        "Blank and invalid together",
+        "The outcome mixes a deliberate act with mistakes; the split exists only for 2017 and 2022 (checked in Results, 4.6).",
+    ),
+    (
+        "Few elections, many rules",
+        "Nine rules on five elections: the “best” is partly a selection effect. H0b and H1-soft were added after earlier results were known.",
+    ),
+]
+
 
 def render() -> None:
     ui.header(
-        "Section 6 · Method & limits",
+        "Section 7 · Method & limits",
         "Exact definitions, honest limits",
         "Everything needed to check, criticise or rerun the study.",
     )
 
-    st.markdown("## 6.1 The error score")
+    ui.section(PAGE, "s7-1")
     st.markdown(
-        "For area *a* and outcome *k* (finalist A, finalist B, blank or invalid, abstention), "
-        "with ŝ the predicted and s the observed share of registered voters:"
+        "| Symbol | Meaning |\n|---|---|\n"
+        "| $a$ | an area: département, overseas territory or voters abroad |\n"
+        "| $g$ | a first-round group: a candidate, blank/invalid voters, abstainers |\n"
+        "| $k$ | a second-round outcome: finalist A, finalist B, blank/invalid, abstention |\n"
+        "| $x_{a,g}$ | first-round share of group $g$ in area $a$ (of registered voters) |\n"
+        "| $s_{a,k}$, $\\hat s_{a,k}$ | observed and predicted second-round share |\n"
+        "| $\\beta_{g,k}$ | share of group $g$ sent to outcome $k$ by a rule |\n"
+        "| $s_c$ | left–right position of candidate $c$, from 0 to 1 |\n"
+        "| $w_a$ | weight of area $a$: its share of round-2 registered voters |\n"
     )
     st.latex(
-        r"\text{error}_a \;=\; \frac{100}{4}\sum_{k=1}^{4}\bigl|\,\hat s_{a,k}-s_{a,k}\bigr|"
-        r"\qquad\text{(percentage points)}"
-    )
-    st.latex(
-        r"\text{score} \;=\; \sum_a w_a\,\text{error}_a,\qquad "
-        r"w_a=\frac{\text{registered voters in round 2 of } a}{\text{all registered voters in round 2}}"
-    )
-    st.markdown(
-        "Absolute gaps are taken **before** averaging, so opposite errors in two areas cannot "
-        "cancel. The four outcomes count equally. Weighting by registered voters means a large "
-        "département counts more than a small overseas territory. A secondary diagnostic, the "
-        "*gap in combined results*, first adds all areas up and then compares: there, errors "
-        "of opposite sign can cancel."
+        r"\hat s_{a,k} = \sum_g x_{a,g}\,\beta_{g,k},\qquad \beta_{g,k}\ge0,\qquad \sum_k\beta_{g,k}=1"
     )
 
-    st.markdown("## 6.2 The transfer table, formally")
-    st.markdown(
-        "With x the first-round shares of an area and β the transfer table of an assumption "
-        "(rows sum to one), the prediction is"
+    ui.section(PAGE, "s7-2")
+    st.markdown("For each area, the mean absolute gap over the four outcomes:")
+    st.latex(
+        r"\text{error}_a = \frac{100}{4}\sum_{k=1}^{4}\bigl\lvert\hat s_{a,k}-s_{a,k}\bigr\rvert\quad\text{(percentage points)}"
     )
-    st.latex(r"\hat s_{a,k} \;=\; \sum_{g} x_{a,g}\,\beta_{g,k}")
+    st.markdown("Then the average over areas, weighted by registered voters:")
+    st.latex(
+        r"\text{score} = \sum_a w_a\,\text{error}_a,\qquad w_a = \frac{\text{registered}^{(2)}_a}{\sum_{a'}\text{registered}^{(2)}_{a'}}"
+    )
     st.markdown(
-        "- **Retained groups never move**: the rows of both finalists, of first-round blank or "
-        "invalid voters and of first-round abstainers are the identity in every assumption.\n"
-        "- **Unplaced candidates** (Cheminade 2012 and 2017, Lassalle 2017: institutes disagree "
-        "or list them last by default) use the H0b row in every proximity rule.\n"
-        "- **Ties**: a candidate exactly halfway between the finalists splits 50/50 (2 cases: "
-        "Boutin 2002, Nihous 2007). Sending them to abstention instead moves no mean by more "
-        "than 0.1 pp.\n"
-        "- **H3**: p is chosen on a grid (0, 0.01, …, 1) to minimise the mean score of four "
-        "elections, then scored on the fifth. With five folds this describes how a rule "
-        "transfers between elections; it supports no significance test."
+        "- Gaps are taken **before** averaging, so opposite errors in two areas cannot cancel.\n"
+        "- The four outcomes count **equally**.\n"
+        "- A large département counts more than a small overseas territory.\n"
+        "- A secondary diagnostic, the *gap in combined results*, first adds all areas up and "
+        "then compares; there, errors of opposite sign can cancel."
+    )
+    ui.box(
+        "decision",
+        "<p>Weight by <b>registered voters of round 2</b> (agreed 31 October): it "
+        "matches the evaluated round and needs no population data from INSEE.</p>",
+    )
+
+    ui.section(PAGE, "s7-3")
+    st.latex(
+        r"\beta^{\text{H3}}(p) = (1-p)\,\beta^{\text{base}} + p\,\beta^{\text{H0b}},\qquad \hat p_{e^\ast} = \arg\min_{p}\ \frac14\sum_{e\ne e^\ast}\text{score}_e\bigl(p\bigr)"
+    )
+    st.markdown(
+        "- $p$ is searched on a grid $0, 0.01, \\dots, 1$; ties go to the smallest value.\n"
+        "- Each election $e^\\ast$ is held out in turn; its score always uses $\\hat p_{e^\\ast}$.\n"
+        "- Areas of one election are never split between training and test."
     )
     folds = data.csv("h3_folds.csv")
-    folds = folds[(folds.variant == "positions=polls;tie=split") & folds.test_year.notna()].pivot(
-        index="base", columns="test_year", values="p"
-    )
+    folds = folds[(folds.variant == "positions=polls;tie=split") & folds.test_year.notna()]
+    folds = folds.pivot(index="base", columns="test_year", values="p")
     folds.columns = [f"held out {int(c)}" for c in folds.columns]
     st.dataframe(folds.style.format("{:.2f}"), width="stretch")
-    ui.caption("Table 7", "Fitted p of H3 for each held-out election and proximity base.")
+    ui.caption("Table 7.1", "Fitted p of H3 for each held-out election and proximity base.")
+    ui.box(
+        "limit",
+        "<p>Five folds describe how a rule transfers between elections. They support no "
+        "significance test. H3 is submitted to the professor for approval.</p>",
+    )
 
-    st.markdown("## 6.3 Limits")
-    limits = [
-        (
-            "Totals are not individual transfers.",
-            "Different individual choices give the same area totals "
-            "(Box 1 on the Introduction). A rule that fits is not an observed transfer.",
-        ),
-        (
-            "The unit is the area, not the polling station.",
-            "Aggregating ~70,000 stations into ~100 areas "
-            "hides variation inside areas and widens the range of behaviours compatible with the totals.",
-        ),
-        (
-            "2002 rests on one poll.",
-            "The poll-based positions for 2002 come from a single institute, and "
-            "2002 is the election that decides the five-election ranking.",
-        ),
-        (
-            "The scale is an order, not a distance.",
-            "Within a poll neighbours are evenly spaced whatever "
-            "their real gap; institutes' table conventions enter the scale (in 2007 Voynet sits slightly "
-            "right of Royal). One dimension ignores Europe, sovereignty or ecology.",
-        ),
-        (
-            "Retained groups never move.",
-            "Real movements of finalists' voters or round-1 abstainers are an "
-            "error floor shared by every rule, which compresses the differences between rules.",
-        ),
-        (
-            "Coverage changes.",
-            "2002 and 2007 miss voters abroad and some overseas areas; years are not "
-            "identical geographic samples.",
-        ),
-        (
-            "Blank and invalid together.",
-            "The outcome mixes a deliberate act with mistakes; the split exists "
-            "only for 2017 and 2022.",
-        ),
-        (
-            "Few elections, many rules.",
-            "Nine rules on five elections: the 'best' is partly a selection "
-            "effect, and gaps under ~0.3 pp are read as ties. H0b and H1-soft were added after earlier "
-            "results were known.",
-        ),
-    ]
-    for i, (t, d) in enumerate(limits, 1):
-        ui.finding(i, t, d)
+    ui.section(PAGE, "s7-4")
+    st.markdown("What we cannot claim, from the most to the least important:")
+    for i, (title, text) in enumerate(LIMITS, 1):
+        with st.expander(f"{i} · {title}"):
+            st.markdown(text)
 
-    st.markdown("## 6.4 Reproduce every number")
+    ui.section(PAGE, "s7-5")
     st.markdown(
         f"All code and data: [{data.REPOSITORY.removeprefix('https://')}]({data.REPOSITORY}). "
         "The repository contains the verified cleaned tables, so no download is needed."
@@ -125,31 +132,28 @@ def render() -> None:
     pub = data.comparison()[[str(y) for y in data.YEARS]]
     pub.columns = [int(c) for c in pub.columns]
     gap = float((live.loc[pub.index] - pub).abs().max().max())
-    ui.callout(
-        f"<b>Live check.</b> This site recomputes every score from the cleaned tables when it "
-        f"starts. Largest difference with the published results table: <b>{gap:.1e} pp</b> "
-        "(rounding only)."
+    ui.box(
+        "result",
+        f"<p>This site recomputes every score from the cleaned tables. Largest difference "
+        f"with the published results table: <b>{gap:.1e} pp</b> (rounding only).</p>",
+        label="Live check",
     )
-    st.markdown(
-        "What a command cannot reproduce is the extraction of the poll orders from the "
-        "institutes' reports. Each of the 22 rows of `data/reference/polling_axes.csv` links to "
-        "its source:"
-    )
-    p = data.polls()[["year", "institute", "fieldwork", "source_url"]]
-    st.dataframe(
-        p,
-        hide_index=True,
-        width="stretch",
-        column_config={
-            "source_url": st.column_config.LinkColumn("Source", display_text="open"),
-            "year": st.column_config.NumberColumn("Election", format="%d"),
-        },
-    )
-    st.markdown(
-        "Poll orders for 2017 and 2022 are taken from Delemazure, T., Dong, C., Peters, D. and "
-        "Tydrichová, M. (2024). *Comparing Ways of Obtaining Candidate Orderings from Approval "
-        "Ballots.* arXiv:2405.04525."
-    )
+    with st.expander("The 22 poll orders and their sources"):
+        p = data.polls()[["year", "institute", "fieldwork", "source_url"]]
+        st.dataframe(
+            p,
+            hide_index=True,
+            width="stretch",
+            column_config={
+                "source_url": st.column_config.LinkColumn("Source", display_text="open"),
+                "year": st.column_config.NumberColumn("Election", format="%d"),
+            },
+        )
+        st.markdown(
+            "Orders for 2017 and 2022 come from Delemazure, T., Dong, C., Peters, D. and "
+            "Tydrichová, M. (2024). *Comparing Ways of Obtaining Candidate Orderings from "
+            "Approval Ballots.* arXiv:2405.04525."
+        )
     st.markdown(
         "*AI tools assisted with code, tests and drafting. The team owns the methodological "
         "decisions, the collection of the poll orders and the interpretation.*"
