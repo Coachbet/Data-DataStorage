@@ -1,4 +1,4 @@
-"""Data access for the paper site.
+"""Data access for the website.
 
 Everything here reads the versioned snapshots (data/bundled, data/reference,
 reports/results) and the existing backend. Nothing is written, and no number is

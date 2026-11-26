@@ -54,31 +54,21 @@ The project team owns methodological decisions, final interpretation and submiss
 
 ## Frontend
 
-The Streamlit app has four pages: Home, Evidence, Explore the data, and
-Method & sources (the 2027 scenarios page was removed on 20 November 2026). `site/app.py` loads the data and dispatches
-to one module per page in `site/views/`. Election and area pickers appear only on
-the pages they change, and keep their value across pages.
+The website is written like an academic paper. Its pages are listed once in
+`site/nav.py` (number, title, anchors), which the sidebar, page headings and
+cross-references all read. `site/app.py` builds the navigation from that list and
+runs one module per page in `site/views/`. `site/data.py` reads the versioned
+snapshots through the backend functions and recomputes every score live;
+`site/ui.py` holds the shared layout pieces and the stylesheet. Fonts are vendored
+in `site/assets/fonts/` with their licences and embedded in the page: nothing is
+fetched from the network. On 26 November 2026 this site (first written in `paper/`)
+replaced the earlier four-page site.
 
-Design tokens (colours, spacing, type scale, fonts) are defined once in
-`site/theme.py`; the stylesheet variables and the Vega-Lite theme are both built
-from them. `site/styles.css` holds the rules, with a comment on every override
-of a Streamlit internal. Every chart is built in `site/charts.py`. Fonts are
-vendored in `site/assets/fonts/` with their licences and embedded in the page:
-nothing is fetched from the network.
+UI tests (`tests/test_site.py`) run every page on the bundled snapshots with HTTP
+blocked and check that each one renders without an error.
 
-Sentences and number formats shown on the site come from
-`application/presentation.py`, which only formats and reshapes generated results
-(`fmt_pp`, `fmt_pct`, the answer sentences, the findings); it computes no new
-result. `application/exploration.py` supplies registered-electorate summaries and
-weighted model-error readings. The 100-voter example on the Evidence page is
-explicitly illustrative, not historical data.
-
-UI tests cover all four pages on the bundled snapshots with HTTP blocked: the
-honesty statements on each page, picker persistence, missing-area resets,
-empty/corrupt/drifted data states, schema validation of every chart, and the
-contrast of the text colours.
-
-The design audit, brief and verification record are in `docs/design/`; the
-before/after screenshots were removed from the repository on 20 November 2026. To recapture screenshots with the app running on port 8501:
+The design audit, brief and verification record in `docs/design/` describe the
+earlier four-page site; the before/after screenshots were removed from the
+repository on 20 November 2026. To recapture screenshots with the app running on port 8501:
 `uv run --with playwright python docs/design/capture.py docs/design/after`
 (Playwright is not a project dependency; the script uses the installed Chrome).
