@@ -69,8 +69,8 @@ TEMPLATES_DIR = PROJECT_ROOT / "docs" / "templates"
 RENDERED = {
     "findings.md": "reports/results/findings.md",
     "report.md": "docs/report/report.md",
-    "presentation_outline.md": "docs/presentation_outline.md",
-    "storage_comparison.md": "docs/storage_comparison.md",
+    "presentation_outline.md": "docs/report/presentation_outline.md",
+    "storage_comparison.md": "docs/report/storage_comparison.md",
 }
 PLACEHOLDER = re.compile(r"\{\{\s*([^}|]+?)\s*(?:\|\s*([^}]+?)\s*)?\}\}")
 
@@ -529,7 +529,7 @@ def crosscheck_numbers(record: dict | None) -> dict:
     if record is None or not record["all_match"]:
         return {
             "text.crosscheck": f"Our {CROSSCHECK_YEAR} sums were compared with the Ministry's "
-            "published national summaries (see `docs/validation.md`)."
+            "published national summaries (run `vote-transfer crosscheck --year 2022`)."
         }
     checked = date.fromisoformat(record["checked_on"])
     return {

@@ -182,7 +182,7 @@ def test_bundled_snapshots_before_2017_have_no_split():
 
 
 def test_same_tables_load_into_sqlite_with_declared_constraints():
-    """Evidence for docs/storage_comparison.md: the relational alternative is feasible.
+    """Evidence for docs/report/storage_comparison.md: the relational alternative is feasible.
 
     The schema declares what validate_tables checks in code. A SQL join then
     reproduces the shares of the derived view. Standard library only.
