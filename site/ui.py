@@ -166,7 +166,6 @@ table.paper.text td, table.paper.text th { text-align: left; }
 table.paper tr.sep td { border-top: 1.5px solid %(ink)s; }
 table.paper td.best { font-weight: 700; background: #EAF5F1; }
 table.paper td.tie { font-weight: 700; color: %(muted)s; }
-.pending { background: #FCF5E1; border: 1px solid #E6CF95; padding: 0 .3rem; border-radius: 2px; font-size: .85em; }
 """
 
 

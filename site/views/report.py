@@ -34,7 +34,6 @@ def render() -> None:
     )
     text = DRAFT.read_text(encoding="utf-8")
     text = re.sub(r"<!--.*?-->", "", text, flags=re.S)
-    text = re.sub(r"`?\[PENDING: ([^\]]*)\]`?", r'<span class="pending">pending: \1</span>', text)
     # Render Markdown in chunks so figures can be shown with st.image.
     pos = 0
     for match in IMAGE.finditer(text):
