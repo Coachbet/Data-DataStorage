@@ -1,0 +1,5 @@
+extend = "../pyproject.toml"
+
+[lint]
+# Long prose strings are easier to edit unbroken in a text-heavy site.
+extend-ignore = ["E501"]
