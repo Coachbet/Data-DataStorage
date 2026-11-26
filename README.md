@@ -58,10 +58,10 @@ No credentials are required and `.env` files are not loaded.
 ## Where things are
 
 ```text
-site/app.py                 Streamlit app entry: navigation, data loading, page dispatch
-site/views/                 The four pages: answer, evidence, explore, method
-site/theme.py, styles.css   Design tokens (one source for CSS and charts) and the stylesheet
-site/charts.py              Every chart, on one shared Vega-Lite theme
+site/app.py                 Streamlit app entry: page setup, navigation, sidebar, pager
+site/nav.py                 Table of contents: every page, section number and anchor
+site/ui.py, site/data.py    Shared layout and stylesheet; data access through the backend
+site/views/                 One module per page (introduction, data, hypotheses, results, ...)
 docs/design/                Design audit, brief and verification notes (screenshots: capture.py)
 backend/vote_transfer/
   infrastructure/           Download with pinned hashes; parsers for the three file layouts

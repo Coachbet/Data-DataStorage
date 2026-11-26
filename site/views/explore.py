@@ -1,220 +1,276 @@
-"""Explore the data: one election, by round and by area."""
+"""Explore: the raw election results and every model's prediction, area by area."""
 
-import charts
-import components
+import altair as alt
+import numpy as np
+import pandas as pd
 import streamlit as st
-from theme import OUTCOME_NAMES
-from vote_transfer.application.exploration import round_summary
-from vote_transfer.application.presentation import (
-    fmt_int,
-    fmt_pct,
-    outcome_roles,
-    rounds_side_by_side,
-)
-from vote_transfer.application.source_catalog import SOURCES
+
+import data
+import ui
 
 
-def finalist_names(results, roles: dict[str, str]) -> dict[str, str]:
-    """Outcome names for one election: the finalists by name, the rest as outcomes."""
-    labels = results.drop_duplicates("option").set_index("option").label
-    names = dict(OUTCOME_NAMES)
-    for option, role in roles.items():
-        if option.startswith("candidate:"):
-            names[role] = labels[option].title()
-    return names
-
-
-FIELDS = [
-    ("Inscrits", "Registered voters", "Everyone on the electoral roll of the polling station"),
-    ("Abstentions", "Abstention", "Registered voters who did not vote"),
-    ("Votants", "Voters", "People who cast a ballot, valid or not"),
-    ("Blancs, Nuls", "Blank or invalid", "Ballots that count for no candidate; we add them up"),
-    ("Exprimés", "Valid votes", "Ballots for a candidate; used only for the usual percentages"),
-    ("Voix", "Votes per candidate", "One count per candidate and polling station"),
-]
-
-
-def provenance() -> None:
-    """Where the election files come from, what they are called and what we keep."""
-    components.section(
-        None,
-        "Where the data comes from",
-        "provenance",
-        lead="All the results come from the French Ministry of the Interior. It publishes "
-        "one file per election on data.gouv.fr, with one line per polling station "
-        "('bureau de vote').",
+def render() -> None:
+    ui.header(
+        "Section 5 · Explore the data",
+        "Play with the numbers",
+        "Pick an election and an area. Everything below is computed live from the cleaned tables.",
     )
-    rows = "".join(
-        f"<tr><td>{year}</td>"
-        + "".join(
-            f'<td><a href="{components.escape(source.landing_url)}" target="_blank" '
-            f'rel="noopener">Original Ministry dataset, {year}, round {source.key[-1]}</a></td>'
-            for source in SOURCES
-            if source.key.startswith(f"official_{year}_")
-        )
-        + "</tr>"
-        for year in sorted(
-            {source.key.split("_")[1] for source in SOURCES if source.key.startswith("official_")}
-        )
+    c1, c2, c3 = st.columns([1, 2, 1])
+    year = c1.selectbox("Election", data.YEARS[::-1], key="ex_year")
+    res = data.results(year)
+    areas = (
+        res[["department_code", "department_name"]].drop_duplicates().sort_values("department_code")
     )
-    components.html(
-        '<table class="plain-table"><thead><tr><th>Election</th><th>Round 1</th>'
-        f"<th>Round 2</th></tr></thead><tbody>{rows}</tbody></table>"
-    )
-    st.caption(
-        "The datasets are called 'Élection présidentielle … résultats par bureaux de "
-        "vote'. For 2002 to 2012 one file has both rounds, so the two links go to the "
-        "same dataset. We keep the original files unchanged and check them with a checksum."
-    )
-    components.html('<div id="keep"></div>')
-    components.figure_head(
-        "What we keep from each file",
-        "The original column names are in French. We keep these counts for every polling "
-        "station, then add them up by area (department, overseas territory or voters abroad).",
-    )
-    table = "".join(
-        f"<tr><td><code>{components.escape(french)}</code></td><td>{components.escape(name)}"
-        f"</td><td>{components.escape(text)}</td></tr>"
-        for french, name, text in FIELDS
-    )
-    components.html(
-        '<table class="plain-table"><thead><tr><th>In the file</th><th>On this site</th>'
-        f"<th>What it counts</th></tr></thead><tbody>{table}</tbody></table>"
-    )
-    components.note(
-        "Why registered voters.",
-        "Most news sites give percentages of valid votes. We use shares of registered voters "
-        "instead, because abstention and blank or invalid ballots are outcomes of the second "
-        "round too, and our assumptions have to predict them.",
+    labels = {
+        "ALL": "All covered areas",
+        **dict(
+            zip(
+                areas.department_code,
+                areas.department_code + " · " + areas.department_name,
+                strict=True,
+            )
+        ),
+    }
+    area = c2.selectbox("Area", list(labels), format_func=labels.get, key="ex_area")
+    base = c3.radio(
+        "Percent of",
+        ["Registered", "Valid votes"],
+        key="ex_base",
+        help="Our models use registered voters; news reports use valid votes.",
     )
 
-
-def render(ctx) -> None:
-    components.page_header(
-        "The data: official results from 2002 to 2022",
-        "First where the numbers come from and what we keep, then one election in detail.",
+    sel = res if area == "ALL" else res[res.department_code == area]
+    e = data.election(year)
+    totals = sel.groupby(["round", "option", "label"], as_index=False)["count"].sum()
+    reg = sel.drop_duplicates(["round", "department_code"]).groupby("round").registered.sum()
+    totals["pct_registered"] = totals.apply(lambda r: r["count"] / reg[r["round"]] * 100, axis=1)
+    valid = totals[totals.option.str.startswith("candidate:")].groupby("round")["count"].sum()
+    totals["pct_valid"] = totals.apply(
+        lambda r: (
+            r["count"] / valid[r["round"]] * 100 if r.option.startswith("candidate:") else np.nan
+        ),
+        axis=1,
     )
-    components.contents(
+    col = "pct_registered" if base == "Registered" else "pct_valid"
+
+    r1 = totals[totals["round"] == 1]
+    r2 = totals[totals["round"] == 2]
+    ab1 = r1.loc[r1.option == "abstention", "pct_registered"].sum()
+    ab2 = r2.loc[r2.option == "abstention", "pct_registered"].sum()
+    bl1 = r1.loc[r1.option == "blank_invalid", "pct_registered"].sum()
+    bl2 = r2.loc[r2.option == "blank_invalid", "pct_registered"].sum()
+    ui.stats(
         [
-            ("Where the data comes from", "provenance"),
-            ("What we keep", "keep"),
-            ("Both rounds side by side", "rounds"),
-            ("One round in detail", "round"),
-        ]
-    )
-    provenance()
-    components.section(None, "Explore one election", "explore")
-    components.election_picker(ctx)
-    if ctx.partial_coverage and ctx.unit == "All units":
-        st.warning(
-            f"**Not national totals.** The {ctx.year} file does not include the voters abroad "
-            "and some overseas areas, so these figures are a bit different from the national "
-            "results you can find, for example, on Wikipedia."
-        )
-    roles = outcome_roles(ctx.results)
-    names = finalist_names(ctx.results, roles)
-
-    components.section(1, "Both rounds side by side", "rounds")
-    both = rounds_side_by_side(ctx.selected, roles)
-    shares = both.set_index(["row", "segment"]).pct
-    components.figure_head(
-        f"Abstention went from {fmt_pct(shares['Round 1', 'abstention'])} to "
-        f"{fmt_pct(shares['Round 2', 'abstention'])} between the rounds; blank or invalid "
-        f"ballots from {fmt_pct(shares['Round 1', 'blank_invalid'])} to "
-        f"{fmt_pct(shares['Round 2', 'blank_invalid'])}",
-        f"Share of registered voters in each round, {ctx.year}, {ctx.area}.",
-    )
-    components.outcome_key(names)
-    charts.stacked_rows(both, names, "Share of registered voters (%)")
-    components.source(
-        "Source: Ministry of the Interior. Each round uses its own number of registered "
-        "voters. These are totals, so they do not show how people moved between the rounds."
-    )
-
-    components.section(2, "One round in detail", "round")
-    round_number = st.radio(
-        "Round", [1, 2], format_func=lambda n: f"Round {n}", horizontal=True, key="round"
-    )
-    summary = round_summary(ctx.selected, round_number)
-    components.stat_row(
-        [
+            (f"{reg[2]:,.0f}", "registered voters in round 2"),
+            (f"{ab1:.1f}% → {ab2:.1f}%", "abstention, round 1 → round 2"),
+            (f"{bl1:.1f}% → {bl2:.1f}%", "blank or invalid, round 1 → round 2"),
             (
-                "Registered voters",
-                fmt_int(summary["registered"]),
-                "Everyone on the electoral roll in the selected areas and round.",
-            ),
-            (
-                "Cast a ballot",
-                fmt_pct(summary["turnout_pct"]),
-                "Includes valid, blank and invalid ballots.",
-            ),
-            (
-                "Did not vote",
-                fmt_pct(summary["abstention_pct"]),
-                "Abstention as a share of registered voters.",
+                f"{(1 - (r1[r1.option.isin(e.outcomes)].pct_registered.sum() / 100)) * 100:.1f}%",
+                "voted for an eliminated candidate",
             ),
         ]
     )
-    basis = st.radio(
-        "Show percentages of",
-        ["Registered voters", "Valid votes"],
-        captions=["Used by our models", "As usually reported"],
-        horizontal=True,
-        key="basis",
+
+    ui.section("explore", "s5-1")
+    role = {
+        e.finalists[0]: "Finalist A",
+        e.finalists[1]: "Finalist B",
+        "blank_invalid": "Blank or invalid",
+        "abstention": "Abstention",
+    }
+    r1 = r1.assign(
+        Group=r1.option.map(role).fillna("Eliminated"), Name=[data.name(year, o) for o in r1.option]
     )
-    totals = summary["totals"].assign(role=summary["totals"].option.map(roles).fillna("other"))
-    if basis == "Valid votes":
-        candidates = totals.dropna(subset=["valid_share_pct"])
-        leader = candidates.iloc[0]
-        components.figure_head(
-            f"{leader.outcome} received {fmt_pct(leader.valid_share_pct)} of valid votes, "
-            f"which is {fmt_pct(leader.share_pct)} of registered voters",
-            f"Round {round_number}, {ctx.year}, {ctx.area}. Share of ballots cast for a "
-            "candidate, as results are usually reported. Abstention and blank or invalid "
-            "ballots are left out, so this view cannot show the whole electorate.",
+    r1 = r1.dropna(subset=[col]).sort_values(col, ascending=False)
+    names = list(r1.Name)
+    bars = (
+        alt.Chart(r1)
+        .mark_bar(height={"band": 0.75})
+        .encode(
+            y=alt.Y(
+                "Name:N", sort=names, title=None, axis=alt.Axis(labelOverlap=False, labelLimit=200)
+            ),
+            x=alt.X(f"{col}:Q", title=f"% of {base.lower()}"),
+            color=alt.Color(
+                "Group:N",
+                scale=alt.Scale(
+                    domain=[
+                        "Finalist A",
+                        "Finalist B",
+                        "Blank or invalid",
+                        "Abstention",
+                        "Eliminated",
+                    ],
+                    range=[
+                        ui.COLOUR[k]
+                        for k in (
+                            "finalist_a",
+                            "finalist_b",
+                            "blank_invalid",
+                            "abstention",
+                            "eliminated",
+                        )
+                    ],
+                ),
+                title=None,
+            ),
+            tooltip=[
+                "Name",
+                alt.Tooltip("count:Q", format=","),
+                alt.Tooltip(f"{col}:Q", format=".2f", title="%"),
+            ],
         )
-        charts.round_bars(
-            candidates.assign(value=candidates.valid_share_pct), "Share of valid votes (%)"
-        )
-        components.note(
-            "How to read this.",
-            f"Of every 100 valid votes in this selection, {leader.outcome} received about "
-            f"{leader.valid_share_pct:.1f}. Out of all registered voters, the same votes are "
-            f"{leader.share_pct:.1f}%.",
-        )
-    else:
-        components.figure_head(
-            f"{fmt_pct(summary['turnout_pct'])} of registered voters cast a ballot; "
-            f"{fmt_pct(summary['abstention_pct'])} did not",
-            f"Round {round_number}, {ctx.year}, {ctx.area}. Share of registered voters: the "
-            "basis our models use, because abstention and blank ballots are outcomes too.",
-        )
-        charts.round_bars(totals.assign(value=totals.share_pct), "Share of registered voters (%)")
-        components.note("How to read this.", summary["reading"])
-    components.source(
-        "Source: Ministry of the Interior. The finalists, blank or invalid ballots and "
-        "abstention keep the same colour on every page; the other candidates are grey."
     )
-    components.figure_head("Exact figures", f"Round {round_number}, {ctx.year}, {ctx.area}.")
-    table = summary["totals"][["outcome", "count", "share_pct", "valid_share_pct"]].copy()
-    table.columns = [
-        "Outcome",
-        "People / ballots",
-        "Registered electorate (%)",
-        "Valid votes (%)",
-    ]
-    st.dataframe(
-        table,
-        hide_index=True,
-        width="stretch",
-        column_config={
-            "Registered electorate (%)": st.column_config.NumberColumn(format="%.1f"),
-            "Valid votes (%)": st.column_config.NumberColumn(format="%.1f"),
-        },
+    txt = bars.mark_text(align="left", dx=3, fontSize=11, color=ui.INK).encode(
+        text=alt.Text(f"{col}:Q", format=".1f")
     )
-    st.download_button(
-        "Download this round (CSV)",
-        ctx.selected[ctx.selected["round"] == round_number].to_csv(index=False),
-        file_name=f"election_{ctx.year}_{ctx.unit.replace(' ', '_')}_round_{round_number}.csv",
-        mime="text/csv",
+    st.altair_chart((bars + txt).properties(height=26 * len(r1)), width="stretch")
+    ui.caption(
+        "Figure 5.1",
+        f"{labels[area]}, {year}. Source: Ministry of the Interior. "
+        "Switch to <i>valid votes</i> to see the percentages usually reported in the news.",
+    )
+
+    ui.section("explore", "s5-2")
+    order = [e.finalists[0], e.finalists[1], "blank_invalid", "abstention"]
+
+    def grp(o):  # noqa: E306
+        return {
+            e.finalists[0]: data.outcome_label(year, "finalist_a"),
+            e.finalists[1]: data.outcome_label(year, "finalist_b"),
+            "blank_invalid": "Blank or invalid",
+            "abstention": "Abstention",
+        }.get(o, "Eliminated candidates")
+
+    both = (
+        totals.assign(Group=totals.option.map(grp))
+        .groupby(["round", "Group"], as_index=False)
+        .pct_registered.sum()
+    )
+    both["Round"] = "Round " + both["round"].astype(str)
+    both = both.drop(columns="round").rename(columns={"pct_registered": "pct"})
+    domain = [grp(o) for o in order] + ["Eliminated candidates"]
+    both["o"] = both.Group.map({g: i for i, g in enumerate(domain)})
+    stack = (
+        alt.Chart(both)
+        .mark_bar(size=46)
+        .encode(
+            y=alt.Y(
+                "Round:N",
+                title=None,
+                sort=["Round 1", "Round 2"],
+                scale=alt.Scale(paddingInner=0.35),
+            ),
+            x=alt.X(
+                "pct:Q",
+                title="% of registered voters",
+                stack="zero",
+                scale=alt.Scale(domain=[0, 100]),
+            ),
+            color=alt.Color(
+                "Group:N",
+                scale=alt.Scale(
+                    domain=domain,
+                    range=[ui.COLOUR[k] for k in data.OUTCOMES] + [ui.COLOUR["eliminated"]],
+                ),
+                title=None,
+            ),
+            order=alt.Order("o:Q"),
+            tooltip=["Round", "Group", alt.Tooltip("pct:Q", format=".1f")],
+        )
+        .properties(height=alt.Step(64))
+    )
+    st.altair_chart(stack, width="stretch")
+    ui.caption(
+        "Figure 5.2",
+        "The grey block of round 1 is what every assumption has to redistribute. "
+        "Each round has its own number of registered voters. Totals only: they do not show who moved where.",
+    )
+
+    ui.section("explore", "s5-3")
+    model = st.segmented_control("Assumption", data.MODELS, default="H0b", key="ex_model") or "H0b"
+    pred = data.prediction(year, model)
+    rows = []
+    for i, code in enumerate(e.areas):
+        for k, roleo in enumerate(data.OUTCOMES):
+            rows.append(
+                {
+                    "code": code,
+                    "area": labels.get(code, code),
+                    "outcome": data.outcome_label(year, roleo),
+                    "predicted": pred[i, k] * 100,
+                    "observed": e.actual[i, k] * 100,
+                    "selected": area == "ALL" or code == area,
+                }
+            )
+    pts = pd.DataFrame(rows)
+    line = (
+        alt.Chart(pd.DataFrame({"v": [0, 75]}))
+        .mark_line(color=ui.MUTED, strokeDash=[4, 3])
+        .encode(x="v:Q", y="v:Q")
+    )
+    scatter = (
+        alt.Chart(pts)
+        .mark_circle(size=34)
+        .encode(
+            x=alt.X(
+                "observed:Q",
+                title="Observed share of registered (%)",
+                scale=alt.Scale(domain=[0, 75]),
+            ),
+            y=alt.Y("predicted:Q", title="Predicted share (%)", scale=alt.Scale(domain=[0, 75])),
+            color=alt.Color("outcome:N", scale=ui.outcome_scale(year), title=None),
+            opacity=alt.condition("datum.selected", alt.value(0.85), alt.value(0.12)),
+            tooltip=[
+                "area",
+                "outcome",
+                alt.Tooltip("predicted:Q", format=".1f"),
+                alt.Tooltip("observed:Q", format=".1f"),
+            ],
+        )
+    )
+    st.altair_chart((line + scatter).properties(height=430), width="stretch")
+    err = np.abs(pred - e.actual).mean(axis=1) * 100
+    area_err = pd.DataFrame(
+        {
+            "Area": [labels.get(a, a) for a in e.areas],
+            "Error (pp)": err,
+            "Registered (round 2)": e.registered_r2.astype(int),
+        }
+    )
+    sc = data.score(year, pred)
+    ui.caption(
+        "Figure 5.3",
+        f"{model}, {year}: one point per area and outcome; on the dashed line the "
+        f"prediction equals the observation. Weighted average error: <b>{sc:.1f} pp</b>."
+        + (
+            ""
+            if area == "ALL"
+            else f" {labels[area]}: {float(area_err.set_index('Area').loc[labels[area], 'Error (pp)']):.1f} pp."
+        ),
+    )
+
+    with st.expander("Every area's error for this assumption (sortable, downloadable)"):
+        st.dataframe(
+            area_err.sort_values("Error (pp)", ascending=False),
+            hide_index=True,
+            width="stretch",
+            column_config={
+                "Error (pp)": st.column_config.NumberColumn(format="%.2f"),
+                "Registered (round 2)": st.column_config.NumberColumn(format="%d"),
+            },
+        )
+        st.download_button(
+            "Download this table (CSV)",
+            area_err.to_csv(index=False).encode(),
+            f"errors_{model}_{year}.csv",
+            "text/csv",
+        )
+    ui.box(
+        "definition",
+        "<b>How the score is computed.</b> For each area: the absolute gap between predicted and "
+        "observed share, for each of the four outcomes, averaged (no weighting between "
+        "outcomes). Then the average over areas, each weighted by its round-2 registered voters. "
+        "Gaps are taken <i>before</i> averaging, so an overestimate in one area cannot cancel an "
+        "underestimate in another.",
     )
