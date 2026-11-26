@@ -26,7 +26,7 @@ STAGES = [
         "votes (would hide abstention and blank ballots, which we must predict).",
         "About a quarter of the blank/invalid outcome is invalid ballots, which no rule can "
         "explain; checked with a 5-outcome sensitivity analysis.",
-        "Data 2.3–2.4 · Results 4.6 · <code>docs/data_quality_and_cleaning.md</code>",
+        "Data 2.3–2.4 · Results 4.6",
     ),
     (
         "Storage",
@@ -36,7 +36,7 @@ STAGES = [
         "to install); DuckDB (a query engine over the same files, not needed at 92k rows).",
         "Constraints enforced by code, not by the engine; joins in Python; two copies of the "
         "snapshots that a check keeps aligned.",
-        "Data 2.6 · <code>docs/storage_comparison.md</code> · <code>tests/test_storage.py</code>",
+        "Data 2.6 · <code>tests/test_storage.py</code>",
     ),
     (
         "Analysis",
@@ -47,7 +47,7 @@ STAGES = [
         "elections) and two-dimensional distances (no 2D position exists for all 61 candidacies).",
         "Nine rules on five elections: the winner is partly a selection effect; 2002 drives "
         "the five-election ranking.",
-        "Hypotheses 3.1–3.4 · Results 4.1–4.5 · <code>docs/methodology.md</code>",
+        "Hypotheses 3.1–3.4 · Results 4.1–4.5",
     ),
     (
         "Communication",
@@ -267,9 +267,7 @@ def render() -> None:
         )
 
     ui.section(PAGE, "s6-3")
-    st.markdown(
-        "Every comment, what we did, and the status. Full list in `docs/response_to_reviews.md`."
-    )
+    st.markdown("Every comment, what we did, and the status.")
     for title, rows in (
         ("Peer review 1 · acquisition (6 October)", ROUND1),
         ("Peer review 2 · quality, cleaning, storage (10 November)", ROUND2),

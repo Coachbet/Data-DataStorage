@@ -106,7 +106,7 @@ the app needs is a view built on load. This layout answers the second peer
 review, which found a repeated denominator and one result file per model.
 
 We compared this in detail with a relational database (SQLite or PostgreSQL) and
-with DuckDB over the same files (`docs/storage_comparison.md`). Our operations
+with DuckDB over the same files (`docs/report/storage_comparison.md`). Our operations
 are: write once by one process, read whole columns, join across models and
 elections, and be reproduced exactly by a reader with no setup. A database would
 add what we lack, **declarative keys and constraints**; we verified that our
@@ -314,8 +314,8 @@ poll orders from the institutes' reports, which is why each row of
 `polling_axes.csv` links to its source; a test fails if the scale is not rebuilt
 after the polls change.
 
-**What changed after peer feedback** (`docs/response_to_reviews.md` lists every
-comment). After the first review we dropped H4, H5 and all auxiliary datasets.
+**What changed after peer feedback** (the Decisions page of the website lists
+every comment). After the first review we dropped H4, H5 and all auxiliary datasets.
 After the second we (i) added the second baseline H0b, which turned out to matter
 more than any other change; (ii) replaced the unreviewed hand-coded candidate
 table with positions built from polling institutes, as the reviewers' concern about
