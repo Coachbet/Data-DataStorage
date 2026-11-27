@@ -23,6 +23,7 @@ What the numbers show. No explanation is offered in this section.
 | H0a | {{score.H0a.2002}} | {{score.H0a.2007}} | {{score.H0a.2012}} | {{score.H0a.2017}} | {{score.H0a.2022}} | {{score.H0a.mean}} | {{score.H0a.mean_without_2002}} |
 | H0b | {{score.H0b.2002}} | {{score.H0b.2007}} | {{score.H0b.2012}} | {{score.H0b.2017}} | {{score.H0b.2022}} | {{score.H0b.mean}} | {{score.H0b.mean_without_2002}} |
 | H1 | {{score.H1.2002}} | {{score.H1.2007}} | {{score.H1.2012}} | {{score.H1.2017}} | {{score.H1.2022}} | {{score.H1.mean}} | {{score.H1.mean_without_2002}} |
+| H1-soft | {{score.H1-soft.2002}} | {{score.H1-soft.2007}} | {{score.H1-soft.2012}} | {{score.H1-soft.2017}} | {{score.H1-soft.2022}} | {{score.H1-soft.mean}} | {{score.H1-soft.mean_without_2002}} |
 | H2-abst | {{score.H2-abst.2002}} | {{score.H2-abst.2007}} | {{score.H2-abst.2012}} | {{score.H2-abst.2017}} | {{score.H2-abst.2022}} | {{score.H2-abst.mean}} | {{score.H2-abst.mean_without_2002}} |
 | H2-blank | {{score.H2-blank.2002}} | {{score.H2-blank.2007}} | {{score.H2-blank.2012}} | {{score.H2-blank.2017}} | {{score.H2-blank.2022}} | {{score.H2-blank.mean}} | {{score.H2-blank.mean_without_2002}} |
 | H3(H1) | {{score.H3(H1).2002}} | {{score.H3(H1).2007}} | {{score.H3(H1).2012}} | {{score.H3(H1).2017}} | {{score.H3(H1).2022}} | {{score.H3(H1).mean}} | {{score.H3(H1).mean_without_2002}} |

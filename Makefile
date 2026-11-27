@@ -25,6 +25,6 @@ check:
 	uv run ruff check backend site tests
 	uv run ruff format --check backend site tests
 	uv run vote-transfer check-snapshots
-# Tracked files only: no .venv, raw downloads or OS metadata.
+# Tracked files only: no .git, .gitignore, .venv, raw downloads or OS metadata.
 archive:
-	git archive --format=zip --prefix=vote-transfer/ -o vote-transfer-$$(git rev-parse --short HEAD).zip HEAD
+	git archive --format=zip --prefix=vote-transfer/ -o vote-transfer-$$(git rev-parse --short HEAD).zip HEAD ":(exclude)*.gitignore"
