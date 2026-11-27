@@ -59,16 +59,15 @@ data/external/**
 !data/external/.gitkeep
 !data/samples/**
 
-# Generated reports and presentation exports
-docs/archive/reports/figures/**
-!docs/archive/reports/figures/.gitkeep
-docs/archive/presentation/build/
-docs/archive/presentation/*.aux
-docs/archive/presentation/*.log
-docs/archive/presentation/*.nav
-docs/archive/presentation/*.out
-docs/archive/presentation/*.snm
-docs/archive/presentation/*.toc
+# LaTeX build files of the report (only the .tex sources and the PDF are versioned)
+report/*.aux
+report/*.out
+report/*.toc
+report/*.fls
+report/*.fdb_latexmk
+report/*.synctex.gz
+report/*.bbl
+report/*.blg
 
 # Local databases and downloaded archives
 *.db

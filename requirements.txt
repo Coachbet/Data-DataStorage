@@ -1,0 +1,12 @@
+# Packages the code imports directly. The exact versions used are locked in uv.lock.
+altair>=6.0,<7
+matplotlib>=3.10,<4
+numpy>=2.2,<3
+pandas>=2.3.0,<3
+pyarrow>=21.0.0,<22
+requests>=2.32.0,<3
+streamlit>=1.50.0,<2
+# Only for the tests (pytest) and for rebuilding the candidate scale notebook (make scale)
+pytest>=8.4.0,<9
+ipykernel>=6.29,<8
+nbconvert>=7.16,<8
