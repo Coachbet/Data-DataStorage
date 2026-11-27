@@ -10,6 +10,7 @@ dependencies = [
     "numpy>=2.2,<3",
     "pandas>=2.3.0,<3",
     "pyarrow>=21.0.0,<22",
+    "pypdfium2>=4.30,<6",
     "requests>=2.32.0,<3",
     "streamlit>=1.50.0,<2",
 ]

@@ -1,7 +1,9 @@
 """Report: the written report, as a PDF when the team adds one, else the Markdown draft."""
 
 import re
+from pathlib import Path
 
+import pypdfium2
 import streamlit as st
 
 import data
@@ -11,6 +13,22 @@ PDF = data.PROJECT / "report" / "report.pdf"
 DECISIONS = data.PROJECT / "report" / "decision_record.pdf"
 DRAFT = data.DOCS / "report" / "report.md"
 IMAGE = re.compile(r"!\[([^\]]*)\]\(([^)]+)\)")
+
+
+@st.cache_data(show_spinner="Loading the report...")
+def pdf_pages(path: str, version: int) -> list[bytes]:
+    """Every page of a PDF as a PNG image (``version`` refreshes the cache when it changes)."""
+    import io
+
+    document = pypdfium2.PdfDocument(Path(path))
+    pages = []
+    for page in document:
+        image = page.render(scale=2).to_pil()
+        buffer = io.BytesIO()
+        image.save(buffer, format="PNG")
+        pages.append(buffer.getvalue())
+    document.close()
+    return pages
 
 
 def render() -> None:
@@ -32,7 +50,10 @@ def render() -> None:
                 "decision_record.pdf",
                 "application/pdf",
             )
-        st.iframe(PDF, height=1000)
+        # Pages are drawn as images: browsers refuse to show a PDF inside Streamlit's
+        # sandboxed frame, but an image shows everywhere.
+        for number, page in enumerate(pdf_pages(str(PDF), PDF.stat().st_mtime_ns), 1):
+            st.image(page, caption=f"Page {number}", width="stretch")
         return
 
     if not DRAFT.is_file():
