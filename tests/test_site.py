@@ -67,4 +67,9 @@ importlib.import_module("views.{key}").render()
 def test_every_page_renders_without_error(offline, key):
     app = AppTest.from_string(PAGE_SCRIPT.format(site=str(SITE), key=key)).run(timeout=180)
     assert not app.exception, [e.value for e in app.exception]
-    assert len(app.markdown) > 3  # the page has real content, not only its frame
+    if key == "report":  # the final report is shown as a PDF, with download buttons
+        labels = [button.label for button in app.get("download_button")]
+        assert "Download the report (PDF)" in labels
+        assert len(app.get("imgs")) == 1 or len(app.get("image")) >= 1  # the pages, as images
+    else:
+        assert len(app.markdown) > 3  # the page has real content, not only its frame
